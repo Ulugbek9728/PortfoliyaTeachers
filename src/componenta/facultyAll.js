@@ -12,7 +12,6 @@ function FacultyAll(props) {
                         <div className="nuqta"></div>
                     </div>
                 </div>
-
                 <Facultys/>
             </div>
         </div>

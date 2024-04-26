@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from "../componenta/Navbar";
+import TeachersAbout from '../componenta/TeachersAbout';
 import TeacherStatistic from "../componenta/teacherStatistic";
 
 function KafedraStatic(props) {
@@ -7,6 +8,7 @@ function KafedraStatic(props) {
         <div>
             <Navbar/>
             <TeacherStatistic/>
+            <TeachersAbout/>
         </div>
     );
 }

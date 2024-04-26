@@ -315,6 +315,12 @@ h5, h6, .fw-medium {
     align-items: flex-end;
     justify-content: center;
 }
+.owl-carousel .owl-item img {
+    display: block;
+    width: 100%;
+    width: 60px;
+    height: 60px;
+}
 
 .testimonial-carousel .owl-dot {
     position: relative;
@@ -335,22 +341,55 @@ h5, h6, .fw-medium {
 .testimonial-carousel .owl-item.center {
     position: relative;
     z-index: 1;
+    background-color: #FFFFFF!important;
 }
 
 .testimonial-carousel .owl-item .testimonial-item {
     transition: .5s;
 }
+/* .owl-item center{
+ 
+} */
+/* .testimonial-carousel .owl-item.center .testimonial-item {
+    background-color: #FFFFFF ;
+} */
+.owl-theme .owl-dots .owl-dot.active span, .owl-theme .owl-dots .owl-dot span {
+    background: #06a3da;
+    width: 30px;
+}
 
-.testimonial-carousel .owl-item.center .testimonial-item {
-    background: #FFFFFF !important;
-    box-shadow: 0 0 30px #DDDDDD;
+/* 
+  .owl-item.center > div::after {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #FFFFFF;
+    top: 0;
+    left: 0;
+    opacity: 0.2;
+  } */
+  
+.owl-theme .owl-dots .owl-dot span {
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    width: 15px;
+    height: 15px;
+    background: #f5efef;
+    border-radius: 2px;
+    transition: .5s;
+}
+ .active {
+    background-color: #EEF9FF ;
+}
+.center {
+    background-color: #ffffff ;
 }
 
 
 /*** Team ***/
-.team-item {
-    transition: .5s;
-}
 
 .team-social {
     position: absolute;
@@ -443,6 +482,7 @@ h5, h6, .fw-medium {
 .link-animated a:hover {
     padding-left: 10px;
 }
+
 
 @media (min-width: 767.98px) {
     .footer-about {

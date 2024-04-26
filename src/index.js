@@ -8,7 +8,6 @@ import {MyRedusers} from "./componenta/MyRedusers";
 import {createStore} from "redux";
 import Provider from "react-redux/es/components/Provider";
 import "./lib/animate/animate.min.css"
-import "./lib/owlcarousel/assets/owl.carousel.min.css"
 import "./utils/i18n";
 import "./style/style.css"
 

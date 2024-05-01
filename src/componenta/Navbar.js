@@ -1,9 +1,10 @@
 import React from 'react';
 import {Link} from "react-router-dom";
+import {ApiName} from "../api/APIname";
 
 function Navbar(props) {
     return (
-        <div className="">
+        <div className="p-0">
 
             <div className="container-fluid bg-dark px-5 d-none d-lg-block">
                 <div className="row gx-0">
@@ -43,7 +44,8 @@ function Navbar(props) {
                             <a href="#" className="nav-item nav-link">Home</a>
                             <a href="#" className="nav-item nav-link">About</a>
                             <a href="#" className="nav-item nav-link">Services</a>
-                            <a href="#" className="nav-item nav-link">Hemis orqali kirish</a>
+                            <a  href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=4&state=auth_state&redirect_uri=${ApiName}/auth`}
+                               className="nav-item nav-link">Hemis orqali kirish</a>
                         </div>
                     </div>
                 </nav>

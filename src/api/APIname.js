@@ -1,4 +1,4 @@
-// const ApiName = 'http://192.168.20.97:9999';
-const ApiName = 'https://api-id.tdtu.uz';
+const ApiName = 'http://localhost:3000';
+// const ApiName = 'https://api-r-office.tdtu.uz';
 
 export {ApiName}

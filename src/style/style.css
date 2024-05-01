@@ -4,6 +4,10 @@
     --secondary: #34AD54;
     --light: #EEF9FF;
     --dark: #091E3E;
+
+}
+body {
+    background-color: #e5e9f4
 }
 
 /*** Heading ***/

@@ -5,12 +5,12 @@ import FlagRu from "../../img/flag-ru.png";
 
 const LanguageSwitcherStyle = styled.div`
   position: relative;
-  top: 8px;
+  top: 0;
   cursor: pointer;
   z-index: 100;
 
   .dropdown__item, .dropdown__menu__item {
-    color: rgb(0, 0, 0,);
+    color: #fff;
     font-size: 20px;
     font-weight: 500;
     line-height: 24px;
@@ -46,8 +46,8 @@ const LanguageSwitcherStyle = styled.div`
   }
 
   .dropdown__item__lang__image {
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     display: block;
     margin-right: 5px;
     background-size: cover;

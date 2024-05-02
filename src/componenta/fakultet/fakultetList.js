@@ -2,14 +2,20 @@ import React from 'react';
 import "../../style/fakultetListe.css"
 
 function FakultetList(props) {
+
+    const test = 10;
+
+
     return (
         <div className='container'>
             <div className="row">
                 <div className="buttons">
+
                     <button className="neumorphic">
                         <i className="fa-light fa-fire"></i>
                         <span>Button 1</span>
                     </button>
+
                     <button className="neumorphic">
                         <i className="fa-light fa-dna"></i>
                         <span>Button 2</span>

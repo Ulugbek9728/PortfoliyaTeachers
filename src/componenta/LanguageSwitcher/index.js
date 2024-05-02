@@ -17,7 +17,6 @@ const LanguageSwitcher = () => {
     i18n.changeLanguage(lng);
     // window.location.reload();
   };
-
   useEffect(() => {
     if (langDropDown) {
       document
@@ -33,7 +32,7 @@ const LanguageSwitcher = () => {
   return (
     <LanguageSwitcherStyle
       onClick={showAndHidden}
-      className={`${langDropDown && "show"}`}>
+      className={`${langDropDown && "show"}`} >
       <div className={"dropdown__item"}>
         <span className={`dropdown__item__lang__image ${lang}`}/>
         <span className={"dropdown__item__lang__text"}>{lang}</span>

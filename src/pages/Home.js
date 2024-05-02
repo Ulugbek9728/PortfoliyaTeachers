@@ -12,7 +12,7 @@ function Home(props) {
             <Navbar/>
             <HeaderCarusel/>
             <Facts/>
-            <Title props={{title1:"Bizning fakultetlar",title2:"Universitet bo'yicha statistika"}}/>
+            <Title props={{title1:"Bizning fakultetlar",title2:"Universitet bo'yicha reyting"}}/>
             <FakultetList/>
             <FacultyAll />
 

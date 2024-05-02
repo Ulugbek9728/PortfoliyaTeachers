@@ -1,7 +1,6 @@
 import React from 'react';
 
 function Title(props) {
-    console.log(props)
     return (
         <div className="container-fluid">
             <div className="container ">

@@ -3,47 +3,72 @@ import "../../style/fakultetListe.css"
 
 function FakultetList(props) {
 
-    const test = 10;
+   
+// File Name: /MyPractice/data.json
+const test = [
+    {
+
+        id:1,
+        name:"Akshit",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:1,
+        index:513,
+    },   
+    {
+        id:2,
+        name:"Nikita",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:2,
+        index:513,
+    },
+    {
+        id:3,
+        name:"Deeksha",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:3,
+        index:765,
+    },
+    {
+        id:4,
+        name:"Ritesh",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:4,
+        index:754,
+    }
+]
 
 
     return (
         <div className='container'>
             <div className="row">
                 <div className="buttons">
-
-                    <button className="neumorphic">
-                        <i className="fa-light fa-fire"></i>
-                        <span>Button 1</span>
-                    </button>
-
-                    <button className="neumorphic">
-                        <i className="fa-light fa-dna"></i>
-                        <span>Button 2</span>
-                    </button>
-                    <button className="neumorphic">
-                        <i className="fa-light fa-chart-mixed"></i>
-                        <span>Button 3</span>
-                    </button>
-                    <button className="neumorphic">
-                        <i className="fa-light fa-atom"></i>
-                        <span>Button 4</span>
-                    </button>
-                    <button className="neumorphic">
-                        <i className="fa-light fa-seedling"></i>
-                        <span>Button 5</span>
-                    </button>
-                    <button className="neumorphic">
-                        <i className="fa-light fa-disease"></i>
-                        <span>Button 6</span>
-                    </button>
-                    <button className="neumorphic">
-                        <i className="fa-light fa-seedling"></i>
-                        <span>Button 7</span>
-                    </button>
-                    <button className="neumorphic">
-                        <i className="fa-light fa-disease"></i>
-                        <span>Button 8</span>
-                    </button>
+                    {test.map((eachcard,index) => (
+                 <button className="neumorphic">
+                    <div className='user_info'>    
+                    <div className='reyting'>
+                        <span className='fw-bolder text-4xl text-white'>{eachcard.rating}</span>
+                        <p className='text-white text-lg'>Rating</p>
+                    </div>
+                    <div className='btn_img'></div>
+                    <div className='user_container'>
+                        <h5 className='user_title text-white'>{eachcard.name}</h5>
+                        <p className='text-white'>{eachcard.universty}</p>
+                     </div>
+                    </div>
+                    <div className='text-center'>
+                        <span className='fw-bolder text-4xl text-white'>{eachcard.index}</span>
+                        <p className='text-white text-lg text-center'>H-Index</p>
+                    </div>
+                    <div className='text-center'>
+                        <span className='fw-bolder text-4xl text-white'>{eachcard.index}</span>
+                        <p className='text-white text-lg text-center'>Publications</p>
+                    </div>
+                    <div className='text-center'>
+                        <span className='fw-bolder text-4xl text-white'>{eachcard.index}</span>
+                        <p className='text-white text-lg text-center'>Citations</p>
+                    </div>
+                 </button>
+                        ))}
                 </div>
             </div>
 

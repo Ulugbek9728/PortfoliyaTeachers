@@ -87,7 +87,7 @@ function Navbar(props) {
                     </div>
 
                     <div className="collapse navbar-collapse" id="navbarCollapse1">
-                        <div className="navbar-nav ms-auto py-0">
+                        <div className="navbar-nav ms-auto py-0 align-items-center">
                             <a href="#" className="nav-item nav-link">Home</a>
                             <Dropdown
                                 menu={{

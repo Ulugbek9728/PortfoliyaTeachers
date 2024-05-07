@@ -1,4 +1,9 @@
 /********** Template CSS **********/
+*{
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
 :root {
     --primary: #06a3da;
     --secondary: #34AD54;

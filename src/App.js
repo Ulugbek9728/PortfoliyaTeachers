@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import FacultyStatic from "./pages/facultyStatic";
 import KafedraStatic from "./pages/kafedraStatic";
 import Auth from "./pages/auth";
+import TeachersDiogramm from "./pages/TeachersDiogramm";
 
 
 function App() {
@@ -21,9 +22,10 @@ function App() {
             <Routes>
                 <Route path={"/"} element={<Home/>}/>
                 <Route path={"/auth/*"} element={ <Auth/>}/>
-
                 <Route path={"/faculties/*"} element={<FacultyStatic/>}/>
                 <Route path={"/Kafedra/*"} element={<KafedraStatic/>}/>
+                <Route path={"/TeachersDiogramm/*"} element={<TeachersDiogramm/>}/>
+
             </Routes>
 
         </QueryClientProvider>

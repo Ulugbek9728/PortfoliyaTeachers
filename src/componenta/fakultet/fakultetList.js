@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import "../../style/fakultetListe.css"
 
 function FakultetList(props) {
@@ -12,7 +13,7 @@ const test = [
         name:"Akshit",
         universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
         rating:1,
-        index:513,
+        index:4,
     },   
     {
         id:2,
@@ -42,32 +43,36 @@ const test = [
         <div className='container'>
             <div className="row">
                 <div className="buttons">
-                    {test.map((eachcard,index) => (
-                 <button className="neumorphic">
+             {test.map((eachcard,index) => (
+                 <Link to="/TeachersDiogramm" className="neumorphic">
                     <div className='user_info'>    
                     <div className='reyting'>
-                        <span className='fw-bolder text-4xl text-white'>{eachcard.rating}</span>
-                        <p className='text-white text-lg'>Rating</p>
+                        <span className='fw-bolder text-4xl '>{eachcard.rating}</span>
+                        <p className=' text-lg'>Rating</p>
                     </div>
                     <div className='btn_img'></div>
                     <div className='user_container'>
-                        <h5 className='user_title text-white'>{eachcard.name}</h5>
-                        <p className='text-white'>{eachcard.universty}</p>
+                        <h5 className='user_title '>{eachcard.name}</h5>
+                        <p >{eachcard.universty}</p>
                      </div>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl text-white'>{eachcard.index}</span>
-                        <p className='text-white text-lg text-center'>H-Index</p>
+                        <span className='fw-bolder text-4xl'>{eachcard.index}</span>
+                        <p className=' text-lg text-center'>H-Index</p>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl text-white'>{eachcard.index}</span>
-                        <p className='text-white text-lg text-center'>Publications</p>
+                        <span className='fw-bolder text-4xl '>{eachcard.index}</span>
+                        <p className=' text-lg text-center'>Publications</p>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl text-white'>{eachcard.index}</span>
-                        <p className='text-white text-lg text-center'>Citations</p>
+                        <span className='fw-bolder text-4xl '>{eachcard.index}</span>
+                        <p className=' text-lg text-center'>Citations</p>
                     </div>
-                 </button>
+                    <div className='text-center'>
+                        <span className='fw-bolder text-4xl '>{eachcard.index}</span>
+                        <p className=' text-lg text-center'>Citations</p>
+                    </div>
+                 </Link>
                         ))}
                 </div>
             </div>

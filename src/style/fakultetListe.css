@@ -10,21 +10,24 @@
           -.5rem -.5rem 1rem hsl(0 0% 100% / .75),
           .5rem .5rem 1rem hsl(0 0% 50% / .5);
   box-shadow: var(--shadow);
+  background-color: inherit;
   outline: none;
   transition: all 0.1s;
-  background-color: rgb(5, 19, 49);
+
 }
 
 span {
     font-family: system-ui, sans-serif;
     font-size:  3rem;
+    color: #000000;
   }
   .reyting{
 margin-left: -15px;
   }
 .buttons {
   display: grid;
-  gap: 10px;
+  gap: 2rem;
+  background-color: inherit;
 }
 .btn_img{
   width: 80px;
@@ -37,12 +40,14 @@ margin-left: -15px;
   font-size: 1.125rem;
   line-height: 1.75rem;
   font-weight: 700;
+  color: #000000;
 }
 .user_info{
   gap: 15px;
 display: flex;
 justify-content: center;
 align-items: center;
+color: #000;
 
 }
 .user_container{

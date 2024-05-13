@@ -4,8 +4,6 @@ import "../../style/fakultetListe.css"
 
 function FakultetList(props) {
 
-   
-// File Name: /MyPractice/data.json
 const test = [
     {
 
@@ -35,9 +33,37 @@ const test = [
         universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
         rating:4,
         index:754,
+    },
+    {
+
+        id:5,
+        name:"Akshit",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:1,
+        index:4,
+    },
+    {
+        id:6,
+        name:"Nikita",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:2,
+        index:513,
+    },
+    {
+        id:7,
+        name:"Deeksha",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:3,
+        index:765,
+    },
+    {
+        id:8,
+        name:"Ritesh",
+        universty:"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        rating:4,
+        index:754,
     }
 ]
-
 
     return (
         <div className='container'>
@@ -47,8 +73,8 @@ const test = [
                  <Link to="/TeachersDiogramm" className="neumorphic">
                     <div className='user_info'>    
                     <div className='reyting'>
-                        <span className='fw-bolder text-4xl '>{eachcard.rating}</span>
-                        <p className=' text-lg'>Rating</p>
+                        <span className='fw-bolder '>{index+1}</span>
+                        <p className=''>Rating</p>
                     </div>
                     <div className='btn_img'></div>
                     <div className='user_container'>
@@ -57,20 +83,20 @@ const test = [
                      </div>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl'>{eachcard.index}</span>
-                        <p className=' text-lg text-center'>H-Index</p>
+                        <span className='user_title'>{eachcard.index}</span>
+                        <p className='user_title'>H-Index</p>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl '>{eachcard.index}</span>
-                        <p className=' text-lg text-center'>Publications</p>
+                        <span className='user_title '>{eachcard.index}</span>
+                        <p className='user_title'>Publications</p>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl '>{eachcard.index}</span>
-                        <p className=' text-lg text-center'>Citations</p>
+                        <span className='user_title '>{eachcard.index}</span>
+                        <p className='user_title'>Citations</p>
                     </div>
                     <div className='text-center'>
-                        <span className='fw-bolder text-4xl '>{eachcard.index}</span>
-                        <p className=' text-lg text-center'>Citations</p>
+                        <span className='user_title '>{eachcard.index}</span>
+                        <p className='user_title'>Citations</p>
                     </div>
                  </Link>
                         ))}

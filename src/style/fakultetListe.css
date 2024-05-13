@@ -17,10 +17,15 @@
 }
 
 span {
+  margin-top: 30px;
+  >i {
+    font-size: 20px;
+  }
+  > span {
     font-family: system-ui, sans-serif;
     font-size:  3rem;
     color: #000000;
-  }
+  }}
   .reyting{
 margin-left: -15px;
   }

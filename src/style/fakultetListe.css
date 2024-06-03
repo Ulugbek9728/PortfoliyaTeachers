@@ -1,68 +1,76 @@
 @import url('https://pro.fontawesome.com/releases/v6.0.0-beta1/css/all.css');
+:root {
+    --primary: #06a3da;
+    --secondary: #34AD54;
+    --light: #EEF9FF;
+    --dark: #091E3E;
 
+}
 .neumorphic {
-  width: 100%;
-  border: 0.5rem solid transparent;
-  border-radius: 1rem;
-  display: flex;
-  justify-content: space-around;
-  --shadow:
-          -.5rem -.5rem 1rem hsl(0 0% 100% / .75),
-          .5rem .5rem 1rem hsl(0 0% 50% / .5);
-  box-shadow: var(--shadow);
-  background-color: inherit;
-  outline: none;
-  transition: all 0.1s;
+    width: 100%;
+    border: 0.5rem solid transparent;
+    border-radius: 1rem;
+    display: flex;
+    justify-content: space-around;
+    --shadow: -.5rem -.5rem 1rem hsl(0 0% 100% / .75),
+    .5rem .5rem 1rem hsl(0 0% 50% / .5);
+    box-shadow: var(--shadow);
+    background-color: inherit;
+    outline: none;
+    transition: all 0.1s;
 
 }
 
-span {
-  margin-top: 30px;
-  >i {
-    font-size: 20px;
-  }
-  > span {
-    font-family: system-ui, sans-serif;
-    font-size:  3rem;
-    color: #000000;
-  }}
-  .reyting{
-margin-left: -15px;
-  }
+.reyting {
+    margin-left: -15px;
+
+    >span{
+        font-size: 45px;
+    }
+}
+
+
 .buttons {
-  display: grid;
-  gap: 2rem;
-  background-color: inherit;
+    display: grid;
+    gap: 2rem;
+    background-color: inherit;
 }
-.btn_img{
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: aqua;
-  margin-left: 15px;
+
+.btn_img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--primary) !important;
+    margin-left: 15px;
 }
-.user_title{
-  font-size: 1.125rem;
-  line-height: 1.75rem;
-  font-weight: 700;
-  color: #000000;
+
+.user_title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: #000000;
 }
-.user_info{
-  gap: 15px;
-display: flex;
-justify-content: center;
-align-items: center;
-color: #000;
+
+.user_info {
+    width: 40%;
+    gap: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    color: #000;
 
 }
-.user_container{
-max-width: 289px;
-width: 100%;
-text-align: left;
+
+.user_container {
+    max-width: 289px;
+    width: 100%;
+    text-align: left;
 }
-.text-lg{
-font-size: 16px;
+
+.text-lg {
+    font-size: 16px;
 }
-.index{
-display: flex;
+
+.index {
+    display: flex;
 }

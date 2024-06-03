@@ -44,8 +44,7 @@ const TeachersComponent = () => {
       <Export enabled={true} />
 
     </Chart>
- </>
-    )
+ </>)
     }
 
 

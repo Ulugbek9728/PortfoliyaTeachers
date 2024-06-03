@@ -32,17 +32,8 @@ function Auth(props) {
             if (response.data.isSuccess === true) {
                 setLoading(false)
                 setLogin(true)
-                localStorage.setItem("myCat", JSON.stringify(response.data.data));
-
-                if (response.data?.data?.roles[0]==='ROLE_OPERATOR'){
-                    navigate("/operator/addFile")
-                }
-                if (response.data?.data?.roles[0]==='ROLE_ADMIN'){
-                    navigate("/adminAll/userAdd")
-                }
-                if (response.data?.data?.roles[0]==='ROLE_DEPARTMENT'){
-                    navigate("/department/addFileDepartment")
-                }
+                localStorage.setItem("myInfo", JSON.stringify(response.data.data));
+                navigate('/profile')
             }
             else {
                 setLoading(false)
@@ -51,11 +42,11 @@ function Auth(props) {
         }).catch((error) => {
             console.log(error);
             setLoading(false)
-            setMessage("Serverda o'zgartirish olib borilmoqda")
+            navigate("/")
+            setMessage("Loginda xato")
 
         })
     }
-
 
     useEffect(() => {
         setMessage('')
@@ -83,7 +74,6 @@ function Auth(props) {
 
                 </div>
             </div>}
-
         </>
 
     );

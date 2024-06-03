@@ -12,19 +12,27 @@ function Navbar(props) {
     const items = [
         {
             label: (
-                <a target="_blank" href="#">
-                    Universitet bo'yicha kafedralar reytingi
-                </a>
+                <Link  to="/university">
+                    Universitet bo'yicha Fakultetlar reytingi
+                </Link>
             ),
-            key: '0',
+            key: '1',
         },
         {
             label: (
-                <a target="_blank" rel="noopener noreferrer" href="#">
-                    Universitet bo'yicha o'qituvchilar reytingi
-                </a>
+                <Link  to="/faculties">
+                    Universitet bo'yicha kafedralar reytingi
+                </Link>
             ),
-            key: '1',
+            key: '2',
+        },
+        {
+            label: (
+                <Link  to="/kafedra">
+                    Universitet bo'yicha o'qituvchilar reytingi
+                </Link>
+            ),
+            key: '3',
         },
         {
             type: 'divider',
@@ -60,18 +68,15 @@ function Navbar(props) {
                     </div>
                 </div>
             </div>
-
             {/*Topbar End*/}
 
             {/*Navbar & Carousel Start*/}
-
             <div className="container-fluid position-relative p-0">
                 <nav className="navbar navbar-expand-lg  navbar-dark px-5 py-3 py-lg-0">
                     <Link to="/" className="navbar-brand p-0 w-50">
                         <h1 className="d-flex align-items-center w-100">
                             <i className="fa fa-user-tie me-2"></i>
-                            <p className=' d-flex text-wrap'>{t("Home.logo1")}</p>
-
+                            <img src="" alt=""/>
                         </h1>
                     </Link>
                     <div className='d-flex gap-3'>
@@ -82,18 +87,12 @@ function Navbar(props) {
                         <div className="d-lg-none">
                             <LanguageSwitcher/>
                         </div>
-
-
                     </div>
 
                     <div className="collapse navbar-collapse" id="navbarCollapse1">
                         <div className="navbar-nav ms-auto py-0 align-items-center">
                             <a href="#" className="nav-item nav-link">Home</a>
-                            <Dropdown
-                                menu={{
-                                    items,
-                                }}
-                            >
+                            <Dropdown menu={{items}}>
                                 <a className='nav-item nav-link' onClick={(e) => e.preventDefault()}>
                                     <Space style={{cursor:"pointer"}}>
                                         TDTU ichki reytinglari
@@ -115,8 +114,6 @@ function Navbar(props) {
                     </div>
 
                 </nav>
-
-
             </div>
         </div>
     );

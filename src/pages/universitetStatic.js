@@ -2,66 +2,66 @@ import React from 'react';
 import Navbar from "../componenta/Navbar";
 import Title from "../componenta/title";
 import FakultetList from "../componenta/fakultet/fakultetList";
+import Facultys from "../componenta/Facultys";
 
-
-function KafedraStatic(props) {
+function UniversitetStatic(props) {
     const fakulty = [
         {
             id:1,
-            name:"Materiallar qarshiligi va mashina detallari",
+            name:"Elektr energetika fakulteti",
             universty:"",
             index:4,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
             id:2,
-            name:"Neft va gaz konlari geologiyasi va geofizikasi kafedrasi",
+            name:"Muhandislik texnologiyalari fakulteti",
             universty:"",
             index:513,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
             id:3,
-            name:"Nazariy mexanika va mashina va mexanizmlar nazariyasi",
+            name:"Geologiya-qidiruv va kon-metallurgiya fakulteti",
             universty:"",
             index:765,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
             id:4,
-            name:"Metallarga bosim bilan ishlov berish",
+            name:"Neft va gaz fakulteti",
             universty:"",
             index:754,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
 
             id:5,
-            name:"Energiya tejamkorligi va energetika auditi",
+            name:"Issiqlik Energetikasi Fakulteti",
             universty:"",
             index:4,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
             id:6,
-            name:"Tеxnоlоgik mаshinаlаr vа jihоzlаr",
+            name:"Mashinasozlik Fakulteti",
             universty:"",
             index:513,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
             id:7,
-            name:"Sanoat iqtisodiyoti va menejmenti kafedrasi",
+            name:"Elektronika va Avtomatika Fakulteti",
             universty:"",
             index:765,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
         },
         {
             id:8,
-            name:"Biotexnologiya kafedrasi",
+            name:"Mexanika Fakulteti",
             universty:"",
             index:754,
-            link:"/TeachersDiogramm/"
+            link:"/faculties/"
 
         }
     ]
@@ -70,8 +70,11 @@ function KafedraStatic(props) {
             <Navbar/>
             <div className="container mt-5">
                 <div className="row">
-                    <Title props={{title1:"O'qituvchilar reytingi",title2:"Kafedra bo'yicha reyting"}}/>
+                    <Title
+                        props={{title1: "Bizning fakultetlar", title2: "Universitet bo'yicha fakultetlar reytingi"}}/>
                     <FakultetList fakulty={fakulty}/>
+
+                    <Facultys/>
                 </div>
             </div>
 
@@ -79,4 +82,4 @@ function KafedraStatic(props) {
     );
 }
 
-export default KafedraStatic;
+export default UniversitetStatic;

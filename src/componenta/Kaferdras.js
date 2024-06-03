@@ -37,12 +37,10 @@ function Kaferdras(props) {
                 {
                     label: "kafedra test",
                     value: "810000",
-                    link: "/kafedra/1"
                 },
                 {
                     label: "kafedra 2",
                     value: "620000",
-                    link: "/123"
                 },
                 {
                     label: "kafedra 3",
@@ -78,9 +76,8 @@ function Kaferdras(props) {
         }
     };
 
-
     return (
-     <ReactFC {...chartConfigs} />
+     <ReactFC className='mt-5' {...chartConfigs} />
     );
 }
 

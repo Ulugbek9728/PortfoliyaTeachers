@@ -9,6 +9,8 @@ import FacultyStatic from "./pages/facultyStatic";
 import KafedraStatic from "./pages/kafedraStatic";
 import Auth from "./pages/auth";
 import TeachersDiogramm from "./pages/TeachersDiogramm";
+import UniversitetStatic from "./pages/universitetStatic";
+import Profile from "./pages/profile";
 
 
 function App() {
@@ -22,9 +24,11 @@ function App() {
             <Routes>
                 <Route path={"/"} element={<Home/>}/>
                 <Route path={"/auth/*"} element={ <Auth/>}/>
+                <Route path={"/university/"} element={<UniversitetStatic/>}/>
                 <Route path={"/faculties/*"} element={<FacultyStatic/>}/>
-                <Route path={"/Kafedra/*"} element={<KafedraStatic/>}/>
+                <Route path={"/kafedra/*"} element={<KafedraStatic/>}/>
                 <Route path={"/TeachersDiogramm/*"} element={<TeachersDiogramm/>}/>
+                <Route path={"/profile/"} element={<Profile/>}/>
 
             </Routes>
 

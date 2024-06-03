@@ -39,42 +39,34 @@ const chartConfigs = {
             {
                 label: "Elektr energetika fakulteti",
                 value: "810000",
-                link: "faculties/1"
             },
             {
                 label: "Muhandislik texnologiyalari fakulteti",
                 value: "620000",
-                link: "faculties/2"
             },
             {
                 label: "Geologiya-qidiruv va kon-metallurgiya fakulteti",
                 value: "350000",
-                link: "faculties/3"
             },
             {
                 label: "Neft va gaz fakulteti",
                 value: "410000",
-                link: "faculties/4"
             },
             {
                 label: "Issiqlik energetikasi fakulteti",
                 value: "620000",
-                link: "faculties/5"
             },
             {
                 label: "Mashinasozlik fakulteti",
                 value: "810000",
-                link: "faculties/6"
             },
             {
                 label: "Elektronika va avtomatika fakulteti",
                 value: "620000",
-                link: "faculties/7"
             },
             {
                 label: "Mexanika fakulteti",
                 value: "350000",
-                link: "faculties/8",
                 color:"e06602"
             }
 

@@ -14,7 +14,6 @@ function Home(props) {
             <HeaderCarusel/>
             <Facts/>
 
-
         </div>
     );
 }

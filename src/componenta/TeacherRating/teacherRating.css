@@ -1,37 +1,42 @@
-.TeacherRating{
-width: 90%;
-margin: 0 auto;
---shadow:
--.5rem -.5rem 1rem hsl(0 0% 100% / .75),
-.5rem .5rem 1rem hsl(0 0% 50% / .5);
-box-shadow: var(--shadow);
-padding: 20px;
-margin-top: 20px ;
-border-radius: 12px;
+.TeacherRating {
+    width: 90%;
+    margin: 0 auto;
+    --shadow: -.5rem -.5rem 1rem hsl(0 0% 100% / .75),
+    .5rem .5rem 1rem hsl(0 0% 50% / .5);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 12px;
 }
-.TeacherRating_header{
- display: flex;
- gap: 30px;
+
+.TeacherRating_header {
+    display: flex;
+    gap: 30px;
 }
-.TeacherRating_img>img{
-width: 100px;
-height: 100px;
+
+.TeacherRating_img > img {
+    width: 100px;
+    height: 100px;
 }
-.TeacherRating_text_name{
-max-width: 485px;
-width: 100%;
-}
-.TeacherRating_text{
+
+.TeacherRating_text_name {
+    max-width: 485px;
     width: 100%;
-  
 }
-.teacher_rating_bottom{
-border-top: 1px solid rgb(120, 118, 118);
-display: flex;
-justify-content: space-around;
-padding: 40px 0;
+
+.TeacherRating_text {
+    width: 100%;
+
 }
-.br_right{
- border-right: 1px solid rgb(136, 134, 134);
- padding-right: 140px;
+
+.teacher_rating_bottom {
+    border-top: 1px solid rgb(120, 118, 118);
+    display: flex;
+    justify-content: space-around;
+    padding: 40px 0;
+}
+
+.br_right {
+    border-right: 1px solid rgb(136, 134, 134);
+    padding-right: 140px;
 }

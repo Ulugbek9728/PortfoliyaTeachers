@@ -4,9 +4,7 @@ import './teacherRating.css'
 
 const TeacherRating = () => {
     const [fulInfo] = useState(JSON.parse(localStorage.getItem("myInfo")));
-
-    console.log(fulInfo)
-
+    
     return (
         <>
             <div className='TeacherRating'>
@@ -17,25 +15,23 @@ const TeacherRating = () => {
                         {/*<img src={user} alt=''/>*/}
                     </div>
                     <div className='TeacherRating_text'>
-                        <h3 className='TeacherRating_text_name'>
-                            {fulInfo?.fullName}
-                        </h3>
-                        <p className='TeacherRating_text_description'>
+                        <h3 className='TeacherRating_text_name'>{fulInfo?.fullName}</h3>
+                        <div className='TeacherRating_text_description'>
                             <div className='d-flex'>
-                                <b>Ish joy:</b>
-                                <p> {fulInfo?.department?.name}</p>
+                                <b className='mx-3'>Ish joy:</b>
+                                <p>{fulInfo?.parentDepartment?.name} <br/> {fulInfo?.department?.name}</p>
                             </div>
                             <div className='d-flex'>
-                                <b>Lavozim: </b>
+                                <b className='mx-3'>Lavozim: </b>
                                 <p> {fulInfo?.staffPosition?.name}</p>
                             </div>
                             <div className='d-flex'>
-                                <b>Shtat birligi:</b>
+                                <b className='mx-3'>Shtat birligi:</b>
                                 <p> {fulInfo?.employmentForm?.name} {fulInfo?.employmentStaff?.name}</p>
                             </div>
 
 
-                        </p>
+                        </div>
 
                     </div>
                 </div>

@@ -5,8 +5,11 @@ import TeachersComponent from '../componenta/Teachers/TeachersComponent'
 const TeachersDiogramm = () => {
   return (
     <>
-      <Navbar/>  
-      <TeachersComponent/>
+      <Navbar/>
+        <div className="" style={{marginTop:"10%"}}>
+            <TeachersComponent />
+        </div>
+
     </>
   )
 }

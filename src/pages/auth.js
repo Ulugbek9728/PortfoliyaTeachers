@@ -18,8 +18,8 @@ function Auth(props) {
     useEffect(() => {
         return () => {
             getEmploee()
+            console.log(1)
         };
-
     }, []);
     function getEmploee() {
         setLoading(true)
@@ -42,7 +42,7 @@ function Auth(props) {
         }).catch((error) => {
             console.log(error);
             setLoading(false)
-            navigate("/")
+            // navigate("/")
             setMessage("Loginda xato")
 
         })
@@ -67,9 +67,9 @@ function Auth(props) {
         <>
             {loading===true ? <Loading/> :  <div>
                 <div className="container-fluid">
-                    <div className="row d-flex align-items-center justify-content-center">
+                    <div className="row mt-5 d-flex align-items-center justify-content-center">
                         <Navbar/>
-                        <img className='w-50' src="./404error1.svg" alt=""/>
+                        <img style={{width:'40%', marginTop:'3%'}} src="./404error1.svg" alt=""/>
                     </div>
 
                 </div>

@@ -3,7 +3,9 @@ import './teacherRating.css'
 
 const TeacherRating = () => {
     const [fulInfo] = useState(JSON.parse(localStorage.getItem("myInfo")));
-    
+
+    console.log(fulInfo)
+
     return (
         <>
             <div className='TeacherRating'>

@@ -4,11 +4,8 @@ import {UserOutlined,} from '@ant-design/icons';
 import {NavLink, Route, Routes,} from "react-router-dom";
 import "./profile.scss"
 
-import {Layout, Menu, theme} from 'antd';
-import {useNavigate, useParams} from "react-router-dom";
-import Navbar from "../componenta/Navbar";
-import Form from "../componenta/Form/Form";
-import Form2 from "../componenta/Form2/Form2";
+import {Layout} from 'antd';
+import Navbar from "../../componenta/Navbar";
 
 const {Content, Sider} = Layout;
 
@@ -40,14 +37,9 @@ function Profile(props) {
         <div>
             <Navbar/>
             <Layout hasSider>
-                <Sider style={{
-                    overflow: 'auto',
-                    height: '100vh',
-                    zIndex: 1,
-                    position: 'fixed',
-                    left: 0,
-                    top: '140px',
-                    bottom: 0,
+                <Sider style={{overflow: 'auto', height: '100vh',
+                    zIndex: 1, position: 'fixed', left: 0,
+                    top: '140px', bottom: 0,
                 }}>
                     <div className='verticalMenu'>
                         {items.map((i, index)=>{
@@ -61,20 +53,13 @@ function Profile(props) {
                 </Sider>
                 <Layout>
                     <Content style={{
-                        width: "90%",
-                        position: "relative",
-                        zIndex: 0,
-                        right: "-10%",
-                        top: "145px",
-                        overflow: 'initial',
-                        background: "#e5e9f4"
+                        width: "90%", position: "relative", zIndex: 0,
+                        right: "-10%", top: "145px",
+                        overflow: 'initial', background: "#e5e9f4"
                     }}>
                         <Routes>
                             <Route path={"/1"} element={ <TeacherRating/>}/>
                         </Routes>
-
-                       {/*<Form/>*/}
-                        <Form2/>
                     </Content>
                 </Layout>
             </Layout>

@@ -72,7 +72,7 @@ function Navbar(props) {
             {/*Navbar & Carousel Start*/}
             <div className="container-fluid position-relative p-0">
                 <nav className="navbar navbar-expand-lg  navbar-dark px-5 py-3 py-lg-0">
-                    <Link to="/" className="navbar-brand p-0 w-50">
+                    <Link to="/" className="navbar-brand p-0">
                         <h1 className="d-flex align-items-center w-100">
                             <i className="fa fa-user-tie me-2"></i>
                             <img src="" alt=""/>

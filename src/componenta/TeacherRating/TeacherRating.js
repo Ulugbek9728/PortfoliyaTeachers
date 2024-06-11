@@ -1,6 +1,5 @@
 import React, {useState} from 'react'
 import './teacherRating.css'
-//import user from '../../img/user.png'
 
 const TeacherRating = () => {
     const [fulInfo] = useState(JSON.parse(localStorage.getItem("myInfo")));

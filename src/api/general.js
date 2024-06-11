@@ -1,7 +1,6 @@
 import { getInstance } from "../utils/httpClient";
 
 export const imgUrl = "https://test.tdtu.uz/storage/";
-// export const imgUrl = "https://homeworking.uz/storage/";
 
 const lang = localStorage.getItem("i18nextLng");
 

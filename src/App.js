@@ -4,8 +4,6 @@ import {QueryClient, QueryClientProvider} from "react-query";
 import {
     createBrowserRouter,
     RouterProvider,
-    Route,
-    Link,
 } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -14,7 +12,7 @@ import KafedraStatic from "./pages/kafedraStatic";
 import Auth from "./pages/auth";
 import TeachersDiogramm from "./pages/TeachersDiogramm";
 import UniversitetStatic from "./pages/universitetStatic";
-import Profile from "./pages/profile";
+import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 
 
@@ -39,36 +37,38 @@ const router = createBrowserRouter([
     {
         path: "/faculties",
         element: (<FacultyStatic/>),
-    },
-    {
-        path: "/faculties/:id",
-        element: (<FacultyStatic/>),
+        children:[
+            {
+                path: "/faculties/:id",
+                element: (<FacultyStatic/>),
+            },
+        ]
     },
     {
         path: "/kafedra",
         element: (<KafedraStatic/>),
-    },
-    {
-        path: "/kafedra/:id",
-        element: (<KafedraStatic/>),
+        children:[
+            {
+                path: "/kafedra/:id",
+                element: (<KafedraStatic/>),
+            },
+        ]
     },
     {
         path: "/teacher_info",
         element: (<TeachersDiogramm/>),
+        children:[
+            {
+                path: "/teacher_info/:id",
+                element: (<TeachersDiogramm/>),
+            },
+        ]
     },
-    {
-        path: "/teacher_info/:id",
-        element: (<TeachersDiogramm/>),
-    },
-    {
-        path:'/profile',
-        element:<Profile/>
-    },
-    {
-        path:'/profile/:id',
-        element:<Profile/>
-    }
 
+    {
+        path:'/profile/*',
+        element:<Profile/>,
+    },
 ]);
 
 function App() {

@@ -1,15 +1,17 @@
 import React from 'react';
-import TeacherRating from "../componenta/TeacherRating/TeacherRating";
-import Navbar from "../componenta/Navbar";
+import TeacherRating from "../../componenta/TeacherRating/TeacherRating";
+import Navbar from "../../componenta/Navbar";
 import {UserOutlined,} from '@ant-design/icons';
-import {Layout, Menu, theme} from 'antd';
-import {useNavigate, useParams} from "react-router-dom";
+import {Layout} from 'antd';
+import {NavLink, Route, Routes,} from "react-router-dom";
+import "./profile.scss"
+
 
 const {Content, Sider} = Layout;
 
 const items = [
     {
-        label: "Menu 1",
+        label: "Profile",
         key: '1',
         icon: <UserOutlined/>,
         access: ['ROLE_DEPARTMENT']
@@ -29,15 +31,7 @@ const items = [
 
 ];
 
-
 function Profile(props) {
-    const navigate = useNavigate();
-
-    const {
-        token: {colorBgContainer, borderRadiusLG},
-    } = theme.useToken();
-    const params = useParams()
-    console.log(params)
 
     return (
         <div>
@@ -52,19 +46,15 @@ function Profile(props) {
                     top: '140px',
                     bottom: 0,
                 }}>
-                    <div className="demo-logo-vertical"/>
-                    <Menu theme="dark" style={{background: "#091e3e", textColor: "white",}} mode="inline"
-
-                          defaultSelectedKeys={params.id} items={items}
-                          onClick={(id) => {
-                              if (id.key === '1') {
-                                  navigate("/profile/1")
-                              } else if (id.key==='2'){
-                                  navigate("/profile/2")}
-                              else if (id.key==='3'){
-                                  navigate("/profile/3")}
-
-                          }}/>
+                    <div className='verticalMenu'>
+                        {items.map((i, index)=>{
+                                return<NavLink key={index} to={`${i.key}`}>
+                                    <span>{i.icon}</span>
+                                    <span className='mx-2'>{i.label}</span>
+                                </NavLink>
+                            })
+                        }
+                    </div>
                 </Sider>
                 <Layout>
                     <Content style={{
@@ -76,12 +66,13 @@ function Profile(props) {
                         overflow: 'initial',
                         background: "#e5e9f4"
                     }}>
-                        <TeacherRating/>
+                        <Routes>
+                            <Route path={"/1"} element={ <TeacherRating/>}/>
+                        </Routes>
+
                     </Content>
                 </Layout>
             </Layout>
-
-
         </div>
     );
 }

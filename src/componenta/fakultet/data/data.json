@@ -1,0 +1,30 @@
+[
+    {
+        "id":1,
+        "name":"Akshit",
+        "universty":"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        "rating":1,
+        "index":4
+    },   
+    {
+        "id":2,
+        "name":"Nikita",
+        "universty":"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        "rating":2,
+        "index":513
+    },
+    {
+        "id":3,
+        "name":"Deeksha",
+        "universty":"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        "rating":3,
+        "index":765
+    },
+    {
+        "id":4,
+        "name":"Ritesh",
+        "universty":"TIQXMMI MTU qoshidagi Fundamental va Amaliy Tadqiqotlar instituti",
+        "rating":4,
+        "index":754
+    }
+]

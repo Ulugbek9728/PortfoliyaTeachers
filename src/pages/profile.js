@@ -1,9 +1,10 @@
 import React from 'react';
-import TeacherRating from "../componenta/TeacherRating/TeacherRating";
-import Navbar from "../componenta/Navbar";
 import {UserOutlined,} from '@ant-design/icons';
 import {Layout, Menu, theme} from 'antd';
 import {useNavigate, useParams} from "react-router-dom";
+import Navbar from "../componenta/Navbar";
+import Form from "../componenta/Form/Form";
+import Form2 from "../componenta/Form2/Form2";
 
 const {Content, Sider} = Layout;
 
@@ -68,15 +69,16 @@ function Profile(props) {
                 </Sider>
                 <Layout>
                     <Content style={{
-                        width: "90%",
+                        width: "80%" ,
                         position: "relative",
                         zIndex: 0,
-                        right: "-10%",
-                        top: "145px",
+                        right: "-15%",
+                        paddingTop: "200px",
                         overflow: 'initial',
                         background: "#e5e9f4"
                     }}>
-                        <TeacherRating/>
+                       {/*<Form/>*/}
+                        <Form2/>
                     </Content>
                 </Layout>
             </Layout>

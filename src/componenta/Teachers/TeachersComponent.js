@@ -14,7 +14,7 @@ import TeacherRating from '../TeacherRating/TeacherRating';
   const customizeText = (e) => `Day ${e.value}`;
 const TeachersComponent = () => {
   return (<>
-  <TeacherRating/>
+  <TeacherRating />
     <Chart
       title="Daily Sales"
       dataSource={Data}

@@ -1,11 +1,12 @@
 import React from 'react';
 import TeacherRating from "../../componenta/TeacherRating/TeacherRating";
-import {UserOutlined,} from '@ant-design/icons';
+import {UserOutlined,FileTextOutlined} from '@ant-design/icons';
 import {NavLink, Route, Routes,} from "react-router-dom";
 import "./profile.scss"
 
 import {Layout} from 'antd';
 import Navbar from "../../componenta/Navbar";
+import IlmiyNashrlar from "../ilmiy nashrlar/ilmiyNashrlar";
 
 const {Content, Sider} = Layout;
 
@@ -17,15 +18,27 @@ const items = [
         access: ['ROLE_DEPARTMENT']
     },
     {
-        label: "Menu 2",
+        label: "Ilmiy nashrlar",
         key: "2",
-        icon: <UserOutlined/>,
+        icon: <FileTextOutlined />,
         access: ['ROLE_DEPARTMENT']
     },
     {
-        label: "Menu 3",
+        label: "Uslubiy nashrlar",
         key: "3",
-        icon: <UserOutlined/>,
+        icon: <FileTextOutlined/>,
+        access: ['ROLE_DEPARTMENT']
+    },
+    {
+        label: "Intelektual mulk agentligi tomonidan berilgan ishlar",
+        key: "4",
+        icon: <FileTextOutlined/>,
+        access: ['ROLE_DEPARTMENT']
+    },
+    {
+        label: "Ilmiy faollik",
+        key: "5",
+        icon: <FileTextOutlined/>,
         access: ['ROLE_DEPARTMENT']
     },
 
@@ -37,9 +50,9 @@ function Profile(props) {
         <div>
             <Navbar/>
             <Layout hasSider>
-                <Sider style={{overflow: 'auto', height: '100vh',
-                    zIndex: 1, position: 'fixed', left: 0,
-                    top: '140px', bottom: 0,
+                <Sider style={{overflow: 'auto', height: '84.5vh',
+                    // zIndex: 1, position: 'fixed', left: 0,
+                    // top: '140px', bottom: 0,
                 }}>
                     <div className='verticalMenu'>
                         {items.map((i, index)=>{
@@ -53,12 +66,11 @@ function Profile(props) {
                 </Sider>
                 <Layout>
                     <Content style={{
-                        width: "90%", position: "relative", zIndex: 0,
-                        right: "-10%", top: "145px",
-                        overflow: 'initial', background: "#e5e9f4"
+                        width: "100%", overflow: 'initial', background: "#e5e9f4"
                     }}>
                         <Routes>
                             <Route path={"/1"} element={ <TeacherRating/>}/>
+                            <Route path={"/2"} element={ <IlmiyNashrlar/>}/>
                         </Routes>
                     </Content>
                 </Layout>

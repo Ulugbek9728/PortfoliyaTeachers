@@ -1,0 +1,51 @@
+.button1 {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 200px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border: 1px solid #02A36D;
+  background-color: rgba(2, 163, 109, 0.8);
+  &:hover {
+    background: #02A36D;
+  }
+  &:hover .button__text {
+    color: transparent;
+  }
+  &:hover .button__icon {
+    width: 200px;
+    transform: translateX(0);
+  }
+  &:active .button__icon {
+    background-color: #02A36D;
+  }
+  &:active {
+    border: 1px solid #02A36D;
+  }
+  .button__icon,.button__text {
+    transition: all 0.3s;
+  }
+  .button__text {
+    transform: translateX(30px);
+    color: #fff;
+    font-weight: 600;
+  }
+  .button__icon {
+    position: absolute;
+    transform: translateX(159px);
+    height: 100%;
+    width: 39px;
+    background-color: #07885d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    fill: #fff;
+  }
+  .svg {
+    width: 30px;
+    stroke: #fff;
+  }
+}

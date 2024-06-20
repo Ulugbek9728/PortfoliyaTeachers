@@ -201,6 +201,9 @@ const TeacherRating = () => {
                                     </Radio.Group>
                                 </Form.Item>
                                 <hr/>
+
+                            </div>
+                            <div style={{width:'33%'}}>
                                 <Form.Item
                                     label="Ilmiy daraja"
                                     name="password"
@@ -221,14 +224,12 @@ const TeacherRating = () => {
                                     <Input className='my-2' placeholder="Diplom sanasi"/>
                                     <Input placeholder="Diplom raqami"/>
                                 </Form.Item>
+                                <hr/>
                                 <Form.Item name='file'>
                                     <Upload name='file' {...propsss}>
                                         <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
                                     </Upload>
                                 </Form.Item>
-                                <hr/>
-                            </div>
-                            <div style={{width:'33%'}}>
                                 <Form.Item
                                     label="Reyting"
                                     name="password"

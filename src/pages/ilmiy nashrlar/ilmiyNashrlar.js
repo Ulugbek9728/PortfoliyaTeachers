@@ -4,13 +4,14 @@ import {
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
 } from 'antd';
 import "./ilmiyNashrlar.scss"
+import FormModal from '../../componenta/Modal/FormModal';
 
 
 function IlmiyNashrlar(props) {
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
-
+    const [open, setOpen] = useState(false)
 
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
@@ -90,6 +91,17 @@ function IlmiyNashrlar(props) {
 
     return (
         <div className='p-4'>
+    <Modal
+        title="Maqola kiritish punkti"
+        centered
+        open={open}
+        onCancel={() => setOpen(false)}
+        width={1600}
+        style={{right:"-80px"}}
+      >
+        <FormModal/>
+      </Modal>
+            
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
                       onFinish={onChange}
@@ -114,9 +126,9 @@ function IlmiyNashrlar(props) {
                 </Form>
 
                 <button type="button" className="button1"
-                    // onClick={() => {
-                    //     setOpen(true)
-                    // }}
+                    onClick={() => {
+                        setOpen(true)
+                    }}
                 >
                     <span className="button__text">Ilmiy nashr yaratish</span>
                     <span className="button__icon">

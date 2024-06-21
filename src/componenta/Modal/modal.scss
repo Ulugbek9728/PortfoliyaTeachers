@@ -1,0 +1,27 @@
+:where(.css-dev-only-do-not-override-1qfezbu).ant-modal-root .ant-modal-centered .ant-modal {
+    right: -80px !important;
+    top: 75px !important;
+}
+ .ant-modal-footer {
+    display: none !important;
+}
+.input{
+ padding: 10px 5px;
+}
+:where(.css-dev-only-do-not-override-1qfezbu).ant-select-single {
+    font-size: 14px;
+    height: 40px;
+}
+
+:where(.css-dev-only-do-not-override-1qfezbu).ant-input-number {
+    width: 100% !important;
+}
+:where(.css-dev-only-do-not-override-1qfezbu).ant-form-item .ant-form-item-label >label {
+
+    font-size: 18px !important;
+}
+:where(.css-dev-only-do-not-override-1qfezbu).ant-upload-wrapper.ant-upload-picture-card-wrapper .ant-upload.ant-upload-select, :where(.css-dev-only-do-not-override-1qfezbu).ant-upload-wrapper.ant-upload-picture-circle-wrapper .ant-upload.ant-upload-select {
+    width: 200px !important;
+    height: 248px !important;
+
+}

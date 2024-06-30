@@ -7,6 +7,9 @@ import "./profile.scss"
 import {Layout} from 'antd';
 import Navbar from "../../componenta/Navbar";
 import IlmiyNashrlar from "../ilmiy nashrlar/ilmiyNashrlar";
+import UslubiyNashrlar from '../Uslubiy nashrlar/UslubiyNashrlar';
+import InteliktualMulk from '../InteluktialMulk/InteliktualMulk';
+import IlmiyFaollik from '../IlmiyFaollik/IlmiyFaollik';
 
 const {Content, Sider} = Layout;
 
@@ -71,6 +74,10 @@ function Profile(props) {
                         <Routes>
                             <Route path={"/1"} element={ <TeacherRating/>}/>
                             <Route path={"/2"} element={ <IlmiyNashrlar/>}/>
+                            <Route path={"/3"} element={ <UslubiyNashrlar/>}/>
+                            <Route path={"/4"} element={ <InteliktualMulk/>}/>
+                            <Route path={"/5"} element={ <IlmiyFaollik/>}/>
+
                         </Routes>
                     </Content>
                 </Layout>

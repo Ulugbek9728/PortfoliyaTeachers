@@ -3,11 +3,10 @@ import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
 } from 'antd';
-import "./ilmiyNashrlar.scss"
 import FormModal from '../../componenta/Modal/FormModal';
-
-
-function IlmiyNashrlar(props) {
+import './UslubiyNashrlar.scss'
+import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
+const UslubiyNashrlar = () => {
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
@@ -16,27 +15,6 @@ function IlmiyNashrlar(props) {
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
     };
-    const onChange = () => {
-        // const departmentID = fulInfo.roles[0] === "ROLE_OPERATOR" ? 7777 : fulInfo.department.id
-        // axios.get(`${ApiName}/api/application/get-as-excel`, {
-        //     headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`},
-        //     params: {
-        //         from: DateListe[0], to: DateListe[1], departmentId: departmentID, isCome: false
-        //     },
-        //     responseType: 'blob'
-        // }).then((response) => {
-        //     const link = document.createElement('a');
-        //     const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        //     const url = URL.createObjectURL(blob);
-        //
-        //     link.href = url;
-        //     link.setAttribute('download', `arizalar_${DateListe[0]}_${DateListe[1]}.xlsx`);
-        //     document.body.appendChild(link);
-        //     link.click();
-        // }).catch((error) => {
-        //     console.log(error)
-        // });
-    };
     const columns = [
         {
             title: '№',
@@ -44,7 +22,7 @@ function IlmiyNashrlar(props) {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
-            title: 'Ilmiy ish nomi',
+            title: 'Uslubiy nashr nomi',
             dataIndex: 'name',
             width: 350,
         },
@@ -59,7 +37,7 @@ function IlmiyNashrlar(props) {
             width: 150
         },
         {
-            title: 'Ilmiy nashr turi',
+            title: 'Uslubiy nashr turi',
             dataIndex: 'address',
             width: 150
         },
@@ -89,8 +67,9 @@ function IlmiyNashrlar(props) {
         });
     }
 
-    return (
-   <div className='p-4'>
+  return (
+    <>
+    <div className='p-4'>
     <Modal
         title="Maqola kiritish punkti"
         centered
@@ -99,12 +78,12 @@ function IlmiyNashrlar(props) {
         width={1600}
         style={{right:"-80px"}}
       >
-        <FormModal/>
+        <UslubiyNashrlarModal/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
-                      onFinish={onChange}
+                    //   onFinish={onChange}
                       className=' d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang"
@@ -153,7 +132,8 @@ function IlmiyNashrlar(props) {
                 }}
             />
         </div>
-    );
+    </>
+  )
 }
 
-export default IlmiyNashrlar;
+export default UslubiyNashrlar

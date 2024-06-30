@@ -7,50 +7,35 @@ import {   Button,Modal,
   InputNumber,
   Select,
   Upload, } from 'antd';
-import './modal.scss'
-import SelectedInput from '../SelectedInput/SelectedInput';
-import { useEffect } from 'react';
+import './UslubiyNashrlarModal.scss'
 import UploadFile from '../UploadFile/UploadFile';
+import { useEffect } from 'react';
 import IntURL from '../IntURL/IntURL';
-const FormModal = () => {
-    const [monografiya, setmonografiya] = useState(false)  
-    const [url, seturl] = useState(false) 
-    const [upload, setupload] = useState(false) 
+const UslubiyNashrlarModal = () => {
     const [selected, setSelected] = useState('')
     const [open, setOpen] = useState(false);
     const { RangePicker } = DatePicker;
-
+    const [url, seturl] = useState(false) 
+    const [upload, setupload] = useState(false) 
     const handleChange = (event) => {
-        setSelected(event)
-        console.log(selected);
-    }
-useEffect(()=>{
-  selected == 'Monografiya' 
-  ?  setmonografiya(true)
-: setmonografiya(false);
-
+      setSelected(event)
+      console.log(selected);
+  }
+  useEffect(()=>{
 if(selected === 'Url'){
-    seturl(true)
-    setupload(false)
- }else{
-   seturl(false)
-   setupload(true)
- }
-  
-},[selected])
-    const normFile = (e) => {
-      if (Array.isArray(e)) {
-        return e;
-      }
-      return e?.fileList;
-    };
+   seturl(true)
+   setupload(false)
+}else{
+  seturl(false)
+  setupload(true)
+}
+    },[selected])
   return (
     <div>
-     <Form className='row'>
-      
+    <Form className='row'>
     <Form.Item         
            layout="vertical"
-           label="Ism Familya"
+           label="Xodim"
            name="name"
            labelCol={{ span: 24 }}
            wrapperCol={{ span: 24 }}
@@ -59,21 +44,17 @@ if(selected === 'Url'){
       </Form.Item>
       <Form.Item
            layout="vertical"
-           label="Ilmiy nashr turi"
+           label="Uslubiy nashr turi"
            name="IlmiyNashr"
            labelCol={{ span: 24 }}
            wrapperCol={{ span: 24 }}  
            className='col-3'>
-      <Select value={selected}  onChange={(e)=> handleChange(e)}>
+      <Select value={selected}>
         <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
-        <Select.Option className='py-2' value={'Monografiya'}>Monografiya</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Maqola (Maxalliy jurnal)</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Maqola (Xorijiy jurnal)</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Maqola ( konferensiya )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Respublika )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Xalqaro )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Xorijiy )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Maxalliy )</Select.Option>
+        <Select.Option className='py-2' value={'Monografiya'}>Darslik</Select.Option>
+        <Select.Option className='py-2' value={'Monografiya'}>Oquv qollanma</Select.Option>
+        <Select.Option className='py-2' value={'Monografiya'}>Uslubiy qollanma</Select.Option>
+        <Select.Option className='py-2' value={'Monografiya'}>Uslubiy korsatma</Select.Option>
       </Select>
       </Form.Item>
       <Form.Item  
@@ -98,9 +79,10 @@ if(selected === 'Url'){
           className='col-6'>
       <Input className='py-2'  placeholder='text'/>
       </Form.Item>
+
       <Form.Item        
         layout="vertical"
-        label="fayl joylash"
+        label="fayl joylash turi"
         name="IlmFan"
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }}  
@@ -111,23 +93,9 @@ if(selected === 'Url'){
       </Select>
       </Form.Item>
 
-      <Form.Item        
-        layout="vertical"
-        label="Ilm-fan soxasi"
-        name="IlmFan"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}  
-        className='col-6'>
-      <Select>
-        <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
-        <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
-      </Select>
-      </Form.Item>
-            {url && <IntURL/>}
-      {upload && <UploadFile />}
       <Form.Item         
         layout="vertical"
-        label="Mualliflar somi"
+        label="Mualliflar soni"
         name="number"
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }} 
@@ -142,19 +110,16 @@ if(selected === 'Url'){
         wrapperCol={{ span: 24 }} 
         className='col-4'>
       <Input className='py-2'  placeholder='text'/>
-      </Form.Item>
-      {monografiya && <SelectedInput/>}
-      <Form.Item          
+      </Form.Item>         
+      {url && <IntURL/>}
+         {upload && <UploadFile/>}
+      <Form.Item         
         layout="vertical"
-        label="Xalqaro Ilmiy bazalar"
-        name="IlmiyBazalar"
+        label="Nashriyot"
         labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}  
-        className='col-3'>
-      <Select>
-          <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
-          <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
-      </Select>
+        wrapperCol={{ span: 24 }} 
+        className='col-6'>
+      <Input  className='py-2'/>
       </Form.Item>
       <Form.Item         
         layout="vertical"
@@ -162,10 +127,28 @@ if(selected === 'Url'){
         name="data"
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }} 
-        className='col-2'>
+        className='col-6'>
           <DatePicker className='py-2' />
       </Form.Item>
-        
+      <Form.Item          
+        layout="vertical"
+        label="Guvohnoma Raqami"
+        name="IlmiyBazalar"
+        labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }}  
+        className='col-3'>
+              <InputNumber className='py-1'/>
+      </Form.Item>
+      <Form.Item         
+        layout="vertical"
+        label="Guvonoma sanasi"
+        name="data"
+        labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }} 
+        className='col-3'>
+          <DatePicker className='py-2' />
+      </Form.Item>
+    
 
       <Form.Item className='col-12 d-flex justify-content-end'>
         <Button type="primary" htmlType="submit">
@@ -177,4 +160,4 @@ if(selected === 'Url'){
   )
 }
 
-export default FormModal
+export default UslubiyNashrlarModal

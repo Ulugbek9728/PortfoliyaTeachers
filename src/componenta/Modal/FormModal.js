@@ -14,18 +14,14 @@ import UploadFile from '../UploadFile/UploadFile';
 import IntURL from '../IntURL/IntURL';
 const FormModal = () => {
     const [monografiya, setmonografiya] = useState(false)  
-    const [url, seturl] = useState(false) 
-    const [upload, setupload] = useState(false) 
+    const [url, seturl] = useState(true) 
     const [selected, setSelected] = useState('')
     const [open, setOpen] = useState(false);
     const { RangePicker } = DatePicker;
     const [selectfile, setselectfile] = useState()
     const [error, seterror] = useState('')
     const [isSucses, setIsSucses] = useState(false);
-    const handleChange = (event) => {
-        setSelected(event)
-        console.log(selected);
-    }
+
     const handlechangefile = (event) =>{
       if(event.target.files.length>0){
        setselectfile(event.target.files[0])
@@ -37,7 +33,6 @@ const FormModal = () => {
     console.log(event);
     const MIN_FILE_SIZE = 1024
     const MAX_FILE_SIZE = 5120
-  
   
     const fileSizeKilobytes = selectfile.size /1024
     if( fileSizeKilobytes < MIN_FILE_SIZE ){
@@ -52,20 +47,6 @@ const FormModal = () => {
     seterror("")
     setIsSucses(true)
   }
-useEffect(()=>{
-  selected == 'Monografiya' 
-  ?  setmonografiya(true)
-: setmonografiya(false);
-
-if(selected === 'Upload'){
-    seturl(false)
-    setupload(true)
- }else{
-   seturl(true)
-   setupload(false)
- }
-  
-},[selected])
   return (
     <div>
      <Form className='row'>
@@ -88,7 +69,7 @@ if(selected === 'Upload'){
            wrapperCol={{ span: 24 }} 
            rules={[{ required: true, message: 'Iltimos ilmiy nashr turini tanlang'}]}
            className='col-3'>
-      <Select value={selected}  onChange={(e)=> handleChange(e)}>
+      <Select value={selected}  onChange={(e)=> setmonografiya(prevValue => !prevValue)}>
         <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
         <Select.Option className='py-2' value={'Monografiya'}>Monografiya</Select.Option>
         <Select.Option className='py-2' value={'demo'}>Maqola (Maxalliy jurnal)</Select.Option>
@@ -124,13 +105,11 @@ if(selected === 'Upload'){
       <Input className='py-2'  placeholder='text'/>
       </Form.Item>
       <Form.Item        
-        layout="vertical"
-        label="fayl joylash"
-        name="IlmFan"
+        layout="vertical"label="fayl joylash"name="IlmFan"
         labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}  
-        className='col-6'>
-      <Select value={selected}  onChange={(e)=> handleChange(e)}>
+wrapperCol={{ span: 24 }}  className='col-6'>
+
+      <Select value={selected} defaultValue="Url"  onChange={(e)=> seturl(prevValue => !prevValue)}>
         <Select.Option value={"Url"} >Url</Select.Option>
         <Select.Option value={"Upload"}>Upload</Select.Option>
       </Select>
@@ -139,7 +118,7 @@ if(selected === 'Upload'){
       <Form.Item        
         layout="vertical"
         label="Ilm-fan soxasi"
-        name="IlmFan"
+        // name="IlmFan"
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }}  
         className='col-6'>
@@ -148,34 +127,23 @@ if(selected === 'Upload'){
         <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
       </Select>
       </Form.Item>
-     {url && <Form.Item         
-        layout="vertical"
-        label="URL"
-        name="URL"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} 
-        className='col-6'
+     {url===true ? <Form.Item         
+        layout="vertical"label="URL"name="URL"labelCol={{ span: 24 }}wrapperCol={{ span: 24 }} className='col-6'
         rules={[
           {  message: "请输入有效的网址" },
 
           {
            type: 'url',
           }
-          // {
-          //   pattern: new RegExp(/(https):\/\/([\w.]+\/?)\S*/),
-          //   message: "notogri manzil"
-          // }
         ]}>
            <IntURL/>
-        </Form.Item>}
-      
-      <Form.Item  labelCol={{ span: 24 }}
+        </Form.Item>
+        : <Form.Item  labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" onChange={handlechangefile}>
-      {upload && <UploadFile />}
+       <UploadFile />
       {isSucses ? <p className='sucsses_msg'>File uploaded successfully</p> : null}
-
       <p className='error_msg'>{error}</p>
-      </Form.Item>
+      </Form.Item>}
       <Form.Item         
         layout="vertical"
         label="Mualliflar somi"
@@ -194,7 +162,7 @@ if(selected === 'Upload'){
         className='col-4'>
       <Input className='py-2'  placeholder='text'/>
       </Form.Item>
-      {monografiya && <SelectedInput/>}
+      {monografiya === true ? <SelectedInput/> : null}
       <Form.Item          
         layout="vertical"
         label="Xalqaro Ilmiy bazalar"

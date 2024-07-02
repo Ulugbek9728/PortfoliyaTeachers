@@ -15,7 +15,7 @@ const UslubiyNashrlarModal = () => {
     const [selected, setSelected] = useState('')
     const [open, setOpen] = useState(false);
     const { RangePicker } = DatePicker;
-    const [url, seturl] = useState(false) 
+    const [url, seturl] = useState(true) 
     const [upload, setupload] = useState(false) 
     const [selectfile, setselectfile] = useState()
     const [error, seterror] = useState('')
@@ -50,15 +50,16 @@ const UslubiyNashrlarModal = () => {
   seterror("")
   setIsSucses(true)
 }
-  useEffect(()=>{
-    if(selected === 'Upload'){
-      seturl(false)
-      setupload(true)
-   }else{
-     seturl(true)
-     setupload(false)
-   }
-    },[selected])
+
+  // useEffect(()=>{
+  //   if(selected === 'Upload'){
+  //     seturl(false)
+  //     setupload(true)
+  //  }else{
+  //    seturl(true)
+  //    setupload(false)
+  //  }
+  //   },[selected])
   return (
     <div>
     <Form className='row'>
@@ -116,7 +117,7 @@ const UslubiyNashrlarModal = () => {
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }}  
         className='col-6'>
-      <Select value={selected}  onChange={(e)=> handleChange(e)}>
+      <Select value={selected} defaultValue="Url"  onChange={(e)=> seturl(prevValue => !prevValue)}>
         <Select.Option value={"Url"} >Url</Select.Option>
         <Select.Option value={"Upload"}>Upload</Select.Option>
       </Select>
@@ -140,7 +141,7 @@ const UslubiyNashrlarModal = () => {
         className='col-4'>
       <Input className='py-2'  placeholder='text'/>
       </Form.Item>   
-      {url &&  <Form.Item         
+      {url === true ?  <Form.Item         
         layout="vertical"
         label="URL"
         name="URL"
@@ -159,15 +160,17 @@ const UslubiyNashrlarModal = () => {
           // }
         ]}>
         <IntURL/>
-          </Form.Item>      
-      } 
+          </Form.Item>
+          :         
       <Form.Item  labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" onChange={handlechangefile}>
-      {upload && <UploadFile />}
+       <UploadFile />
       {isSucses ? <p className='sucsses_msg'>File uploaded successfully</p> : null}
 
       <p className='error_msg'>{error}</p>
-      </Form.Item>
+      </Form.Item>   
+      } 
+
       <Form.Item         
         layout="vertical"
         label="Nashriyot"

@@ -10,7 +10,7 @@ const SelectedInput = () => {
            name="name"
            labelCol={{ span: 24 }}
            wrapperCol={{ span: 24 }}
-           className='col-12'>
+           className='col-6'>
         <Input  placeholder='Name' className='py-2'/>
       </Form.Item>
     </>

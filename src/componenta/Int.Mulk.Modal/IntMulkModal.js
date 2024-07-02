@@ -9,14 +9,12 @@ import {   Button,Modal,
   Select,
   Upload, } from 'antd';
 import './IntModal.scss'
-import { useEffect } from 'react';
+
 import UploadFile from '../UploadFile/UploadFile';
 import IntURL from '../IntURL/IntURL';
-import { upload } from '@testing-library/user-event/dist/upload';
 const IntMulkModal = () => {
    
-    const [url, seturl] = useState(false) 
-    const [upload, setupload] = useState(false) 
+    const [url, seturl] = useState(true) 
     const [selected, setSelected] = useState('')
     const [open, setOpen] = useState(false);
     const [selectfile, setselectfile] = useState()
@@ -24,10 +22,7 @@ const IntMulkModal = () => {
     const [isSucses, setIsSucses] = useState(false);
     const { RangePicker } = DatePicker;
 
-    const handleChange = (event) => {
-      setSelected(event)
-      console.log(selected);
-  }
+
   const handlechangefile = (event) =>{
     if(event.target.files.length>0){
      setselectfile(event.target.files[0])
@@ -54,15 +49,6 @@ const IntMulkModal = () => {
   seterror("")
   setIsSucses(true)
 }
-  useEffect(()=>{
-    if(selected === 'Upload'){
-      seturl(false)
-      setupload(true)
-   }else{
-     seturl(true)
-     setupload(false)
-   }
-    },[selected])
   return (
     <div>
     <Form className='row'>
@@ -82,9 +68,15 @@ const IntMulkModal = () => {
            labelCol={{ span: 24 }}
            wrapperCol={{ span: 24 }}  
            className='col-3'>
-      <Select value={selected}>
-        <Select.Option className='py-2' value={'demo'}>Demo</Select.Option>
-        <Select.Option className='py-2' value={'Monografiya'}>Monografiya</Select.Option>
+      <Select>
+        <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
+        <Select.Option className='py-2' value={'Ixtiro'}>Ixtiro</Select.Option>
+        <Select.Option className='py-2' value={'Foydali modal'}>Foydali model</Select.Option>
+        <Select.Option className='py-2' value={'Sanoat namunasi'}>Sanoat namunasi</Select.Option>
+        <Select.Option className='py-2' value={'Seleksiya yutuqlari'}>Seleksiya yutuqlari</Select.Option>
+        <Select.Option className='py-2' value={'Tovar belgisi'}>Tovar belgisi</Select.Option>
+        <Select.Option className='py-2' value={'Firma nomlari'}>Firma nomlari</Select.Option>
+        <Select.Option className='py-2' value={'EHM nomlari va ma`lumot bazasi'}>EHM nomlari va ma`lumot bazasi</Select.Option>
       </Select>
       </Form.Item>
       <Form.Item  
@@ -117,7 +109,7 @@ const IntMulkModal = () => {
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }}  
         className='col-2'>
-      <Select value={selected}  onChange={(e)=> handleChange(e)}>
+      <Select value={selected} defaultValue="Url"  onChange={(e)=> seturl(prevValue => !prevValue)}>
         <Select.Option value={"Url"} >Url</Select.Option>
         <Select.Option value={"Upload"}>Upload</Select.Option>
       </Select>
@@ -126,7 +118,6 @@ const IntMulkModal = () => {
       <Form.Item        
         layout="vertical"
         label="Ilm-fan soxasi"
-        name="IlmFan"
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }}  
         className='col-6'>
@@ -135,7 +126,7 @@ const IntMulkModal = () => {
         <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
       </Select>
       </Form.Item>
-     {url && <Form.Item         
+     {url === true ? <Form.Item         
         layout="vertical"
         label="URL"
         name="URL"
@@ -154,14 +145,15 @@ const IntMulkModal = () => {
           // }
         ]}>
            <IntURL/>
-        </Form.Item>}
-        <Form.Item  labelCol={{ span: 24 }}
+        </Form.Item> :
+      <Form.Item  labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" onChange={handlechangefile}>
-      {upload && <UploadFile />}
+       <UploadFile />
       {isSucses ? <p className='sucsses_msg'>File uploaded successfully</p> : null}
-
       <p className='error_msg'>{error}</p>
       </Form.Item>
+      }
+
       <Form.Item         
         layout="vertical"
         label="Mualliflar somi"

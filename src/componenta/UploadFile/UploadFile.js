@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { PlusOutlined } from '@ant-design/icons';
 import {   Button,Modal,
   DatePicker,
@@ -8,18 +8,14 @@ import {   Button,Modal,
   Select,
   Upload, } from 'antd';
   import './UploadFile.scss'
-const UploadFile = () => {
-    const normFile = (e) => {
-        if (Array.isArray(e)) {
-          return e;
-        }
-        return e?.fileList;
-      };
+const UploadFile = () => {       
+  const [selectfile, setselectfile] = useState()
+  const [error, seterror] = useState('')
+
   return (
-    <>
-    <Form.Item  labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" getValueFromEvent={normFile}>
-      <Upload action="/upload.do"  listType="picture-card">
+    < >
+
+      <Upload  action="/upload.do"  listType="picture-card">
             <button
               style={{
                 border: 0,
@@ -37,7 +33,6 @@ const UploadFile = () => {
               </div>
             </button>
       </Upload>
-      </Form.Item>
     </>
   )
 }

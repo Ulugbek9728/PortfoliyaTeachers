@@ -3,7 +3,7 @@ import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
 } from 'antd';
-import FormModal from '../../componenta/Modal/FormModal';
+import IIlmiyFaollik from '../../componenta/IlmiyFaollik.Modal/IIlmiyFaollik';
 
 
 const IlmiyFaollik = () => {
@@ -73,10 +73,10 @@ const IlmiyFaollik = () => {
         centered
         open={open}
         onCancel={() => setOpen(false)}
-        width={1600}
+        width={1000}
         style={{right:"-80px"}}
       >
-        <FormModal/>
+        <IIlmiyFaollik/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>

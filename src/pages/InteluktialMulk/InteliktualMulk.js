@@ -69,7 +69,7 @@ const InteliktualMulk = () => {
   return (
     <div className='p-4'>
     <Modal
-        title="Maqola kiritish punkti"
+        title="Intelektual mulk punkti"
         centered
         open={open}
         onCancel={() => setOpen(false)}

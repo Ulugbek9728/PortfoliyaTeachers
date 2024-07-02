@@ -19,31 +19,53 @@ const FormModal = () => {
     const [selected, setSelected] = useState('')
     const [open, setOpen] = useState(false);
     const { RangePicker } = DatePicker;
-
+    const [selectfile, setselectfile] = useState()
+    const [error, seterror] = useState('')
+    const [isSucses, setIsSucses] = useState(false);
     const handleChange = (event) => {
         setSelected(event)
         console.log(selected);
     }
+    const handlechangefile = (event) =>{
+      if(event.target.files.length>0){
+       setselectfile(event.target.files[0])
+       console.log(event);
+     }
+   }
+   const handleSubmit = (event) => { 
+    event.preventDefault()
+    console.log(event);
+    const MIN_FILE_SIZE = 1024
+    const MAX_FILE_SIZE = 5120
+  
+  
+    const fileSizeKilobytes = selectfile.size /1024
+    if( fileSizeKilobytes < MIN_FILE_SIZE ){
+     seterror('Minimum size 1 mb')
+     setIsSucses(false)
+     return;
+    }
+    if( fileSizeKilobytes > MAX_FILE_SIZE ){
+      seterror('Maximum size 5 mb')
+      setIsSucses(false)
+    }
+    seterror("")
+    setIsSucses(true)
+  }
 useEffect(()=>{
   selected == 'Monografiya' 
   ?  setmonografiya(true)
 : setmonografiya(false);
 
-if(selected === 'Url'){
-    seturl(true)
-    setupload(false)
+if(selected === 'Upload'){
+    seturl(false)
+    setupload(true)
  }else{
-   seturl(false)
-   setupload(true)
+   seturl(true)
+   setupload(false)
  }
   
 },[selected])
-    const normFile = (e) => {
-      if (Array.isArray(e)) {
-        return e;
-      }
-      return e?.fileList;
-    };
   return (
     <div>
      <Form className='row'>
@@ -54,6 +76,7 @@ if(selected === 'Url'){
            name="name"
            labelCol={{ span: 24 }}
            wrapperCol={{ span: 24 }}
+           rules={[{ required: true, message: 'Iltimos ism familyangiz kiriting'}]}
            className='col-6'>
         <Input  placeholder='Name' className='py-2'/>
       </Form.Item>
@@ -62,7 +85,8 @@ if(selected === 'Url'){
            label="Ilmiy nashr turi"
            name="IlmiyNashr"
            labelCol={{ span: 24 }}
-           wrapperCol={{ span: 24 }}  
+           wrapperCol={{ span: 24 }} 
+           rules={[{ required: true, message: 'Iltimos ilmiy nashr turini tanlang'}]}
            className='col-3'>
       <Select value={selected}  onChange={(e)=> handleChange(e)}>
         <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
@@ -95,6 +119,7 @@ if(selected === 'Url'){
           name="nashr"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
+          rules={[{ required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
           className='col-6'>
       <Input className='py-2'  placeholder='text'/>
       </Form.Item>
@@ -123,8 +148,34 @@ if(selected === 'Url'){
         <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
       </Select>
       </Form.Item>
-            {url && <IntURL/>}
+     {url && <Form.Item         
+        layout="vertical"
+        label="URL"
+        name="URL"
+        labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }} 
+        className='col-6'
+        rules={[
+          {  message: "请输入有效的网址" },
+
+          {
+           type: 'url',
+          }
+          // {
+          //   pattern: new RegExp(/(https):\/\/([\w.]+\/?)\S*/),
+          //   message: "notogri manzil"
+          // }
+        ]}>
+           <IntURL/>
+        </Form.Item>}
+      
+      <Form.Item  labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" onChange={handlechangefile}>
       {upload && <UploadFile />}
+      {isSucses ? <p className='sucsses_msg'>File uploaded successfully</p> : null}
+
+      <p className='error_msg'>{error}</p>
+      </Form.Item>
       <Form.Item         
         layout="vertical"
         label="Mualliflar somi"
@@ -165,10 +216,8 @@ if(selected === 'Url'){
         className='col-2'>
           <DatePicker className='py-2' />
       </Form.Item>
-        
-
       <Form.Item className='col-12 d-flex justify-content-end'>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" onClick={handleSubmit} >
            Submit
         </Button>
       </Form.Item>

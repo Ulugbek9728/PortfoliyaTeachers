@@ -71,7 +71,7 @@ const UslubiyNashrlar = () => {
     <>
     <div className='p-4'>
     <Modal
-        title="Maqola kiritish punkti"
+        title="Uslubiy nashrlar punkti"
         centered
         open={open}
         onCancel={() => setOpen(false)}

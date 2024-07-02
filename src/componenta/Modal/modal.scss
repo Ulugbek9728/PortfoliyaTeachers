@@ -21,7 +21,18 @@
     font-size: 18px !important;
 }
 :where(.css-dev-only-do-not-override-1qfezbu).ant-upload-wrapper.ant-upload-picture-card-wrapper .ant-upload.ant-upload-select, :where(.css-dev-only-do-not-override-1qfezbu).ant-upload-wrapper.ant-upload-picture-circle-wrapper .ant-upload.ant-upload-select {
-    width: 100px !important;
-    height: 148px !important;
+    width: 150px !important;
+    height: 150px !important;
+}
 
+
+.error_msg{
+color: red;
+font-size: 16px;
+font-family: sans-serif;
+}
+.sucsses_msg{
+ color: green;
+ font-size: 16px;
+ font-family: sans-serif;
 }

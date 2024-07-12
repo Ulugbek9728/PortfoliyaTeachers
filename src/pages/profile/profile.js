@@ -10,6 +10,7 @@ import IlmiyNashrlar from "../ilmiy nashrlar/ilmiyNashrlar";
 import UslubiyNashrlar from '../Uslubiy nashrlar/UslubiyNashrlar';
 import InteliktualMulk from '../InteluktialMulk/InteliktualMulk';
 import IlmiyFaollik from '../IlmiyFaollik/IlmiyFaollik';
+import IlmiySaloxiyati from '../IlmiySaloxiyati/IlmiySaloxiyati';
 
 const {Content, Sider} = Layout;
 
@@ -41,6 +42,12 @@ const items = [
     {
         label: "Ilmiy faollik",
         key: "5",
+        icon: <FileTextOutlined/>,
+        access: ['ROLE_DEPARTMENT']
+    },
+    {
+        label: "Ilmiy saloxiyatdagi oshirishdagi hissasi",
+        key: "6",
         icon: <FileTextOutlined/>,
         access: ['ROLE_DEPARTMENT']
     },
@@ -77,7 +84,7 @@ function Profile(props) {
                             <Route path={"/3"} element={ <UslubiyNashrlar/>}/>
                             <Route path={"/4"} element={ <InteliktualMulk/>}/>
                             <Route path={"/5"} element={ <IlmiyFaollik/>}/>
-
+                            <Route path={"/6"} element={ <IlmiySaloxiyati/>}/>
                         </Routes>
                     </Content>
                 </Layout>

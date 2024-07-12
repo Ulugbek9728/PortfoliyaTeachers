@@ -9,7 +9,6 @@ import {   Button,Modal,
   Upload, } from 'antd';
 import './modal.scss'
 import SelectedInput from '../SelectedInput/SelectedInput';
-import { useEffect } from 'react';
 import UploadFile from '../UploadFile/UploadFile';
 import IntURL from '../IntURL/IntURL';
 const FormModal = () => {
@@ -104,17 +103,12 @@ const FormModal = () => {
           className='col-6'>
       <Input className='py-2'  placeholder='text'/>
       </Form.Item>
-      <Form.Item        
-        layout="vertical"label="fayl joylash"name="IlmFan"
-        labelCol={{ span: 24 }}
-wrapperCol={{ span: 24 }}  className='col-6'>
-
+      <Form.Item layout="vertical"label="fayl joylash"name="IlmFan" labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}  className='col-6'>
       <Select value={selected} defaultValue="Url"  onChange={(e)=> seturl(prevValue => !prevValue)}>
         <Select.Option value={"Url"} >Url</Select.Option>
         <Select.Option value={"Upload"}>Upload</Select.Option>
       </Select>
       </Form.Item>
-
       <Form.Item        
         layout="vertical"
         label="Ilm-fan soxasi"

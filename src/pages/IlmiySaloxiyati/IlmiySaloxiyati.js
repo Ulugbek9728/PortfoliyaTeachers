@@ -3,10 +3,9 @@ import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
 } from 'antd';
-import IIlmiyFaollik from '../../componenta/IlmiyFaollik.Modal/IIlmiyFaollik';
-
-
-const IlmiyFaollik = () => {
+import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySaloxiyatModal';
+import IlmiyFaollik from '../IlmiyFaollik/IlmiyFaollik';
+const IlmiySaloxiyati = () => {
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
@@ -22,7 +21,7 @@ const IlmiyFaollik = () => {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
-            title: 'Ilmiy platforma',
+            title: 'Ilmiy ',
             dataIndex: 'name',
             width: 350,
         },
@@ -32,7 +31,7 @@ const IlmiyFaollik = () => {
             width: 200,
         },
         {
-            title: 'Nashr yili',
+            title: 'Ximoya qilgan yili',
             dataIndex: 'address',
             width: 150
         },
@@ -69,33 +68,32 @@ const IlmiyFaollik = () => {
   return (
     <div className='p-4'>
     <Modal
-        title="Maqola kiritish punkti"
+        title="Ilmiy raxbarlik ostidagi shogird qoshish punkti"
         centered
         open={open}
         onCancel={() => setOpen(false)}
-        width={1000}
+        width={1600}
         style={{right:"-80px"}}
       >
-        <IIlmiyFaollik/>
+        <IlmiySaloxiyatModal />
       </Modal>      
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
                       className=' d-flex align-items-center gap-4'
                 >
-                    <Form.Item label="Mudatini belgilang"
-                               name="MurojatYuklash"
-                               >
-                        <DatePicker.RangePicker
-                            name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate}/>
-                    </Form.Item>
-                    <Form.Item label="Ilmiy nashr nomi" name="MurojatYuklash">
-                        <Input style={{width: '500px'}} placeholder="Nom bo'yicha qidirish"/>
-                    </Form.Item>
-                    <Form.Item>
-                        <button className="btn btn-success mt-4" type="submit">
-                            <span className="button__text">Ma'lumotni izlash</span>
-                        </button>
-                    </Form.Item>
+      <Form.Item  
+          layout="vertical"
+          label="Til"
+          name="Til"
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
+          className=''>
+      <Select  style={{width: '300px'}}>
+        <Select.Option value="o`zbek">o`zbek</Select.Option>
+        <Select.Option value="rus">rus</Select.Option>
+        <Select.Option value="eng">eng</Select.Option>
+      </Select>
+      </Form.Item>
 
                 </Form>
 
@@ -130,4 +128,4 @@ const IlmiyFaollik = () => {
   )
 }
 
-export default IlmiyFaollik
+export default IlmiySaloxiyati

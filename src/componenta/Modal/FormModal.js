@@ -12,6 +12,22 @@ import SelectedInput from '../SelectedInput/SelectedInput';
 import UploadFile from '../UploadFile/UploadFile';
 import IntURL from '../IntURL/IntURL';
 const FormModal = () => {
+    const [data, setData] = useState(
+      {
+        employeeId: "string",
+        authorCount: 0,
+        issueYear: "2024-07-15",
+        language: "string",
+        scientificName: "string",
+        scientificField: "string",
+        doiOrUrl: "string",
+        authorIds: [
+          0
+        ],
+        publicationDatabase: "string",
+        decisionScientificCouncil: "string"
+      }
+      )
     const [monografiya, setmonografiya] = useState(false)  
     const [url, seturl] = useState(true) 
     const [selected, setSelected] = useState('')
@@ -20,7 +36,25 @@ const FormModal = () => {
     const [selectfile, setselectfile] = useState()
     const [error, seterror] = useState('')
     const [isSucses, setIsSucses] = useState(false);
-
+    const handleInputChange = (event) => {
+      const { name, value } = event.target;
+      const [section, field] = name.split('.');
+  
+      if (field) {
+        setData(prevState => ({
+          ...prevState,
+          [section]: {
+            ...prevState[section],
+            [field]: value
+          }
+        }));
+      } else {
+        setData(prevState => ({
+          ...prevState,
+          [name]: value
+        }));
+      }
+    };
     const handlechangefile = (event) =>{
       if(event.target.files.length>0){
        setselectfile(event.target.files[0])
@@ -48,8 +82,7 @@ const FormModal = () => {
   }
   return (
     <div>
-     <Form className='row'>
-      
+  <Form className='row' onFinish={handleSubmit}>
     <Form.Item         
            layout="vertical"
            label="Ism Familya"
@@ -58,7 +91,7 @@ const FormModal = () => {
            wrapperCol={{ span: 24 }}
            rules={[{ required: true, message: 'Iltimos ism familyangiz kiriting'}]}
            className='col-6'>
-        <Input  placeholder='Name' className='py-2'/>
+        <Input value={data.scientificName} name="scientificName.name" onChange={handleInputChange}  placeholder='Name' className='py-2'/>
       </Form.Item>
       <Form.Item
            layout="vertical"
@@ -71,13 +104,13 @@ const FormModal = () => {
       <Select value={selected}  onChange={(e)=> setmonografiya(prevValue => !prevValue)}>
         <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
         <Select.Option className='py-2' value={'Monografiya'}>Monografiya</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Maqola (Maxalliy jurnal)</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Maqola (Xorijiy jurnal)</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Maqola ( konferensiya )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Respublika )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Xalqaro )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Xorijiy )</Select.Option>
-        <Select.Option className='py-2' value={'demo'}>Tezis ( Maxalliy )</Select.Option>
+        <Select.Option className='py-2' value={'Maqola (Maxalliy jurnal)'}>Maqola (Maxalliy jurnal)</Select.Option>
+        <Select.Option className='py-2' value={'Maqola (Xorijiy jurnal'}>Maqola (Xorijiy jurnal)</Select.Option>
+        <Select.Option className='py-2' value={'Maqola ( konferensiya )'}>Maqola ( konferensiya )</Select.Option>
+        <Select.Option className='py-2' value={'Tezis ( Respublika )'}>Tezis ( Respublika )</Select.Option>
+        <Select.Option className='py-2' value={'Tezis ( Xalqaro )'}>Tezis ( Xalqaro )</Select.Option>
+        <Select.Option className='py-2' value={'Tezis ( Xorijiy )'}>Tezis ( Xorijiy )</Select.Option>
+        <Select.Option className='py-2' value={'Tezis ( Maxalliy )'}>Tezis ( Maxalliy )</Select.Option>
       </Select>
       </Form.Item>
       <Form.Item  
@@ -101,7 +134,7 @@ const FormModal = () => {
           wrapperCol={{ span: 24 }}
           rules={[{ required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
           className='col-6'>
-      <Input className='py-2'  placeholder='text'/>
+      <Input className='py-2' value={data} name="scientificName.name" onChange={handleInputChange} placeholder='text'/>
       </Form.Item>
       <Form.Item layout="vertical"label="fayl joylash"name="IlmFan" labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}  className='col-6'>
       <Select value={selected} defaultValue="Url"  onChange={(e)=> seturl(prevValue => !prevValue)}>

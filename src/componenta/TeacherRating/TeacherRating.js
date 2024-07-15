@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
 import './teacherRating.css';
 import { EditOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Form, Input, Select, Upload, Radio, message } from 'antd';
+import { Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber } from 'antd';
 import { ApiName } from "../../api/APIname";
 import axios from 'axios';
+import moment from 'moment';
 
 const TeacherRating = () => {
-  const [fulInfo] = useState(JSON.parse(localStorage.getItem("myInfo")));
+  const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+  
+
+
   const [data, setData] = useState({
-    profileId: "",
+    profileId: fulInfo?.id,
     specialist: {
       name: "",
       date: "",
-      number: '',
+      number: null,
       attachId: ""
     },
     scientificTitle: {
       name: "",
       date: "",
-      number: '',
+      number: null,
       attachId: ""
     },
     profileRating: {
@@ -29,20 +33,27 @@ const TeacherRating = () => {
     scientificDegree: {
       name: "",
       date: "",
-      number: '',
+      number: null,
       attachId: ""
+    },
+    isTop1000: false,
+    profileTop1000: {
+      country: "",
+      university: ""
     }
   });
   const [edite, setEdite] = useState(false);
-  const [radio, setRadio] = useState('');
-  const [radio2, setRadio2] = useState('');
-  const handleDateChange = (value, name) => {
+  const [radio, setRadio] = useState(false);
+  const [radio2, setRadio2] = useState(data.isTop1000);
+
+  const handleDateChange = (date, name) => {
+    const formattedDate = date ? date.format('YYYY-MM-DD') : null;
     setData((prevData) => {
       const keys = name.split('.');
       if (keys.length === 1) {
         return {
           ...prevData,
-          [name]: value,
+          [name]: formattedDate,
         };
       } else {
         let newState = { ...prevData };
@@ -50,11 +61,12 @@ const TeacherRating = () => {
         for (let i = 0; i < keys.length - 1; i++) {
           current = current[keys[i]];
         }
-        current[keys[keys.length - 1]] = value;
+        current[keys[keys.length - 1]] = formattedDate;
         return newState;
       }
     });
   };
+
   const handleFileChange = (info, section) => {
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
@@ -110,8 +122,6 @@ const TeacherRating = () => {
 
   const handleSelectChange = (value, option) => {
     const { name } = option;
-    if (!name) return; // Add this line to handle undefined name
-
     const [section, field] = name.split('.');
 
     if (field) {
@@ -131,35 +141,36 @@ const TeacherRating = () => {
   };
 
   const handleSubmit = () => {
-    console.log(data);
-    // axios.put(`${ApiName}/api/employee/update`, data, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     Authorization: `Bearer ${fulInfo?.accessToken}`,
-    //   },
-    // })
-    //   .then(response => {
-    //     console.log('Success:', response.data);
-    //     message.success('Form submitted successfully');
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //     message.error('Error submitting form');
-    //   });
+    axios.put(`${ApiName}/api/employee/update`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${fulInfo?.accessToken}`,
+      },
+    })
+      .then(response => {
+        console.log('Success:', response.data);
+        message.success('Form submitted successfully');
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        message.error('Error submitting form');
+      });
   };
 
-  const handlechangeradio = (e) => {
-    if (e.target.value === 'ha') {
-      setRadio(true);
-    } else if (e.target.value === 'ha1') {
-      setRadio2(true);
-    } else if (e.target.value === 'yoq1') {
-      setRadio2(false);
-    } else {
-      setRadio(false);
-    }
+  const handleRadioChange = (e) => {
+    const { value } = e.target;
+    setRadio(value === 'ha');
   };
 
+  const handleRadioChange2 = (e) => {
+    const { value } = e.target;
+    const isTop1000 = value === 'ha1';
+    setRadio2(isTop1000);
+    setData(prevState => ({
+      ...prevState,
+      isTop1000
+    }));
+  };
   return (
     <>
       <div className='TeacherRating'>
@@ -212,10 +223,17 @@ const TeacherRating = () => {
           <Form onFinish={handleSubmit} labelAlign="left" layout="vertical" colon={false} style={{ maxWidth: '100%' }}>
             <div className="d-flex gap-5">
               <div style={{ width: '33%' }}>
+                
                 <Form.Item label="Mutaxassislik" name="Mutaxassislik">
                   <Input value={data.specialist.name} name="specialist.name" onChange={handleInputChange} placeholder="Mutaxasislik nomi" />
-                  <DatePicker  value={data.specialist.date} name='specialist.date' onChange={(date) => handleDateChange(date, 'specialist.date')} className='my-2' placeholder="Diplom sanasi" />
-                  <Input value={data.specialist.number} name='specialist.number' onChange={handleInputChange} placeholder="Diplom raqami" />
+                  <DatePicker
+                    value={data.specialist.date ? moment(data.specialist.date) : null}
+                    name='specialist.date'
+                    onChange={(date) => handleDateChange(date, 'specialist.date')}
+                    className='my-2'
+                    placeholder="Diplom sanasi"
+                  />
+                  <InputNumber value={data.specialist.number} name='specialist.number' onChange={(value) => handleInputChange({ target: { name: 'specialist.number', value } })} placeholder="Diplom raqami" style={{ width: '100%' }} />
                 </Form.Item>
                 <Form.Item name='file'>
                   <Upload {...propsss('specialist')}>
@@ -223,20 +241,27 @@ const TeacherRating = () => {
                   </Upload>
                 </Form.Item>
                 <hr />
-                <Form.Item label="Ilmiy unvon" name="scientificTitle">
+                <Form.Item label="Ilmiy unvon" name="ilmiyUnvon">
                   <Select
-                    name="scientificTitle.name"
-                    value={data.scientificDegree.name || undefined}
-                    onChange={(value, option) => handleSelectChange(value, { name: "scientificTitle.name" })}
+                    name='scientificTitle.name'
                     placeholder="Ilmiy unvon nomi"
+                    value={data.scientificTitle.name || undefined}
+                    onChange={(value, option) => handleSelectChange(value, { name: "scientificTitle.name" })}
                     options={[
-                      { value: 'Stajer-tadqiqotchi', label: 'Dotsent' },
-                      { value: 'Tayanch doktorant (PhD)', label: 'Professor' }
+                      { value: 'katta ilmiy xodim', label: 'Katta ilmiy xodim' },
+                      { value: 'kichik ilmiy xodim', label: 'Kichik ilmiy xodim' },
+                      { value: 'tayanch doktorant (PhD)', label: 'Tayanch doktorant (PhD)' },
+                      { value: 'tayanch dotsent', label: 'Tayanch dotsent' }
                     ]}
                   />
-                   <DatePicker   value={data.scientificTitle.date} name='scientificTitle.date' onChange={(date) => handleDateChange(date, 'scientificTitle.date')} className='my-2' placeholder="Diplom sanasi" />
-                  {/* <Input value={data.scientificTitle.date} name='scientificTitle.date' onChange={handleInputChange} className='my-2' placeholder="Diplom sanasi" /> */}
-                  <Input value={data.scientificTitle.number} name='scientificTitle.number' onChange={handleInputChange} placeholder="Diplom raqami" />
+                  <DatePicker
+                    value={data.scientificTitle.date ? moment(data.scientificTitle.date) : null}
+                    name='scientificTitle.date'
+                    onChange={(date) => handleDateChange(date, 'scientificTitle.date')}
+                    className='my-2'
+                    placeholder="Diplom sanasi"
+                  />
+                  <InputNumber value={data.scientificTitle.number} name='scientificTitle.number' onChange={(value) => handleInputChange({ target: { name: 'scientificTitle.number', value } })} placeholder="Diplom raqami" style={{ width: '100%' }} />
                 </Form.Item>
                 <Form.Item name='file'>
                   <Upload {...propsss('scientificTitle')}>
@@ -251,17 +276,29 @@ const TeacherRating = () => {
                   <Input value={data.profileRating.wosURL} onChange={handleInputChange} name='profileRating.wosURL' className='my-2' placeholder="WoS maʼlumotlar bazasidagi sahifasiga (profiliga) havola" />
                   <Input value={data.profileRating.googleScholarURL} onChange={handleInputChange} name='profileRating.googleScholarURL' placeholder="GoogleScholar maʼlumotlar bazasidagi sahifasiga (profiliga) havola" />
                 </Form.Item>
-                <hr/>
+                <hr />
                 <Form.Item label="Davlat mukofoti bilan tag`dirlanganligi" name="scientificDegree">
-                      <DatePicker  name='scientificDegree.date'className='my-2' placeholder="Olgan sanasi" />
-                      <Input placeholder="Diplom raqami" />
-                    </Form.Item>
+                <Input value={data.specialist.name} name="specialist.name" onChange={handleInputChange} placeholder="Davlat mukofoti nomi" />
+                  <DatePicker
+                    value={data.scientificDegree.date ? moment(data.scientificDegree.date) : null}
+                    name='scientificDegree.date'
+                    onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
+                    className='my-2'
+                    placeholder="Olgan sanasi"
+                  />
+
+                </Form.Item>
+                <Form.Item name='file'>
+                 <Upload {...propsss('scientificDegree')}>
+                   <Button icon={<UploadOutlined />}>Diplom (pdf)</Button>
+                 </Upload>
+                </Form.Item>
               </div>
               <div style={{ width: '33%' }}>
                 <Form.Item style={{ marginTop: "27px" }} label="Ilmiy daraja bormi?">
-                  <Radio.Group onChange={handlechangeradio}>
-                    <Radio value={'ha'}>Ha</Radio>
-                    <Radio value={'yoq'}>Yo'q</Radio>
+                  <Radio.Group onChange={handleRadioChange}>
+                    <Radio value='ha'>Ha</Radio>
+                    <Radio value='yoq'>Yo'q</Radio>
                   </Radio.Group>
                 </Form.Item>
                 <hr />
@@ -271,33 +308,36 @@ const TeacherRating = () => {
                       <Select
                         name='scientificDegree.name'
                         placeholder="Ilmiy daraja nomi"
-                        value={data.scientificDegree.name ||undefined}
+                        value={data.scientificDegree.name || undefined}
                         onChange={(value, option) => handleSelectChange(value, { name: "scientificDegree.name" })}
                         options={[
                           { value: 'Falsafa doktori (PhD)', label: 'Falsafa doktori (PhD)' },
                           { value: 'Fan doktori, (DSc)', label: 'Fan doktori, (DSc)' }
                         ]}
                       />
-                      <DatePicker  value={data.scientificDegree.date} name='scientificDegree.date' onChange={(date) => handleDateChange(date, 'scientificDegree.date')} className='my-2' placeholder="Diplom sanasi" />
-                      <Input onChange={handleInputChange} value={data.scientificDegree.number} name='scientificDegree.number' placeholder="Diplom raqami" />
-                    </Form.Item>
-                    <hr />
-                    <Form.Item name='file'>
-                      <Upload {...propsss('scientificDegree')}>
-                        <Button icon={<UploadOutlined />}>Diplom (pdf)</Button>
-                      </Upload>
+                      <DatePicker
+                        value={data.scientificDegree.date ? moment(data.scientificDegree.date) : null}
+                        name='scientificDegree.date'
+                        onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
+                        className='my-2'
+                        placeholder="Diplom sanasi"
+                      />
+                      <InputNumber value={data.scientificDegree.number} name='scientificDegree.number' onChange={(value) => handleInputChange({ target: { name: 'scientificDegree.number', value } })} placeholder="Diplom raqami" style={{ width: '100%' }} />
                     </Form.Item>
                     <Form.Item style={{ marginTop: "27px" }} label="Dunyoning nufuzli TOP-1000 taligiga kiruvchi OTMlarida (PhD) yoki (DSc) darajasini olganligi">
-                      <Radio.Group onChange={handlechangeradio}>
-                        <Radio value={'ha1'}>Ha</Radio>
-                        <Radio value={'yoq1'}>Yo'q</Radio>
+                      <Radio.Group onChange={handleRadioChange2} value={radio2 ? 'ha1' : 'yoq1'}>
+                        <Radio value='ha1'>Ha</Radio>
+                        <Radio value='yoq1'>Yo'q</Radio>
                       </Radio.Group>
                     </Form.Item>
                     {radio2 && (
-                      <Form.Item  name="top100">
-                        <Input placeholder="Shaxri, davlati" />
-                        <Input className='my-2' placeholder="Universituti" />
-                      </Form.Item>
+                      <Form.Item name="top100">
+                        <Input value={data.profileTop1000.country} name="profileTop1000.country" onChange={handleInputChange} placeholder="Shaxri, davlati" />
+                        <Input className='my-2' value={data.profileTop1000.university} name="profileTop1000.university" onChange={handleInputChange} placeholder="Universituti" />
+                        <Upload {...propsss('scientificDegree')}>
+                         <Button icon={<UploadOutlined />}>Diplom (pdf)</Button>
+                        </Upload>
+                      </Form.Item>                    
                     )}
                   </>
                 )}

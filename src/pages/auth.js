@@ -15,38 +15,36 @@ function Auth(props) {
     const [loading, setLoading] = useState(false);
     const [login, setLogin] = useState(false);
 
-    useEffect(() => {
-        return () => {
-            getEmploee()
-            console.log(1)
-        };
-    }, []);
-    function getEmploee() {
-        setLoading(true)
-        axios.get(`${ApiName}/api/auth/login`, {
-            params: {
-                code: searchParams.get('code'),
-                state: searchParams.get('state')
-            }
-        }).then((response) => {
-            if (response.data.isSuccess === true) {
-                setLoading(false)
-                setLogin(true)
-                localStorage.setItem("myInfo", JSON.stringify(response.data.data));
-                navigate('/profile')
-            }
-            else {
-                setLoading(false)
-                setMessage(response.data.message)
-            }
-        }).catch((error) => {
-            console.log(error);
-            setLoading(false)
-            // navigate("/")
-            setMessage("Loginda xato")
 
-        })
-    }
+    window.onload = function() {
+            setLoading(true)
+            axios.get(`${ApiName}/api/auth/login`, {
+                params: {
+                    code: searchParams.get('code'),
+                    state: searchParams.get('state')
+                }
+            }).then((response) => {
+                if (response.data.isSuccess === true) {
+                    setLoading(false)
+                    setLogin(true)
+                    localStorage.setItem("myInfo", JSON.stringify(response.data.data));
+                    navigate('/profile')
+                }
+                else {
+                    setLoading(false)
+                    setMessage(response.data.message)
+                }
+            }).catch((error) => {
+                console.log(error);
+                setLoading(false)
+                // navigate("/")
+                setMessage("Loginda xato")
+    
+            })
+        
+        };
+
+    
 
     useEffect(() => {
         setMessage('')

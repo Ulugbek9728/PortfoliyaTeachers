@@ -40,7 +40,12 @@ const TeacherRating = () => {
     profileTop1000: {
       country: "",
       university: ""
+    },  profileStateAwardDTO: {
+      nameStateAward: "",
+      date: "",
+      attachId: ""
     }
+  
   });
   const [edite, setEdite] = useState(false);
   const [radio, setRadio] = useState(false);
@@ -278,18 +283,18 @@ const TeacherRating = () => {
                 </Form.Item>
                 <hr />
                 <Form.Item label="Davlat mukofoti bilan tag`dirlanganligi" name="scientificDegree">
-                <Input value={data.specialist.name} name="specialist.name" onChange={handleInputChange} placeholder="Davlat mukofoti nomi" />
+                <Input value={data.profileStateAwardDTO.nameStateAward} name="profileStateAwardDTO.nameStateAward" onChange={handleInputChange} placeholder="Davlat mukofoti nomi" />
                   <DatePicker
-                    value={data.scientificDegree.date ? moment(data.scientificDegree.date) : null}
-                    name='scientificDegree.date'
-                    onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
+                    value={data.profileStateAwardDTO.date ? moment(data.profileStateAwardDTO.date) : null}
+                    name='profileStateAwardDTO.date'
+                    onChange={(date) => handleDateChange(date, 'profileStateAwardDTO.date')}
                     className='my-2'
                     placeholder="Olgan sanasi"
                   />
 
                 </Form.Item>
                 <Form.Item name='file'>
-                 <Upload {...propsss('scientificDegree')}>
+                 <Upload {...propsss('profileStateAwardDTO')}>
                    <Button icon={<UploadOutlined />}>Diplom (pdf)</Button>
                  </Upload>
                 </Form.Item>

@@ -2,19 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Modal, DatePicker, Form, Input, InputNumber, Select, Upload, message, Space } from 'antd';
 import './modal.scss';
+import { EditOutlined, UploadOutlined } from '@ant-design/icons';
 import UploadFile from '../UploadFile/UploadFile';
 import axios from 'axios';
 import { ApiName } from '../../api/APIname';
 import moment from 'moment';
 
 
-const FormModal = () => {
+const FormModal = (props) => {
   const [Scientificpublication, setScientificpublication] = useState([])
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const [data, setData] = useState({
+  
     authorCount: 0,
     issueYear: moment(''),
-    publicationType: "MONOGRAPH",
+    publicationType: props?.publicationType,
     language: "",
     scientificName: "",
     scientificField: "",
@@ -27,7 +29,10 @@ const FormModal = () => {
       0
     ],
     publicationDatabase: "",
-    decisionScientificCouncil: ""
+    decisionScientificCouncil: "",
+    mediaIds: [
+      
+    ]
   });
 
   useEffect(() => {
@@ -53,8 +58,37 @@ const FormModal = () => {
      })
    }
    
-
-
+   const [searchResults, setSearchResults] = useState([
+    { id: 1, name: 'Author 1' },
+    { id: 2, name: 'Author 2' }
+  ]);
+   const [selectedItems, setSelectedItems] = useState([]);
+   const handleSearch = async (value) => {
+    if (value) {
+      try {
+        const response = await axios.get(`${ApiName}/api/author/search`, {
+          params: { query: value },
+        });
+        if (response.data.isSuccess && !response.data.error) {
+          setSearchResults(response.data.data.results || []);
+        } else {
+          console.error('Error in response:', response.data.message);
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        setSearchResults([]);
+      }
+    } else {
+      setSearchResults([]);
+    }
+  };
+  const handleChange = (value) => {
+    setData((prevState) => ({
+      ...prevState,
+      authorIds: value
+    }));
+  };
   const [monografiya, setMonografiya] = useState(false);
   const [url, setUrl] = useState(true);
   const [selectfile, setSelectfile] = useState(null);
@@ -85,14 +119,30 @@ const FormModal = () => {
       setUrl(value === 'Url');
     }
   };
+  const propsss = () => ({
+    name: 'file',
+    action: `${ApiName}/api/v1/attach/upload`,
+    headers: {
+      Authorization: `Bearer ${fulInfo?.accessToken}`,
+    },
+    showUploadList: false,
+    onChange: (info) => handleFileChange(info),
+  });
 
-  const handleChangeFile = (event) => {
-    if (event.target.files.length > 0) {
-      setSelectfile(event.target.files[0]);
+  const handleFileChange = (info) => {
+    if (info.file.status === 'done') {
+      message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
+      setData(prevState => ({
+        ...prevState,
+        mediaIds: [info.file.response.id],
+      }));
+    } else if (info.file.status === 'error') {
+      message.error(`${info.file.name} fayl yuklashda xato.`);
     }
   };
-
+  const token = fulInfo?.accessToken;
   const handleSubmit = (values) => {
+
     axios.post(`${ApiName}/api/publication/create`, {
       ...data,
       issueYear: data.issueYear.format('YYYY-MM-DD')
@@ -102,14 +152,14 @@ const FormModal = () => {
         Authorization: `Bearer ${fulInfo?.accessToken}`,
       },
     })
-      .then(response => {
-        console.log('Success:', response.data);
-        message.success('Forma muvaffaqiyatli yuborildi');
-      })
-      .catch(error => {
-        console.error('Xato:', error);
-        message.error('Formani yuborishda xato');
-      });
+    .then(response => {
+      console.log('Success:', response.data);
+      message.success('Forma muvaffaqiyatli yuborildi');
+    })
+    .catch(error => {
+      console.error('Xato:', error);
+      message.error('Formani yuborishda xato');
+    });
 
     const MIN_FILE_SIZE = 1024; // 1 MB
     const MAX_FILE_SIZE = 5120; // 5 MB
@@ -132,16 +182,7 @@ const FormModal = () => {
     setIsSucses(true);
     console.log(data);
   };
-  const options = [];
-  for (let i = 10; i < 36; i++) {
-    options.push({
-      label: i.toString(36) + i,
-      value: i.toString(36) + i,
-    });
-  }
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
+
   return (
     <div>
       <Form className='row' onFinish={handleSubmit}>
@@ -164,7 +205,7 @@ const FormModal = () => {
           </Select>
         </Form.Item>
 
-        {/* {monografiya && (
+        {monografiya && (
           <Form.Item
             layout="vertical"
             label="Ilmiy yoki ilmiy texnik kengash qarori"
@@ -176,7 +217,7 @@ const FormModal = () => {
           >
             <Input value={data.decisionScientificCouncil} name="decisionScientificCouncil" onChange={handleInputChange} placeholder='Ilmiy yoki ilmiy texnik kengash qarori' className='py-2' />
           </Form.Item>
-        )} */}
+        )}
 
         <Form.Item
           layout="vertical"
@@ -237,13 +278,15 @@ const FormModal = () => {
         ) : (
           <Form.Item
             layout="vertical"
-            label="Fayl yuklash"
-            name="upload"
+            label="Fayl"
+            name="file"
             labelCol={{ span: 24 }}
             wrapperCol={{ span: 24 }}
             className='col-6'
           >
-            <input type="file" onChange={handleChangeFile} />
+            <Upload {...propsss()} >
+              <Button>Yuklash</Button>
+            </Upload>
           </Form.Item>
         )}
 
@@ -273,32 +316,21 @@ const FormModal = () => {
       <InputNumber value={data.authorCount} name="authorCount" onChange={(value) => setData(prevState => ({ ...prevState, authorCount: value }))} placeholder='Mualliflar soni' className='py-2 w-100' />
     </Form.Item>
 
-    {/* <Space
-    // style={{
-    //   width: '100%',
-    // }}
-    className='col-6'
-    direction="vertical"
-  >
-    <Select
-      mode="multiple"
-      allowClear
-      style={{
-        width: '100%',
-      }}
-      placeholder="Please select"
-      onChange={handleChange}
-    />
-    <Select
-      mode="multiple"
-      disabled
-      style={{
-        width: '100%',
-      }}
-      placeholder="Please select"
-      onChange={handleChange}
-    />
-  </Space> */}
+    <Space className="col-6" direction="vertical">
+      <Select
+        mode="multiple"
+        allowClear
+        style={{
+          width: '100%',
+        }}
+        placeholder="Please select"
+        onSearch={handleSearch}
+        onChange={handleChange}
+        options={searchResults.map((result) => ({ value: result.id, label: result.name }))}
+        filterOption={false}
+        showSearch
+      />
+    </Space>
 
     <Form.Item
       layout="vertical"

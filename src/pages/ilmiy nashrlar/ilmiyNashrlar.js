@@ -99,7 +99,7 @@ function IlmiyNashrlar(props) {
         width={1600}
         style={{right:"-80px"}}
       >
-        <FormModal/>
+        <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" />
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>

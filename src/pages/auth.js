@@ -11,7 +11,6 @@ function Auth(props) {
     const [searchParams] = useSearchParams();
     const [message, setMessage] = useState('');
     const [sucsessText, setSucsessText] = useState('');
-
     const [loading, setLoading] = useState(false);
     const [login, setLogin] = useState(false);
 

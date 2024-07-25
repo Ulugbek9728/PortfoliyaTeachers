@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './teacherRating.css';
 import { EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber } from 'antd';
@@ -7,8 +7,32 @@ import axios from 'axios';
 import moment from 'moment';
 
 const TeacherRating = () => {
+
+  const CurrentUser = () => {
+
+    axios.get(`${ApiName}/api/profile/current`, {
+      headers:{
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${fulInfo.accessToken}`
+      }
+    }).then((response) => {
+      if (response.data.isSuccess === true) {
+        localStorage.setItem("getMyInfo", JSON.stringify(response.data.data));
+        console.log(getFullInfo); 
+    }
+    }).catch((error) => {
+
+      console.log(error);
+    })
+
+};
+
+useEffect(() => {
+  CurrentUser()
+ 
+}, []);
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-  
+  const getFullInfo = JSON.parse(localStorage.getItem('getMyInfo'))
 
 
   const [data, setData] = useState({
@@ -146,7 +170,7 @@ const TeacherRating = () => {
   };
 
   const handleSubmit = () => {
-    axios.put(`${ApiName}/api/employee/update`, data, {
+    axios.put(`${ApiName}/api/profile/update`, data, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${fulInfo?.accessToken}`,
@@ -155,6 +179,43 @@ const TeacherRating = () => {
       .then(response => {
         console.log('Success:', response.data);
         message.success('Form submitted successfully');
+        setEdite(false); // Modalni yopish
+        setData({
+          profileId: fulInfo?.id,
+          specialist: {
+            name: "",
+            date: "",
+            number: null,
+            attachId: ""
+          },
+          scientificTitle: {
+            name: "",
+            date: "",
+            number: null,
+            attachId: ""
+          },
+          profileRating: {
+            scopusURL: "",
+            wosURL: "",
+            googleScholarURL: ""
+          },
+          scientificDegree: {
+            name: "",
+            date: "",
+            number: null,
+            attachId: ""
+          },
+          isTop1000: false,
+          profileTop1000: {
+            country: "",
+            university: ""
+          },
+          profileStateAwardDTO: {
+            nameStateAward: "",
+            date: "",
+            attachId: ""
+          }
+        }); // Inputlarni bo'sh holatda qoldirish
       })
       .catch(error => {
         console.error('Error:', error);
@@ -176,6 +237,7 @@ const TeacherRating = () => {
       isTop1000
     }));
   };
+  
   return (
     <>
       <div className='TeacherRating'>
@@ -185,7 +247,8 @@ const TeacherRating = () => {
           </div>
           <div className='TeacherRating_text'>
             <h3 className='TeacherRating_text_name'>{fulInfo?.fullName}</h3>
-            <div className='TeacherRating_text_description'>
+            <div className='TeacherRating_text_description row'>
+            <div className='col-3'>
               <div className='d-flex'>
                 <b className='mx-3'>Ish joy:</b>
                 <p>{fulInfo?.parentDepartment?.name} <br /> {fulInfo?.department?.name}</p>
@@ -198,6 +261,83 @@ const TeacherRating = () => {
                 <b className='mx-3'>Shtat birligi:</b>
                 <p> {fulInfo?.employmentForm?.name} {fulInfo?.employmentStaff?.name}</p>
               </div>
+            </div>
+              <div >
+              <div className='d-flex'>
+                <b className='mx-3'>Mutaxasislik nomi</b>
+                <p> {getFullInfo?.specialist?.name}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Diplom sanasi</b>
+                <p> {getFullInfo?.specialist?.date}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Diplom soni</b>
+                <p> {getFullInfo?.specialist?.number}</p>
+              </div>
+              </div>
+            <div >
+              <div className='d-flex'>
+                <b className='mx-3'>Ilmiy unvon nomi</b>
+                <p> {getFullInfo?.scientificTitle?.name}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Diplom sanasi</b>
+                <p> {getFullInfo?.scientificTitle?.date}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Diplom raqami</b>
+                <p> {getFullInfo?.scientificTitle?.number}</p>
+              </div>
+            </div>
+            <div>
+              <div className='d-flex'>
+                <b className='mx-3'>Scopus linki</b>
+                <p> {getFullInfo?.profileRating?.scopusURL}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Wos linki</b>
+                <p> {getFullInfo?.profileRating?.wosURL}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Google scholar linki</b>
+                <p> {getFullInfo?.profileRating?.googleScholarURL}</p>
+              </div>
+              </div>
+            <div>
+              <div className='d-flex'>
+                <b className='mx-3'>Davlat mukofoti nomi</b>
+                <p> {getFullInfo?.profileStateAwardDTO?.nameStateAward}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Davlat mukofotini olgan sanasi</b>
+                <p> {getFullInfo?.profileStateAwardDTO?.date}</p>
+              </div>
+            </div>
+            <div>
+              <div className='d-flex'>
+                <b className='mx-3'>Ilmiy daraja nomi</b>
+                <p> {getFullInfo?.scientificDegree?.name}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Diplom sanasi</b>
+                <p> {getFullInfo?.scientificDegree?.date}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Diplom raqami</b>
+                <p> {getFullInfo?.scientificDegree?.number}</p>
+              </div>
+            </div>
+            <div>
+              <div className='d-flex'>
+                <b className='mx-3'>Davlati</b>
+                <p> {getFullInfo?.profileTop1000?.country}</p>
+              </div>
+              <div className='d-flex'>
+                <b className='mx-3'>Universituti</b>
+                <p> {getFullInfo?.profileTop1000?.university}</p>
+              </div>
+            </div>
             </div>
           </div>
           <button className='btn btn-warning' style={{ height: 50 }} onClick={() => setEdite(!edite)}>
@@ -281,7 +421,7 @@ const TeacherRating = () => {
                   <Input value={data.profileRating.wosURL} onChange={handleInputChange} name='profileRating.wosURL' className='my-2' placeholder="WoS maʼlumotlar bazasidagi sahifasiga (profiliga) havola" />
                   <Input value={data.profileRating.googleScholarURL} onChange={handleInputChange} name='profileRating.googleScholarURL' placeholder="GoogleScholar maʼlumotlar bazasidagi sahifasiga (profiliga) havola" />
                 </Form.Item>
-                <hr />
+                <hr/>
                 <Form.Item label="Davlat mukofoti bilan tag`dirlanganligi" name="scientificDegree">
                 <Input value={data.profileStateAwardDTO.nameStateAward} name="profileStateAwardDTO.nameStateAward" onChange={handleInputChange} placeholder="Davlat mukofoti nomi" />
                   <DatePicker

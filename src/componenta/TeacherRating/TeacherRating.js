@@ -34,7 +34,6 @@ useEffect(() => {
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const getFullInfo = JSON.parse(localStorage.getItem('getMyInfo'))
 
-
   const [data, setData] = useState({
     profileId: fulInfo?.id,
     specialist: {

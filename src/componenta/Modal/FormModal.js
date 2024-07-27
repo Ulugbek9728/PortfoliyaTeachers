@@ -54,7 +54,7 @@ const FormModal = (props) => {
       console.log(response.data);
     })
     .catch(error => {
-      console.log(error, 'eror');
+      console.log(error, 'error');
      })
    }
    

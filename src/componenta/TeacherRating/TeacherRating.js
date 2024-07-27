@@ -247,97 +247,104 @@ useEffect(() => {
           </div>
           <div className='TeacherRating_text'>
             <h3 className='TeacherRating_text_name'>{fulInfo?.fullName}</h3>
-            <div className='TeacherRating_text_description row'>
-            <div className='col-3'>
-              <div className='d-flex'>
-                <b className='mx-3'>Ish joy:</b>
+            <div className='TeacherRating_text_description row '>
+            <div className='col-4'>
+              <div >
+                <b >Ish joy:</b>
                 <p>{fulInfo?.parentDepartment?.name} <br /> {fulInfo?.department?.name}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Lavozim: </b>
+              <div>
+                <b >Lavozim: </b>
                 <p> {fulInfo?.staffPosition?.name}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Shtat birligi:</b>
+              <div>
+                <b >Shtat birligi:</b>
                 <p> {fulInfo?.employmentForm?.name} {fulInfo?.employmentStaff?.name}</p>
               </div>
+              <hr/>
             </div>
-              <div >
-              <div className='d-flex'>
-                <b className='mx-3'>Mutaxasislik nomi</b>
+              <div  className='col-4'>
+              <div className=''>
+                <b >Mutaxasislik nomi</b>
                 <p> {getFullInfo?.specialist?.name}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Diplom sanasi</b>
+              <div className=''>
+                <b >Diplom sanasi</b>
                 <p> {getFullInfo?.specialist?.date}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Diplom soni</b>
+              <div className=''>
+                <b>Diplom soni</b>
                 <p> {getFullInfo?.specialist?.number}</p>
               </div>
-              </div>
-            <div >
-              <div className='d-flex'>
-                <b className='mx-3'>Ilmiy unvon nomi</b>
+              <hr/>
+            </div>
+            <div  className='col-4'>
+              <div className=''>
+                <b>Ilmiy unvon nomi</b>
                 <p> {getFullInfo?.scientificTitle?.name}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Diplom sanasi</b>
+              <div className=''>
+                <b >Diplom sanasi</b>
                 <p> {getFullInfo?.scientificTitle?.date}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Diplom raqami</b>
+              <div className=''>
+                <b >Diplom raqami</b>
                 <p> {getFullInfo?.scientificTitle?.number}</p>
               </div>
+              <hr/>
             </div>
-            <div>
-              <div className='d-flex'>
-                <b className='mx-3'>Scopus linki</b>
+            <div  className='col-4'>
+              <div className=''>
+                <b >Scopus linki</b>
                 <p> {getFullInfo?.profileRating?.scopusURL}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Wos linki</b>
+              <div className=''>
+                <b>Wos linki</b>
                 <p> {getFullInfo?.profileRating?.wosURL}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Google scholar linki</b>
+              <div className=''>
+                <b >Google scholar linki</b>
                 <p> {getFullInfo?.profileRating?.googleScholarURL}</p>
               </div>
-              </div>
-            <div>
-              <div className='d-flex'>
-                <b className='mx-3'>Davlat mukofoti nomi</b>
+              <hr/>
+            </div>
+            <div  className='col-4'>
+              <div>
+                <b >Davlat mukofoti nomi</b>
                 <p> {getFullInfo?.profileStateAwardDTO?.nameStateAward}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Davlat mukofotini olgan sanasi</b>
+              <div>
+                <b>Davlat mukofotini olgan sanasi</b>
                 <p> {getFullInfo?.profileStateAwardDTO?.date}</p>
               </div>
+              <hr/>
             </div>
-            <div>
-              <div className='d-flex'>
-                <b className='mx-3'>Ilmiy daraja nomi</b>
+            <div  className='col-4'>
+              <div className=''>
+                <b >Ilmiy daraja nomi</b>
                 <p> {getFullInfo?.scientificDegree?.name}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Diplom sanasi</b>
+              <div className=''>
+                <b >Diplom sanasi</b>
                 <p> {getFullInfo?.scientificDegree?.date}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Diplom raqami</b>
+              <div className=''>
+                <b>Diplom raqami</b>
                 <p> {getFullInfo?.scientificDegree?.number}</p>
               </div>
+              <hr/>
             </div>
-            <div>
-              <div className='d-flex'>
-                <b className='mx-3'>Davlati</b>
+            <div  className='col-4'>
+              <div className=''>
+                <b >Davlati</b>
                 <p> {getFullInfo?.profileTop1000?.country}</p>
               </div>
-              <div className='d-flex'>
-                <b className='mx-3'>Universituti</b>
+              <div className=''>
+                <b>Universituti</b>
                 <p> {getFullInfo?.profileTop1000?.university}</p>
               </div>
             </div>
+            
             </div>
           </div>
           <button className='btn btn-warning' style={{ height: 50 }} onClick={() => setEdite(!edite)}>

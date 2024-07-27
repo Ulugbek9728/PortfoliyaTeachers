@@ -1,17 +1,22 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
 } from 'antd';
 import "./ilmiyNashrlar.scss"
 import FormModal from '../../componenta/Modal/FormModal';
+import axios from "axios";
+import {ApiName} from "../../api/APIname";
 
 
 function IlmiyNashrlar(props) {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
     const [open, setOpen] = useState(false)
+    const [dataList, setDataList] = useState([])
 
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
@@ -44,25 +49,31 @@ function IlmiyNashrlar(props) {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
+            title: 'Ilmiy nashr turi',
+            render: (item, record, index) => (<>{item?.classifierOptionsDTO?.name}</>),
+            width: 150
+        },
+        {
+            title: 'Ilmiy nashr tili',
+            width: 100,
+            render: (item, record, index) => (<>{item?.language}</>)
+        },
+        {
             title: 'Ilmiy ish nomi',
             dataIndex: 'name',
             width: 350,
         },
         {
             title: 'Mualliflar',
-            dataIndex: 'age',
+            dataIndex: 'authorCount',
             width: 200,
         },
         {
             title: 'Nashr yili',
-            dataIndex: 'address',
+            dataIndex: 'issueYear',
             width: 150
         },
-        {
-            title: 'Ilmiy nashr turi',
-            dataIndex: 'address',
-            width: 150
-        },
+
         {
             title: 'Xodim',
             dataIndex: 'address',
@@ -79,29 +90,39 @@ function IlmiyNashrlar(props) {
             width: 150
         },
     ];
-    const data = [];
-    for (let i = 0; i < 100; i++) {
-        data.push({
-            key: i,
-            name: `Edward King ${i}`,
-            age: 32,
-            address: `London, Park Lane no. ${i}`,
+
+    useEffect(() => {
+        return()=>{
+            getIlmiyNashir()
+        }
+    }, []);
+
+    function getIlmiyNashir() {
+        axios.get(`${ApiName}/api/publication/current-user`, {
+            headers:{
+                Authorization: `Bearer ${fulInfo.accessToken}`
+            }
+        }).then((response) => {
+            console.log(response?.data?.data?.content);
+            setDataList(response?.data?.data?.content);
+        }).catch((error) => {
+            console.log(error)
         });
     }
 
     return (
-   <div className='p-4'>
-    <Modal
-        title="Maqola kiritish punkti"
-        centered
-        open={open}
-        onCancel={() => setOpen(false)}
-        width={1600}
-        style={{right:"-80px"}}
-      >
-        <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" />
-      </Modal>
-            
+        <div className='p-4'>
+            <Modal
+                title="Maqola kiritish punkti"
+                centered
+                open={open}
+                onCancel={() => setOpen(false)}
+                width={1600}
+                style={{right: "-80px"}}
+            >
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS"/>
+            </Modal>
+
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
                       onFinish={onChange}
@@ -109,7 +130,7 @@ function IlmiyNashrlar(props) {
                 >
                     <Form.Item label="Mudatini belgilang"
                                name="MurojatYuklash"
-                               >
+                    >
                         <DatePicker.RangePicker
                             // placeholder={["Bosh sana", 'Tugash sana']}
                             name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate}/>
@@ -126,9 +147,9 @@ function IlmiyNashrlar(props) {
                 </Form>
 
                 <button type="button" className="button1"
-                    onClick={() => {
-                        setOpen(true)
-                    }}
+                        onClick={() => {
+                            setOpen(true)
+                        }}
                 >
                     <span className="button__text">Ilmiy nashr yaratish</span>
                     <span className="button__icon">
@@ -144,7 +165,13 @@ function IlmiyNashrlar(props) {
             </div>
             <Table
                 columns={columns}
-                dataSource={data}
+                dataSource={dataList?.map(item => {
+                    return {
+                        ...item,
+                        key: item?.id,
+
+                    }
+                })}
                 pagination={{
                     pageSize: 50,
                 }}

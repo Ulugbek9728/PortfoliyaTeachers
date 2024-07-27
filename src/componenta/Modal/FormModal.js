@@ -13,7 +13,6 @@ const FormModal = (props) => {
   const [Scientificpublication, setScientificpublication] = useState([])
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const [data, setData] = useState({
-  
     authorCount: 0,
     issueYear: moment(''),
     publicationType: props?.publicationType,
@@ -34,6 +33,17 @@ const FormModal = (props) => {
       
     ]
   });
+  const [searchResults, setSearchResults] = useState([
+    { id: 1, name: 'Author 1' },
+    { id: 2, name: 'Author 2' }
+  ]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [monografiya, setMonografiya] = useState(false);
+  const [url, setUrl] = useState(true);
+  const [selectfile, setSelectfile] = useState(null);
+  const [error, setError] = useState('');
+  const [isSucses, setIsSucses] = useState(false);
+  const { RangePicker } = DatePicker;
 
   useEffect(() => {
     ClassifairGet()
@@ -58,11 +68,7 @@ const FormModal = (props) => {
      })
    }
    
-   const [searchResults, setSearchResults] = useState([
-    { id: 1, name: 'Author 1' },
-    { id: 2, name: 'Author 2' }
-  ]);
-   const [selectedItems, setSelectedItems] = useState([]);
+
    const handleSearch = async (value) => {
     if (value) {
       try {
@@ -89,12 +95,6 @@ const FormModal = (props) => {
       authorIds: value
     }));
   };
-  const [monografiya, setMonografiya] = useState(false);
-  const [url, setUrl] = useState(true);
-  const [selectfile, setSelectfile] = useState(null);
-  const [error, setError] = useState('');
-  const [isSucses, setIsSucses] = useState(false);
-  const { RangePicker } = DatePicker;
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -142,7 +142,6 @@ const FormModal = (props) => {
   };
   const token = fulInfo?.accessToken;
   const handleSubmit = (values) => {
-
     axios.post(`${ApiName}/api/publication/create`, {
       ...data,
       issueYear: data.issueYear.format('YYYY-MM-DD')
@@ -157,7 +156,7 @@ const FormModal = (props) => {
       message.success('Forma muvaffaqiyatli yuborildi');
     })
     .catch(error => {
-      console.error('Xato:', error);
+      console.log(error)
       message.error('Formani yuborishda xato');
     });
 
@@ -180,7 +179,6 @@ const FormModal = (props) => {
 
     setError("");
     setIsSucses(true);
-    console.log(data);
   };
 
   return (
@@ -226,9 +224,9 @@ const FormModal = (props) => {
           className='col-6'
         >
           <Select value={data.language} name="language" onChange={(value, option) => handleSelectChange(value, { name: "language" })}>
-            <Select.Option value="o`zbek">o`zbek</Select.Option>
+            <Select.Option value="uz">uz</Select.Option>
             <Select.Option value="rus">rus</Select.Option>
-            <Select.Option value="eng">eng</Select.Option>
+            <Select.Option value="en">en</Select.Option>
           </Select>
         </Form.Item>
 

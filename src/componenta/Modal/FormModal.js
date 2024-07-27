@@ -204,21 +204,19 @@ const FormModal = (props) => {
           name="scientificPublicationType" onChange={(value, option) => handleSelectChange(value, { name: "scientificPublicationType" })}>
           </Select>
         </Form.Item>
-
         {monografiya && (
           <Form.Item
             layout="vertical"
             label="Ilmiy yoki ilmiy texnik kengash qarori"
-            name="monografiyaInfo"
+            name="scientificPublicationType"
             labelCol={{ span: 24 }}
             wrapperCol={{ span: 24 }}
-            rules={[{ required: true, message: 'Iltimos monografiya ma\'lumotlarini kiriting' }]}
+            rules={[{ required: true, message: 'Iltimos monografiya ma`lumotlarini kiriting' }]}
             className='col-6'
           >
             <Input value={data.decisionScientificCouncil} name="decisionScientificCouncil" onChange={handleInputChange} placeholder='Ilmiy yoki ilmiy texnik kengash qarori' className='py-2' />
           </Form.Item>
         )}
-
         <Form.Item
           layout="vertical"
           label="Til"

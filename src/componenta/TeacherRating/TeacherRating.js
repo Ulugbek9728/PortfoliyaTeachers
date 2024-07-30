@@ -13,7 +13,7 @@ const TeacherRating = () => {
     axios.get(`${ApiName}/api/profile/current`, {
       headers:{
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${fulInfo.accessToken}`
+        Authorization: `Bearer ${fulInfo?.accessToken}`
       }
     }).then((response) => {
       if (response.data.isSuccess === true) {
@@ -28,7 +28,7 @@ const TeacherRating = () => {
 };
 
 useEffect(() => {
-  CurrentUser()
+  return ()=>{CurrentUser()}
  
 }, []);
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
@@ -178,7 +178,7 @@ useEffect(() => {
       .then(response => {
         console.log('Success:', response.data);
         message.success('Form submitted successfully');
-        setEdite(false); // Modalni yopish
+        setEdite(false);
         setData({
           profileId: fulInfo?.id,
           specialist: {
@@ -214,7 +214,8 @@ useEffect(() => {
             date: "",
             attachId: ""
           }
-        }); // Inputlarni bo'sh holatda qoldirish
+        }); 
+        CurrentUser();
       })
       .catch(error => {
         console.error('Error:', error);
@@ -287,7 +288,7 @@ useEffect(() => {
                 <p> {getFullInfo?.scientificTitle?.date}</p>
               </div>
               <div className=''>
-                <b >Diplom raqami</b>
+                <b>Diplom raqami</b>
                 <p> {getFullInfo?.scientificTitle?.number}</p>
               </div>
               <hr/>

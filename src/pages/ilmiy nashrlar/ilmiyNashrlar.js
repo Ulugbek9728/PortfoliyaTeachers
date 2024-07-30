@@ -1,30 +1,27 @@
-import React, {useState, useRef, useEffect} from 'react';
-import {
-    Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
-    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
-} from 'antd';
-import "./ilmiyNashrlar.scss"
+import React, { useState, useRef, useEffect } from 'react';
+import { Space, Table, Modal, Button, Form, DatePicker, Input, Switch, message } from 'antd';
+import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
-import {ApiName} from "../../api/APIname";
-
+import { ApiName } from "../../api/APIname";
 
 function IlmiyNashrlar(props) {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
-    const [open, setOpen] = useState(false)
-    const [dataList, setDataList] = useState([])
+    const [open, setOpen] = useState(false);
+    const [dataList, setDataList] = useState([]);
+    const [editingData, setEditingData] = useState(null);
 
     const onChangeDate = (value, dateString) => {
-        setDateListe(dateString)
+        setDateListe(dateString);
     };
+
     const onChange = () => {
         // const departmentID = fulInfo.roles[0] === "ROLE_OPERATOR" ? 7777 : fulInfo.department.id
-        // axios.get(`${ApiName}/api/application/get-as-excel`, {
-        //     headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`},
+        // axios.get(${ApiName}/api/application/get-as-excel, {
+        //     headers: {"Authorization": Bearer ${fulInfo?.accessToken}},
         //     params: {
         //         from: DateListe[0], to: DateListe[1], departmentId: departmentID, isCome: false
         //     },
@@ -35,13 +32,37 @@ function IlmiyNashrlar(props) {
         //     const url = URL.createObjectURL(blob);
         //
         //     link.href = url;
-        //     link.setAttribute('download', `arizalar_${DateListe[0]}_${DateListe[1]}.xlsx`);
+        //     link.setAttribute('download', arizalar_${DateListe[0]}_${DateListe[1]}.xlsx);
         //     document.body.appendChild(link);
         //     link.click();
         // }).catch((error) => {
         //     console.log(error)
         // });
     };
+
+    const toggleActiveStatus = (record) => {
+        const newStatus = record.publicationStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+        console.log(`Switching status for record id ${record.id} to ${newStatus}`);
+        
+        const requestData = { id: record.id, publicationStatus: newStatus };
+        console.log('Request data:', requestData);
+
+        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        }).then((response) => {
+            console.log('API response:', response.data);
+            const updatedItem = response.data;
+            setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
+            message.success('Publication status updated successfully');
+        }).catch((error) => {
+            console.log('API error:', error.response ? error.response.data : error.message);
+            message.error('Failed to update publication status');
+        });
+    };
+
     const columns = [
         {
             title: '№',
@@ -60,7 +81,7 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'Ilmiy ish nomi',
-            dataIndex: 'name',
+            dataIndex: 'scientificName',
             width: 350,
         },
         {
@@ -73,7 +94,6 @@ function IlmiyNashrlar(props) {
             dataIndex: 'issueYear',
             width: 150
         },
-
         {
             title: 'Xodim',
             dataIndex: 'address',
@@ -86,101 +106,147 @@ function IlmiyNashrlar(props) {
         },
         {
             title: "So'rov Faol",
-            dataIndex: 'address',
-            width: 150
+            width: 150,
+            render: (text, record) => (
+                <Switch
+                    checked={record.publicationStatus === "ACTIVE"}
+                    onChange={() => toggleActiveStatus(record)}
+                />
+            )
         },
+        {
+            title: 'Harakatlar',
+            width: 100,
+            render: (text, record) => (
+              <Space size="middle">
+                <Button type="link" onClick={() => onEdit(record)}>Tahrirlash</Button>
+                <Button onClick={() => handleDelete(record.id)} type="danger">
+                  O'chirish
+                </Button>
+              </Space>
+            ),
+          },
     ];
 
     useEffect(() => {
-        return()=>{
-            getIlmiyNashir()
-        }
+        getIlmiyNashir();
     }, []);
+
+    const handleDelete = (id) => {
+      // Ma'lumotni ro'yxatdan olib tashlash
+      setDataList(prevDataList => prevDataList.filter(item => item.id !== id));
+      
+      message.success('Maqola muvaffaqiyatli o\'chirildi');
+    };
 
     function getIlmiyNashir() {
         axios.get(`${ApiName}/api/publication/current-user`, {
-            headers:{
-                Authorization: `Bearer ${fulInfo.accessToken}`
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`
             }
         }).then((response) => {
-            console.log(response?.data?.data?.content);
-            setDataList(response?.data?.data?.content);
+            console.log('Fetched data:', response?.data?.data?.content);
+            const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
+            setDataList(fetchedData);
         }).catch((error) => {
-            console.log(error)
+            console.log('API error:', error);
+            message.error('Failed to fetch data');
         });
     }
+
+    const onEdit = (record) => {
+        console.log('Editing record:', record);
+        setEditingData(record);
+        setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
+    };
+
+    const handleCancel = () => {
+        setOpen(false);
+        setEditingData(null);
+    };
+
+    const handleFinish = (values) => {
+        if (editingData) {
+            const updatedValues = { ...values, id: editingData.id }; // ID ni qo'shish
+            axios.put(`${ApiName}/api/publication/update`, updatedValues, {
+                headers: {
+                    Authorization: `Bearer ${fulInfo?.accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }).then((response) => {
+                const updatedItem = response.data;
+                setDataList(dataList.map(item => item.id === updatedItem.id ? updatedItem : item));
+                message.success('Maqola muvaffaqiyatli yangilandi');
+                setOpen(false);
+                setEditingData(null);
+            }).catch((error) => {
+                message.error('Maqolani yangilashda xatolik');
+            });
+        } else {
+            axios.post(`${ApiName}/api/publication`, values, {
+                headers: {
+                    Authorization: `Bearer ${fulInfo?.accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }).then((response) => {
+                setDataList([...dataList, { ...response.data, key: response.data.id }]);
+                message.success('Maqola muvaffaqiyatli qo\'shildi');
+                setOpen(false);
+            }).catch((error) => {
+                message.error('Maqolani qo\'shishda xatolik');
+            });
+        }
+    };
 
     return (
         <div className='p-4'>
             <Modal
-                title="Maqola kiritish punkti"
+                title={editingData ? "Maqola tahrirlash" : "Maqola kiritish punkti"}
                 centered
                 open={open}
-                onCancel={() => setOpen(false)}
+                onCancel={handleCancel}
                 width={1600}
-                style={{right: "-80px"}}
+                style={{ right: "-80px" }}
             >
-                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS"/>
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel} />
             </Modal>
 
-            <div className=' d-flex  align-items-center justify-content-between'>
+            <div className='d-flex align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
                       onFinish={onChange}
-                      className=' d-flex align-items-center gap-4'
+                      className='d-flex align-items-center gap-4'
                 >
-                    <Form.Item label="Mudatini belgilang"
-                               name="MurojatYuklash"
-                    >
+                    <Form.Item label="Mudatini belgilang" name="MurojatYuklash">
                         <DatePicker.RangePicker
-                            // placeholder={["Bosh sana", 'Tugash sana']}
-                            name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate}/>
+                            name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate} />
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr nomi" name="MurojatYuklash">
-                        <Input style={{width: '500px'}} placeholder="Nom bo'yicha qidirish"/>
+                        <Input style={{ width: '500px' }} placeholder="Nom bo'yicha qidirish" />
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success mt-4" type="submit">
                             <span className="button__text">Ma'lumotni izlash</span>
                         </button>
                     </Form.Item>
-
                 </Form>
 
-                <button type="button" className="button1"
-                        onClick={() => {
-                            setOpen(true)
-                        }}
-                >
-                    <span className="button__text">Ilmiy nashr yaratish</span>
-                    <span className="button__icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
-                             strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" height="24"
-                             fill="none" className="svg">
-                            <line y2="19" y1="5" x2="12" x1="12"/>
-                            <line y2="12" y1="12" x2="19" x1="5"/>
-                        </svg>
-                    </span>
+                <button type="button" className="btn btn-success" onClick={() => setOpen(true)}>
+                    <span className="button__text">Ma'lumot qo'shish</span>
                 </button>
-
             </div>
-            <Table
-                columns={columns}
-                dataSource={dataList?.map(item => {
-                    return {
-                        ...item,
-                        key: item?.id,
 
-                    }
-                })}
-                pagination={{
-                    pageSize: 50,
-                }}
-                scroll={{
-                    y: 660,
-                }}
-            />
+            <div className="mt-4">
+                <Table
+                    columns={columns}
+                    dataSource={dataList}
+                    scroll={{ x: 1300 }}
+                />
+            </div>
         </div>
     );
 }
 
 export default IlmiyNashrlar;
+
+
+

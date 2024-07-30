@@ -41,7 +41,7 @@ function IlmiyNashrlar(props) {
     };
 
     const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
         console.log(`Switching status for record id ${record.id} to ${newStatus}`);
         
         const requestData = { id: record.id, publicationStatus: newStatus };
@@ -133,10 +133,32 @@ function IlmiyNashrlar(props) {
     }, []);
 
     const handleDelete = (id) => {
-      // Ma'lumotni ro'yxatdan olib tashlash
-      setDataList(prevDataList => prevDataList.filter(item => item.id !== id));
-      
-      message.success('Maqola muvaffaqiyatli o\'chirildi');
+        try {
+        
+            const response =  axios.put(`${ApiName}/api/publication/update_status`, {
+              id,
+              publicationStatus: 'DELETED'
+            }, {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+              }
+            });
+        
+            // API javobini tekshirish
+            if (response.data.publicationStatus === 'DELETED') {
+              message.success('Maqola muvaffaqiyatli o\'chirildi');
+              // Ma'lumotni ro'yxatdan olib tashlash
+              setDataList(prevDataList => prevDataList.filter(item => item.id !== id));
+            } else {
+              message.error('Maqolani o\'chirishda xatolik');
+            }
+          }catch (error) {
+            // Xatolik yuzaga kelsa
+            console.error('Maqolani o\'chirishda xatolik:', error);
+            message.error('Maqolani o\'chirishda xatolik');
+          }
+        
     };
 
     function getIlmiyNashir() {

@@ -56,6 +56,7 @@ const UslubiyNashrlar = () => {
             dataIndex: 'address',
             width: 150
         },
+        
     ];
     const data = [];
     for (let i = 0; i < 100; i++) {

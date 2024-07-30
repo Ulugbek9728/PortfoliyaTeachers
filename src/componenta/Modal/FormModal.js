@@ -1,75 +1,69 @@
 import React, { useEffect, useState } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Modal, DatePicker, Form, Input, InputNumber, Select, Upload, message, Space } from 'antd';
-import './modal.scss';
-import { EditOutlined, UploadOutlined } from '@ant-design/icons';
-import UploadFile from '../UploadFile/UploadFile';
+import { Button, Form, Input, InputNumber, Select, Upload, message, Space, DatePicker } from 'antd';
 import axios from 'axios';
 import { ApiName } from '../../api/APIname';
 import moment from 'moment';
 
-
 const FormModal = (props) => {
-  const [Scientificpublication, setScientificpublication] = useState([])
+  const [Scientificpublication, setScientificpublication] = useState([]);
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const [data, setData] = useState({
     authorCount: 0,
-    issueYear: moment(''),
+    issueYear: moment(),
     publicationType: props?.publicationType,
     language: "",
     scientificName: "",
     scientificField: "",
     doiOrUrl: "",
-    scientificPublicationType: {
-      name: '',
-      code: ''
-    },
-    authorIds: [
-      0
-    ],
     publicationDatabase: "",
     decisionScientificCouncil: "",
-    mediaIds: [
-      
-    ]
+    fileType: "",
+    mediaIds: [],
+    authorIds: []
   });
-  const [searchResults, setSearchResults] = useState([
-    { id: 1, name: 'Author 1' },
-    { id: 2, name: 'Author 2' }
-  ]);
+
+  const [searchResults, setSearchResults] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [monografiya, setMonografiya] = useState(false);
   const [url, setUrl] = useState(true);
-  const [selectfile, setSelectfile] = useState(null);
   const [error, setError] = useState('');
   const [isSucses, setIsSucses] = useState(false);
   const { RangePicker } = DatePicker;
 
   useEffect(() => {
-    ClassifairGet()
-  }, []);
+    ClassifairGet();
+    if (props.editingData) {
+      setData({
+        ...props.editingData,
+        issueYear: moment(props.editingData.issueYear),
+        publicationType: props.editingData.publicationType,
+        scientificPublicationType: props.editingData.scientificPublicationType,
+        fileType: props.editingData.fileType || 'Url'
+      });
+      setMonografiya(props.editingData.scientificPublicationType?.name === 'Monografiya');
+      setUrl(props.editingData.fileType === 'Url');
+    }
+  }, [props.editingData]);
 
-   function ClassifairGet(params) {
-    axios.get(`${ApiName}/api/classifier`,{
-      params:{
-        key:'h_scientific_publication_type'
+  function ClassifairGet() {
+    axios.get(`${ApiName}/api/classifier`, {
+      params: {
+        key: 'h_scientific_publication_type'
       },
-      headers:{
+      headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${fulInfo.accessToken}`
+        Authorization: `Bearer ${fulInfo?.accessToken}`
       }
     })
     .then(response => {
       setScientificpublication(response.data);
-      console.log(response.data);
     })
     .catch(error => {
       console.log(error, 'error');
-     })
-   }
-   
+    });
+  }
 
-   const handleSearch = async (value) => {
+  const handleSearch = async (value) => {
     if (value) {
       try {
         const response = await axios.get(`${ApiName}/api/author/search`, {
@@ -89,6 +83,7 @@ const FormModal = (props) => {
       setSearchResults([]);
     }
   };
+
   const handleChange = (value) => {
     setData((prevState) => ({
       ...prevState,
@@ -108,17 +103,18 @@ const FormModal = (props) => {
     const { name } = option;
     setData(prevState => ({
       ...prevState,
-      [name]: name ==='scientificPublicationType' ? Scientificpublication[0]?.options?.filter(item=> item.code === value)[0] : value
+      [name]: name === 'scientificPublicationType' ? Scientificpublication[0]?.options?.filter(item => item.code === value)[0] : value
     }));
 
     if (name === "scientificPublicationType") {
-      setMonografiya(value === 'MONOGRAPH');
+      setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
     }
 
     if (name === "fileType") {
       setUrl(value === 'Url');
     }
   };
+
   const propsss = () => ({
     name: 'file',
     action: `${ApiName}/api/v1/attach/upload`,
@@ -140,51 +136,49 @@ const FormModal = (props) => {
       message.error(`${info.file.name} fayl yuklashda xato.`);
     }
   };
-  const token = fulInfo?.accessToken;
+
   const handleSubmit = (values) => {
-    axios.post(`${ApiName}/api/publication/create`, {
+    const requestPayload = {
       ...data,
       issueYear: data.issueYear.format('YYYY-MM-DD')
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${fulInfo?.accessToken}`,
-      },
-    })
-    .then(response => {
-      console.log('Success:', response.data);
-      message.success('Forma muvaffaqiyatli yuborildi');
-    })
-    .catch(error => {
-      console.log(error)
-      message.error('Formani yuborishda xato');
-    });
-
-    const MIN_FILE_SIZE = 1024; // 1 MB
-    const MAX_FILE_SIZE = 5120; // 5 MB
-
-    if (selectfile) {
-      const fileSizeKilobytes = selectfile.size / 1024;
-      if (fileSizeKilobytes < MIN_FILE_SIZE) {
-        setError('Minimal hajm 1 MB');
-        setIsSucses(false);
-        return;
-      }
-      if (fileSizeKilobytes > MAX_FILE_SIZE) {
-        setError('Maksimal hajm 5 MB');
-        setIsSucses(false);
-        return;
-      }
+    };
+    
+    if (props.editingData) {
+      axios.put(`${ApiName}/api/publication/update`, requestPayload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+      })
+      .then(response => {
+        message.success('Maqola muvaffaqiyatli yangilandi');
+        // props.onSuccess();
+      })
+      .catch(error => {
+        console.log(error);
+        message.error('Maqolani yangilashda xatolik');
+      });
+    } else {
+      axios.post(`${ApiName}/api/publication/create`, requestPayload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+      })
+      .then(response => {
+        message.success('Maqola muvaffaqiyatli qo\'shildi');
+        // props.onSuccess();
+      })
+      .catch(error => {
+        console.log(error);
+        message.error('Maqolani qo\'shishda xatolik');
+      });
     }
-
-    setError("");
-    setIsSucses(true);
   };
 
   return (
     <div>
       <Form className='row' onFinish={handleSubmit}>
-
         <Form.Item
           layout="vertical"
           label="Ilmiy nashr turi"
@@ -194,19 +188,19 @@ const FormModal = (props) => {
           rules={[{ required: true, message: 'Iltimos ilmiy nashr turini tanlang' }]}
           className='col-6'
         >
-          <Select 
-          value={data.scientificPublicationType}
-          options={Scientificpublication[0]?.options?.map(item=>{
-          return {label: item.name,value: item.code }
-          })}
-          name="scientificPublicationType" onChange={(value, option) => handleSelectChange(value, { name: "scientificPublicationType" })}>
-          </Select>
+          <Select
+            value={data.scientificPublicationType?.code}
+            options={Scientificpublication[0]?.options?.map(item => ({ label: item.name, value: item.code }))}
+            name="scientificPublicationType"
+            onChange={(value, option) => handleSelectChange(value, { name: "scientificPublicationType" })}
+          />
         </Form.Item>
+
         {monografiya && (
           <Form.Item
             layout="vertical"
             label="Ilmiy yoki ilmiy texnik kengash qarori"
-            name="scientificPublicationType"
+            name="decisionScientificCouncil"
             labelCol={{ span: 24 }}
             wrapperCol={{ span: 24 }}
             rules={[{ required: true, message: 'Iltimos monografiya ma`lumotlarini kiriting' }]}
@@ -215,6 +209,7 @@ const FormModal = (props) => {
             <Input value={data.decisionScientificCouncil} name="decisionScientificCouncil" onChange={handleInputChange} placeholder='Ilmiy yoki ilmiy texnik kengash qarori' className='py-2' />
           </Form.Item>
         )}
+
         <Form.Item
           layout="vertical"
           label="Til"
@@ -223,7 +218,11 @@ const FormModal = (props) => {
           wrapperCol={{ span: 24 }}
           className='col-6'
         >
-          <Select value={data.language} name="language" onChange={(value, option) => handleSelectChange(value, { name: "language" })}>
+          <Select
+            value={data.language}
+            name="language"
+            onChange={(value, option) => handleSelectChange(value, { name: "language" })}
+          >
             <Select.Option value="uz">uz</Select.Option>
             <Select.Option value="rus">rus</Select.Option>
             <Select.Option value="en">en</Select.Option>
@@ -250,7 +249,11 @@ const FormModal = (props) => {
           wrapperCol={{ span: 24 }}
           className='col-6'
         >
-          <Select value={data.fileType} name ="fileType" onChange={(value, option) => handleSelectChange(value, { name: "fileType" })}>
+          <Select
+            value={data.fileType}
+            name="fileType"
+            onChange={(value, option) => handleSelectChange(value, { name: "fileType" })}
+          >
             <Select.Option value="Url">Url</Select.Option>
             <Select.Option value="Upload">Upload</Select.Option>
           </Select>
@@ -269,7 +272,13 @@ const FormModal = (props) => {
             ]}
             className='col-6'
           >
-            <Input value={data.doiOrUrl} name="doiOrUrl" onChange={handleInputChange} placeholder='URL' className='py-2' />
+            <Input
+              value={data.doiOrUrl}
+              name="doiOrUrl"
+              onChange={handleInputChange}
+              placeholder='URL'
+              className='py-2'
+            />
           </Form.Item>
         ) : (
           <Form.Item
@@ -280,7 +289,7 @@ const FormModal = (props) => {
             wrapperCol={{ span: 24 }}
             className='col-6'
           >
-            <Upload {...propsss()} >
+            <Upload {...propsss()}>
               <Button>Yuklash</Button>
             </Upload>
           </Form.Item>
@@ -294,82 +303,92 @@ const FormModal = (props) => {
           wrapperCol={{ span: 24 }}
           className='col-6'
         >
-          <Select value={data.scientificField} name="scientificField" onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}>
-           <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
-           <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
-         </Select>
-       </Form.Item>
+          <Select
+            value={data.scientificField}
+            name="scientificField"
+            onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}
+          >
+            <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
+            <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
+          </Select>
+        </Form.Item>
 
-       <Form.Item
-      layout="vertical"
-      label="Mualliflar soni"
-      name="authorCount"
-      labelCol={{ span: 24 }}
-      wrapperCol={{ span: 24 }}
-      rules={[{ required: true, message: 'Iltimos mualliflar sonini kiriting' }]}
-      className='col-6'
-    >
-      <InputNumber value={data.authorCount} name="authorCount" onChange={(value) => setData(prevState => ({ ...prevState, authorCount: value }))} placeholder='Mualliflar soni' className='py-2 w-100' />
-    </Form.Item>
+        <Form.Item
+          layout="vertical"
+          label="Mualliflar soni"
+          name="authorCount"
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
+          rules={[{ required: true, message: 'Iltimos mualliflar sonini kiriting' }]}
+          className='col-6'
+        >
+          <InputNumber
+            value={data.authorCount}
+            name="authorCount"
+            onChange={(value) => setData(prevState => ({ ...prevState, authorCount: value }))}
+            placeholder='Mualliflar soni'
+            className='py-2 w-100'
+          />
+        </Form.Item>
 
-    <Space className="col-6" direction="vertical">
-      <Select
-        mode="multiple"
-        allowClear
-        style={{
-          width: '100%',
-        }}
-        placeholder="Please select"
-        onSearch={handleSearch}
-        onChange={handleChange}
-        options={searchResults.map((result) => ({ value: result.id, label: result.name }))}
-        filterOption={false}
-        showSearch
-      />
-    </Space>
+        <Space className="col-6" direction="vertical">
+          <Select
+            mode="multiple"
+            allowClear
+            style={{ width: '100%' }}
+            placeholder="Mualliflarni tanlang"
+            onSearch={handleSearch}
+            onChange={handleChange}
+            options={searchResults.map((result) => ({ value: result.id, label: result.name }))}
+            filterOption={false}
+            showSearch
+          />
+        </Space>
 
-    <Form.Item
-      layout="vertical"
-      label="Xalqaro ilmiy bazalar"
-      name="publicationDatabase"
-      labelCol={{ span: 24 }}
-      wrapperCol={{ span: 24 }}
-      className='col-6'
-    >
-      <Input value={data.publicationDatabase} name="publicationDatabase" onChange={handleInputChange} placeholder='Xalqaro ilmiy bazalar' className='py-2' />
-    </Form.Item>
+        <Form.Item
+          layout="vertical"
+          label="Xalqaro ilmiy bazalar"
+          name="publicationDatabase"
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
+          className='col-6'
+        >
+          <Input
+            value={data.publicationDatabase}
+            name="publicationDatabase"
+            onChange={handleInputChange}
+            placeholder='Xalqaro ilmiy bazalar'
+            className='py-2'
+          />
+        </Form.Item>
 
-    <Form.Item
-      layout="vertical"
-      label="Ilmiy kengash qarori"
-      name="decisionScientificCouncil"
-      labelCol={{ span: 24 }}
-      wrapperCol={{ span: 24 }}
-      className='col-6'
-    >
-      <Input value={data.decisionScientificCouncil} name="decisionScientificCouncil" onChange={handleInputChange} placeholder='Ilmiy kengash qarori' className='py-2' />
-    </Form.Item>
+        <Form.Item
+          layout="vertical"
+          label="Nashr sanasi"
+          name="issueYear"
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
+          rules={[{ required: true, message: 'Iltimos nashr sanasini kiriting' }]}
+          className='col-6'
+        >
+          <DatePicker
+            value={data.issueYear}
+            name="issueYear"
+            onChange={(date) => setData(prevState => ({ ...prevState, issueYear: date }))}
+            className='w-100'
+          />
+        </Form.Item>
 
-    <Form.Item
-      layout="vertical"
-      label="Nashr sanasi"
-      name="issueYear"
-      labelCol={{ span: 24 }}
-      wrapperCol={{ span: 24 }}
-      rules={[{ required: true, message: 'Iltimos nashr sanasini kiriting' }]}
-      className='col-6'
-    >
-      <DatePicker value={data.issueYear} name="issueYear" onChange={(date) => setData(prevState => ({ ...prevState, issueYear: date }))} className='w-100' />
-    </Form.Item>
-
-    <Form.Item className='col-12'>
-      <Button type="primary" htmlType="submit" className='w-100'>
-        Submit
-      </Button>
-    </Form.Item>
-  </Form>
-</div>
+        <Form.Item className='col-12'>
+          <Button type="primary" htmlType="submit" className='w-100'>
+            {props.editingData ? 'Yangilash' : 'Yuborish'}
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
 
 export default FormModal;
+
+

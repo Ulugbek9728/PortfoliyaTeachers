@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, Select, Upload, message, DatePicker } from 'antd';
+import React, { useEffect, useState, useRef } from 'react';
+import { Button, Form, Input, Select, Upload, message, DatePicker, Divider } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { ApiName } from '../../api/APIname';
 import moment from 'moment';
@@ -7,6 +8,13 @@ import moment from 'moment';
 const FormModal = (props) => {
   const [Scientificpublication, setScientificpublication] = useState([]);
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+  const [data2, setData2] = useState({
+      citizenship: "",
+      fullName: "",
+      workplace: "",
+      position: "",
+      degreeAndTitle: ""
+  })
   const [data, setData] = useState({
     authorCount: 0,
     issueYear: moment(),
@@ -21,29 +29,36 @@ const FormModal = (props) => {
     mediaIds: [],
     authorIds: []
   });
-
+  const inputRef = useRef(null);
   const [searchResults, setSearchResults] = useState([]);
   const [monografiya, setMonografiya] = useState(false);
   const [url, setUrl] = useState(true);
   const [fileList, setFileList] = useState([]);
   const [form] = Form.useForm();
-
-  useEffect(() => {
+  const [form2] = Form.useForm();
+  const [name, setName] = useState('');
+  const [items, setItems] = useState(['jack', 'lucy']);
+  useEffect((value) => {
     ClassifairGet();
     if (props.editingData) {
       const editingValues = {
         ...props.editingData,
         issueYear: moment(props.editingData.issueYear),
-        // publicationType: props.editingData.publicationType,
-        classifierOptionsDTO: props.editingData.scientificPublicationType?.name,
+        publicationType: props.editingData.publicationType,
+        scientificPublicationType: props.editingData.scientificPublicationType?.name,
         fileType: props.editingData.fileType || 'Url'
       };
       setData(editingValues);
       form.setFieldsValue(editingValues);
-      setMonografiya(props.editingData.scientificPublicationType?.name === 'Monografiya');
-      setUrl(props.editingData.fileType === 'Url');
+      // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
+      // setUrl(props.editingData.fileType === 'Url');
     }
   }, [props.editingData, form]);
+useEffect(()=>{
+  return ()=>{
+    handleSearch('')
+  } 
+},[])
 
   function ClassifairGet() {
     axios.get(`${ApiName}/api/classifier`, {
@@ -64,7 +79,8 @@ const FormModal = (props) => {
   }
 
   const handleSearch = async (value) => {
-    if (value) {
+    console.log(value);
+   
       try {
         const response = await axios.get(`${ApiName}/api/author/search`, {
           params: { query: value },
@@ -82,9 +98,7 @@ const FormModal = (props) => {
         console.error('Error fetching search results:', error);
         setSearchResults([]);
       }
-    } else {
-      setSearchResults([]);
-    }
+   
   };
 
   const handleChange = (value) => {
@@ -98,6 +112,11 @@ const FormModal = (props) => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+    
+    setData2(prevState => ({
       ...prevState,
       [name]: value
     }));
@@ -144,6 +163,25 @@ const FormModal = (props) => {
     }
   };
 
+  const onFinish = (values) => {
+    const requestPayload2 = {
+      ...data2
+    };
+    console.log(data2);
+    axios.post(`${ApiName}/api/author/create`, requestPayload2, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${fulInfo?.accessToken}`,
+      },
+    }).then(response => {
+      console.log(data2);
+      handleSearch('')
+      message.success(`Maqola muvaffaqiyatli 'qo'shildi'}`);
+    }).catch(error => {
+      console.log(error);
+      message.error(`Maqolani 'qo'shishda'} xatolik`);
+    });
+};
   const handleSubmit = (values) => {
     const requestPayload = {
       ...data,
@@ -169,11 +207,16 @@ const FormModal = (props) => {
       if (props.onSuccess) {
         props.onSuccess();
       }
+      // Modalni yopish
+      if (props.onCancel) {
+        props.onCancel();
+      }
     }).catch(error => {
       console.log(error);
       message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
     });
   };
+
 
   return (
     <div>
@@ -186,7 +229,7 @@ const FormModal = (props) => {
         <Form.Item
           layout="vertical"
           label="Ilmiy nashr turi"
-          name="publicationType"
+          name="scientificPublicationType"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           rules={[{ required: true, message: 'Iltimos ilmiy nashr turini tanlang' }]}
@@ -319,6 +362,83 @@ const FormModal = (props) => {
             onSearch={handleSearch}
             onChange={handleChange}
             options={searchResults.map(author => ({ value: author.id, label: author.fullName }))}
+            dropdownRender={(menu) => (
+              <>
+                  {menu}
+                  <Divider
+                      style={{
+                          margin: '8px 0',
+                      }}
+                  />
+
+                  <Form
+                      name="wrap"
+                      form={form2}
+                  >
+                      <div className="d-flex gap-2">
+                          <Form.Item
+                              name="username"
+                              rules={[
+                                  {
+                                      required: true,
+                                  },
+                              ]}
+                          >
+                              <Input placeholder="Hammuallif F.I.Sh"  value={data2.fullName} name={'fullName'} onChange={handleInputChange}/>
+                          </Form.Item>
+                          <Form.Item
+                              name="fuqaroligi"
+                              rules={[
+                                  {
+                                      required: true,
+                                  },
+                              ]}
+                          >
+                              <Input placeholder="Hammuallif fuqaroligi" value={data2.citizenship} onChange={handleInputChange} name={'citizenship'} />
+                          </Form.Item>
+                          <Form.Item
+                              name="ish joyi"
+                              rules={[
+                                  {
+                                      required: true,
+                                  },
+                              ]}
+                          >
+                              <Input placeholder="Hammuallif ish joyi" value={data2.workplace} onChange={handleInputChange} name={'workplace'} />
+                          </Form.Item>
+                          <Form.Item
+                              name="lavozimi"
+                              rules={[
+                                  {
+                                      required: true,
+                                  },
+                              ]}
+                          >
+                              <Input placeholder="Hammuallif lavozimi" value={data2.position} onChange={handleInputChange} name={'position'} />
+                          </Form.Item>
+                      </div>
+                      <div className="d-flex gap-2">
+                          <Form.Item
+                              name="ilmiy daraja va unvoni"
+                              rules={[
+                                  {
+                                      required: true,
+                                  },
+                              ]}
+                          >
+                              <Input placeholder="Hammuallif ilmiy daraja va unvoni" onChange={handleInputChange}  value={data2.degreeAndTitle} name={'degreeAndTitle'}/>
+                          </Form.Item>
+                          <Form.Item>
+                              <Button type="primary" icon={<PlusOutlined />} onClick={onFinish} htmlType="submit">
+                                  Qo'shish
+                              </Button>
+                          </Form.Item>
+                      </div>
+
+
+                  </Form>
+              </>
+      )}
           />
         </Form.Item>
 

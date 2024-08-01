@@ -1,23 +1,25 @@
-import React, {useRef, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import {Button, DatePicker, Form, Input, InputNumber, Select, message,Divider ,} from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-
+import axios from 'axios'
+import { ApiName } from '../../api/APIname';
 import './UslubiyNashrlarModal.scss'
 import IntURL from '../IntURL/IntURL';
 import moment from "moment/moment";
 
-const UslubiyNashrlarModal = () => {
+const UslubiyNashrlarModal = (props) => {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const inputRef = useRef(null);
+    const [searchResults, setSearchResults] = useState([]);
+    const [Scientificpublication, setScientificpublication] = useState([]);
     const [form] = Form.useForm();
-
     const [selected, setSelected] = useState('')
     const [url, seturl] = useState(true)
     const [selectfile, setselectfile] = useState()
-
     const [data, setData] = useState({
         authorCount: 0,
         issueYear: moment(),
-        publicationType: '',
+        publicationType: props?.publicationType,
         language: "",
         scientificName: "",
         scientificField: "",
@@ -30,8 +32,33 @@ const UslubiyNashrlarModal = () => {
     });
     const [name, setName] = useState('');
     const [items, setItems] = useState(['jack', 'lucy']);
-
-
+    useEffect(() => {
+        ClassifairGet();
+    },[])
+    function ClassifairGet() {
+        axios.get(`${ApiName}/api/classifier`, {
+          params: {
+            key: 'h_methodical_publication_type'
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${fulInfo?.accessToken}`
+          }
+        })
+        .then(response => {
+          setScientificpublication(response.data);
+        })
+        .catch(error => {
+          console.log(error, 'error');
+        });
+      }
+      const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setData(prevState => ({
+          ...prevState,
+          [name]: value
+        }));
+      };
 
     const handlechangefile = (event) => {
         if (event.target.files.length > 0) {
@@ -42,7 +69,17 @@ const UslubiyNashrlarModal = () => {
     const handleSubmit = () => {
 
     }
-
+const handleSelectChange = (value, option) =>{
+    const { name } = option;
+    console.log(Scientificpublication);
+    setData(prevState => ({
+      ...prevState,
+      [name]: name === 'scientificPublicationType' ? Scientificpublication[0]?.options?.filter(item => item.code === value)[0] : value
+    }));
+    if (name === "fileType") {
+        seturl(value === 'Url');
+      }
+}
     const onNameChange = (event) => {
         setName(event.target.value);
     };
@@ -69,23 +106,25 @@ const UslubiyNashrlarModal = () => {
     return (
         <div>
             <Form className='row'>
-                <Form.Item layout="vertical" label="Xodim" name="name"
+                {/* <Form.Item layout="vertical" label="Xodim" name="name"
                            labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-6'>
                     <Input placeholder='Name' className='py-2'/>
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item layout="vertical" label="Uslubiy nashr turi" name="IlmiyNashr"
                            labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-3'>
-                    <Select value={selected}>
-                        <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
-                        <Select.Option className='py-2' value={'Monografiya'}>Darslik</Select.Option>
-                        <Select.Option className='py-2' value={'Monografiya'}>Oquv qollanma</Select.Option>
-                        <Select.Option className='py-2' value={'Monografiya'}>Uslubiy qollanma</Select.Option>
-                        <Select.Option className='py-2' value={'Monografiya'}>Uslubiy korsatma</Select.Option>
-                    </Select>
+                    <Select 
+                    value={data.scientificPublicationType} 
+                    options={Scientificpublication[0]?.options?.map(item => ({ label: item.name, value: item.code }))}
+                    name="scientificPublicationType"
+                    onChange={(value, option) => handleSelectChange(value, { name: "scientificPublicationType" })}/>
                 </Form.Item>
                 <Form.Item layout="vertical" label="Til" name="Til"
                            labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-3'>
-                    <Select>
+                    <Select
+                      value={data.language}
+                      name="language"
+                      onChange={(value, option) => handleSelectChange(value, { name: "language" })}
+                    >
                         <Select.Option value="uz">uz</Select.Option>
                         <Select.Option value="rus">rus</Select.Option>
                         <Select.Option value="en">en</Select.Option>
@@ -93,21 +132,33 @@ const UslubiyNashrlarModal = () => {
                 </Form.Item>
                 <Form.Item layout="vertical" label="Nashrning bibliografik matni" name="nashr"
                            labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-6'>
-                    <Input className='py-2' placeholder='text'/>
+                    <Input value={data.scientificName} name="scientificName" onChange={handleInputChange} placeholder='Nashrning bibliografik matni' className='py-2'/>
                 </Form.Item>
 
                 <Form.Item layout="vertical" label="fayl joylash turi" name="IlmFan"
                            labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-6'>
-                    <Select value={selected} defaultValue="Url" onChange={(e) => seturl(prevValue => !prevValue)}>
+                    <Select
+                     value={data.fileType}
+                     name="fileType"
+                     onChange={(value, option) => handleSelectChange(value, { name: "fileType" })}
+                    >
                         <Select.Option value={"Url"}>Url</Select.Option>
                         <Select.Option value={"Upload"}>Upload</Select.Option>
                     </Select>
                 </Form.Item>
 
-                <Form.Item layout="vertical" label="Mualliflar" name="Mualliflar"
-                           labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-6'>
-                    <Select size="large"  placeholder="Mualilfar" mode="multiple" allowClear
-                        dropdownRender={(menu) => (
+                <Form.Item 
+                  layout="vertical" 
+                  label="Mualliflar" 
+                  name="Mualliflar"
+                  labelCol={{span: 24}} 
+                  wrapperCol={{span: 24}} className='col-6'>
+                  <Select 
+                    size="large"  
+                    placeholder="Mualilfar" 
+                    mode="multiple" 
+                    allowClear
+                    dropdownRender={(menu) => (
                             <>
                                 {menu}
                                 <Divider
@@ -189,8 +240,8 @@ const UslubiyNashrlarModal = () => {
 
                                 </Form>
                             </>
-                        )}
-                             options={options}
+                    )}
+                    options={options}
                     />
                 </Form.Item>
 

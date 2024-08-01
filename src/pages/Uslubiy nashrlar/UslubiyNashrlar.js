@@ -80,7 +80,7 @@ const UslubiyNashrlar = () => {
         width={1600}
         style={{right:"-80px"}}
       >
-        <UslubiyNashrlarModal/>
+        <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS"/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>

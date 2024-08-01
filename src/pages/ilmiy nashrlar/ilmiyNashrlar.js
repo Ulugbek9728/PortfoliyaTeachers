@@ -193,7 +193,7 @@ function IlmiyNashrlar(props) {
 
     const handleFinish = (values) => {
         if (editingData) {
-            const updatedValues = { ...values, id: editingData.id }; // ID ni qo'shish
+            const updatedValues = { ...values, id: editingData.id }; 
             axios.put(`${ApiName}/api/publication/update`, updatedValues, {
                 headers: {
                     Authorization: `Bearer ${fulInfo?.accessToken}`,

@@ -133,33 +133,29 @@ function IlmiyNashrlar(props) {
     }, []);
 
     const handleDelete = (id) => {
-        try {
-        
-            const response =  axios.put(`${ApiName}/api/publication/update_status`, {
-              id,
-              publicationStatus: 'DELETED'
-            }, {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-              }
-            });
-        
-            // API javobini tekshirish
-            if (response.data.publicationStatus === 'DELETED') {
-              message.success('Maqola muvaffaqiyatli o\'chirildi');
-              // Ma'lumotni ro'yxatdan olib tashlash
-              setDataList(prevDataList => prevDataList.filter(item => item.id !== id));
-            } else {
-              message.error('Maqolani o\'chirishda xatolik');
-            }
-          }catch (error) {
-            // Xatolik yuzaga kelsa
-            console.error('Maqolani o\'chirishda xatolik:', error);
-            message.error('Maqolani o\'chirishda xatolik');
+        axios.put(`${ApiName}/api/publication/update_status`, {
+          id,
+          publicationStatus: 'DELETED'
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${fulInfo?.accessToken}`
           }
-        
-    };
+        })
+        .then(response => {
+          // API javobini tekshirish
+          if (response.data.publicationStatus === 'DELETED') {
+            message.success('Maqola muvaffaqiyatli o\'chirildi');
+            // Ma'lumotni ro'yxatdan olib tashlash
+            setDataList(prevDataList => prevDataList.filter(item => item.id !== id));
+          }
+        })
+        .catch(error => {
+          // Xatolik yuzaga kelsa
+          console.error('Maqolani o\'chirishda xatolik:', error);
+          message.error('Maqolani o\'chirishda xatolik');
+        });
+      };
 
     function getIlmiyNashir() {
         axios.get(`${ApiName}/api/publication/current-user`, {
@@ -179,6 +175,7 @@ function IlmiyNashrlar(props) {
     const onEdit = (record) => {
         console.log('Editing record:', record);
         setEditingData(record);
+        console.log();
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
 

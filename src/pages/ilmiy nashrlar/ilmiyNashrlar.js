@@ -41,7 +41,7 @@ function IlmiyNashrlar(props) {
     };
 
     const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
         console.log(`Switching status for record id ${record.id} to ${newStatus}`);
         
         const requestData = { id: record.id, publicationStatus: newStatus };
@@ -54,9 +54,11 @@ function IlmiyNashrlar(props) {
             }
         }).then((response) => {
             console.log('API response:', response.data);
+
             const updatedItem = response.data;
             setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
             message.success('Publication status updated successfully');
+            getIlmiyNashir();
         }).catch((error) => {
             console.log('API error:', error.response ? error.response.data : error.message);
             message.error('Failed to update publication status');
@@ -92,6 +94,11 @@ function IlmiyNashrlar(props) {
         {
             title: 'Nashr yili',
             dataIndex: 'issueYear',
+            width: 150
+        },
+        {
+            title: 'url',
+            render: (item, record, index) => (<a href={item?.doiOrUrl} target={"_blank"}>{item?.doiOrUrl}</a>),
             width: 150
         },
         {

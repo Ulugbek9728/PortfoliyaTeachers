@@ -10,7 +10,6 @@ import {   Button,Modal,
   Upload, } from 'antd';
 import './IntModal.scss'
 
-import UploadFile from '../UploadFile/UploadFile';
 import IntURL from '../IntURL/IntURL';
 const IntMulkModal = () => {
    
@@ -148,7 +147,7 @@ const IntMulkModal = () => {
         </Form.Item> :
       <Form.Item  labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" onChange={handlechangefile}>
-       <UploadFile />
+
       {isSucses ? <p className='sucsses_msg'>File uploaded successfully</p> : null}
       <p className='error_msg'>{error}</p>
       </Form.Item>

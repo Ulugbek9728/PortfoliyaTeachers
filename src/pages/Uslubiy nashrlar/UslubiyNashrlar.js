@@ -68,6 +68,7 @@ const UslubiyNashrlar = () => {
         });
     }
 
+
   return (
     <>
     <div className='p-4'>
@@ -110,7 +111,7 @@ const UslubiyNashrlar = () => {
                         setOpen(true)
                     }}
                 >
-                    <span className="button__text">Ilmiy nashr yaratish</span>
+                    <span className="button__text">Uslubiy nashr</span>
                     <span className="button__icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
                              strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" height="24"

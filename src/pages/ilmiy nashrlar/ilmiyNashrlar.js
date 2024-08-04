@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Space, Table, Modal, Button, Form, DatePicker, Input, Switch, message } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
@@ -19,25 +20,6 @@ function IlmiyNashrlar(props) {
     };
 
     const onChange = () => {
-        // const departmentID = fulInfo.roles[0] === "ROLE_OPERATOR" ? 7777 : fulInfo.department.id
-        // axios.get(${ApiName}/api/application/get-as-excel, {
-        //     headers: {"Authorization": Bearer ${fulInfo?.accessToken}},
-        //     params: {
-        //         from: DateListe[0], to: DateListe[1], departmentId: departmentID, isCome: false
-        //     },
-        //     responseType: 'blob'
-        // }).then((response) => {
-        //     const link = document.createElement('a');
-        //     const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        //     const url = URL.createObjectURL(blob);
-        //
-        //     link.href = url;
-        //     link.setAttribute('download', arizalar_${DateListe[0]}_${DateListe[1]}.xlsx);
-        //     document.body.appendChild(link);
-        //     link.click();
-        // }).catch((error) => {
-        //     console.log(error)
-        // });
     };
 
     const toggleActiveStatus = (record) => {
@@ -126,9 +108,9 @@ function IlmiyNashrlar(props) {
             width: 100,
             render: (text, record) => (
               <Space size="middle">
-                <Button type="link" onClick={() => onEdit(record)}>Tahrirlash</Button>
-                <Button onClick={() => handleDelete(record.id)} type="danger">
-                  O'chirish
+                <Button type="primary" ghost className='d-flex justify-content-center align-items-center w-10px' style={{"minWidth":'120px'}} onClick={() => onEdit(record)}><EditOutlined /></Button>
+                <Button className='d-flex justify-content-center align-items-center w-10px' style={{"minWidth":'120px'}} onClick={() => handleDelete(record.id)} type="primary" danger ghost>
+                <DeleteOutlined />
                 </Button>
               </Space>
             ),
@@ -150,19 +132,15 @@ function IlmiyNashrlar(props) {
           }
         })
         .then(response => {
-          // API javobini tekshirish
           if (response.data.publicationStatus === 'DELETED') {
-            message.success('Maqola muvaffaqiyatli o\'chirildi');
-            // Ma'lumotni ro'yxatdan olib tashlash
-            setDataList(prevDataList => prevDataList.filter(item => item.id !== id));
+            message.success('Maqola muvaffaqiyatli o`chirildi');
+            getIlmiyNashir(); 
           }
         })
         .catch(error => {
-          // Xatolik yuzaga kelsa
-          console.error('Maqolani o\'chirishda xatolik:', error);
-          message.error('Maqolani o\'chirishda xatolik');
+          message.error('Maqolani o`chirishda xatolik');
         });
-      };
+    };
 
     function getIlmiyNashir() {
         axios.get(`${ApiName}/api/publication/current-user`, {
@@ -180,9 +158,7 @@ function IlmiyNashrlar(props) {
     }
 
     const onEdit = (record) => {
-        console.log('Editing record:', record);
         setEditingData(record);
-        console.log();
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
 
@@ -193,7 +169,7 @@ function IlmiyNashrlar(props) {
 
     const handleFinish = (values) => {
         if (editingData) {
-            const updatedValues = { ...values, id: editingData.id }; 
+            const updatedValues = { ...values, id: editingData.id };
             axios.put(`${ApiName}/api/publication/update`, updatedValues, {
                 headers: {
                     Authorization: `Bearer ${fulInfo?.accessToken}`,
@@ -233,6 +209,7 @@ function IlmiyNashrlar(props) {
                 onCancel={handleCancel}
                 width={1600}
                 style={{ right: "-80px" }}
+                footer={null} // Modal footerni o'chiring
             >
                 <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel} />
             </Modal>
@@ -273,6 +250,7 @@ function IlmiyNashrlar(props) {
 }
 
 export default IlmiyNashrlar;
+
 
 
 

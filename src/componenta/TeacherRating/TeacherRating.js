@@ -176,7 +176,6 @@ useEffect(() => {
       },
     })
       .then(response => {
-        console.log('Success:', response.data);
         message.success('Form submitted successfully');
         setEdite(false);
         setData({

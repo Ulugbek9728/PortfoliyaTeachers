@@ -132,7 +132,8 @@ function IlmiyNashrlar(props) {
           }
         })
         .then(response => {
-          if (response.data.publicationStatus === 'DELETED') {
+            console.log(response);
+          if (response.data.message === "Success") {
             message.success('Maqola muvaffaqiyatli o`chirildi');
             getIlmiyNashir(); 
           }

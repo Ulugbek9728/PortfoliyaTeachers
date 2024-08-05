@@ -45,8 +45,9 @@ const FormModal = (props) => {
       const editingValues = {
         ...props.editingData,
         issueYear: moment(props.editingData.issueYear),
+        scientificField: props.editingData.scientificField,
         publicationType: props.editingData.publicationType,
-        scientificPublicationType: props.editingData.scientificPublicationType?.name,
+        scientificPublicationType: props.editingData.scientificPublicationType?.code,
         fileType: props.editingData.fileType || 'Url'
       };
       setData(editingValues);

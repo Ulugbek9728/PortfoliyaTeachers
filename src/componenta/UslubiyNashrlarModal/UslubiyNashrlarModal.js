@@ -506,7 +506,7 @@ const UslubiyNashrlarModal = (props) => {
         </Form.Item> */}
 
         <Form.Item className="col-12 d-flex justify-content-end">
-          <Button onClick={handleSubmit} type="primary" htmlType="submit">
+          <Button  type="primary" htmlType="submit">
             Submit
           </Button>
         </Form.Item>

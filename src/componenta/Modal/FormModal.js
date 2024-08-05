@@ -321,7 +321,7 @@ const FormModal = (props) => {
 
     <Form.Item
       layout="vertical"
-      label="Fayl joylash"
+      label="Fayl yuklash turini tanlang"
       name="fileType"
       labelCol={{ span: 24 }}
       wrapperCol={{ span: 24 }}
@@ -510,7 +510,7 @@ const FormModal = (props) => {
 
     <Form.Item
       layout="vertical"
-      label="Chiqarilgan yil"
+      label="Nashr yili	"
       name="issueYear"
       labelCol={{ span: 24 }}
       wrapperCol={{ span: 24 }}

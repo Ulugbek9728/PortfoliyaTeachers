@@ -14,12 +14,20 @@ function IlmiyNashrlar(props) {
     const [open, setOpen] = useState(false);
     const [dataList, setDataList] = useState([]);
     const [editingData, setEditingData] = useState(null);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 1,
+            pageSize: 2,
+            total: 10
+        },
+    });
 
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString);
     };
 
     const onChange = () => {
+
     };
 
     const toggleActiveStatus = (record) => {
@@ -40,7 +48,7 @@ function IlmiyNashrlar(props) {
             const updatedItem = response.data;
             setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
             message.success('Publication status updated successfully');
-            getIlmiyNashir();
+            getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
         }).catch((error) => {
             console.log('API error:', error.response ? error.response.data : error.message);
             message.error('Failed to update publication status');
@@ -64,14 +72,19 @@ function IlmiyNashrlar(props) {
             render: (item, record, index) => (<>{item?.language}</>)
         },
         {
-            title: 'Ilmiy ish nomi',
+            title: 'Nashrning bibliografik matni',
             dataIndex: 'scientificName',
-            width: 350,
+            width: 250,
+        },
+        {
+            title: 'Mualliflar soni',
+            dataIndex: 'authorCount',
+            width: 80,
         },
         {
             title: 'Mualliflar',
-            dataIndex: 'authorCount',
-            width: 200,
+            dataIndex: 'address',
+            width: 150
         },
         {
             title: 'Nashr yili',
@@ -80,13 +93,8 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'url',
-            render: (item, record, index) => (<a href={item?.doiOrUrl} target={"_blank"}>{item?.doiOrUrl}</a>),
-            width: 150
-        },
-        {
-            title: 'Xodim',
-            dataIndex: 'address',
-            width: 150
+            render: (item, record, index) => (<a href={item?.doiOrUrl} target={"_blank"}>file</a>),
+            width: 50
         },
         {
             title: 'Tekshirish',
@@ -108,8 +116,8 @@ function IlmiyNashrlar(props) {
             width: 100,
             render: (text, record) => (
               <Space size="middle">
-                <Button type="primary" ghost className='d-flex justify-content-center align-items-center w-10px' style={{"minWidth":'120px'}} onClick={() => onEdit(record)}><EditOutlined /></Button>
-                <Button className='d-flex justify-content-center align-items-center w-10px' style={{"minWidth":'120px'}} onClick={() => handleDelete(record.id)} type="primary" danger ghost>
+                <Button type="primary" ghost className='d-flex justify-content-center align-items-center ' style={{"minWidth":'30px'}} onClick={() => onEdit(record)}><EditOutlined /></Button>
+                <Button className='d-flex justify-content-center align-items-center' style={{"minWidth":'30px'}} onClick={() => handleDelete(record.id)} type="primary" danger ghost>
                 <DeleteOutlined />
                 </Button>
               </Space>
@@ -118,7 +126,7 @@ function IlmiyNashrlar(props) {
     ];
 
     useEffect(() => {
-        getIlmiyNashir();
+        getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
     }, []);
 
     const handleDelete = (id) => {
@@ -135,7 +143,7 @@ function IlmiyNashrlar(props) {
             console.log(response);
           if (response.data.message === "Success") {
             message.success('Maqola muvaffaqiyatli o`chirildi');
-            getIlmiyNashir(); 
+              getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
           }
         })
         .catch(error => {
@@ -143,15 +151,25 @@ function IlmiyNashrlar(props) {
         });
     };
 
-    function getIlmiyNashir() {
+    function getIlmiyNashir(page, pageSize) {
         axios.get(`${ApiName}/api/publication/current-user`, {
             headers: {
                 Authorization: `Bearer ${fulInfo?.accessToken}`
             },
             params:{
-                type: 'SCIENTIFIC_PUBLICATIONS'
+                type: 'SCIENTIFIC_PUBLICATIONS',
+                size: pageSize,
+                page: page - 1
             }
         }).then((response) => {
+            console.log(response.data.data)
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: response.data.data.size,
+                    total: response.data.data.totalElements
+                }
+            })
             console.log('Fetched data:', response?.data?.data?.content);
             const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
             setDataList(fetchedData);
@@ -246,7 +264,17 @@ function IlmiyNashrlar(props) {
                 <Table
                     columns={columns}
                     dataSource={dataList}
-                    scroll={{ x: 1300 }}
+                    scroll={{ y:550 }}
+                    pagination={
+                        {
+                            total: tableParams.pagination.total,
+                            pageSize: tableParams.pagination.pageSize,
+                            onChange: (page, pageSize) => {
+
+                                getIlmiyNashir(page, pageSize);
+                            }
+                        }
+                    }
                 />
             </div>
         </div>

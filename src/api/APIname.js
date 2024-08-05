@@ -1,3 +1,3 @@
-const ApiName = 'http://api-portfolio.uplink.uz';
-// const ApiName = 'http://192.168.18.9:8080'
+// const ApiName = 'http://api-portfolio.uplink.uz';
+const ApiName = 'http://192.168.16.97:8080'
 export {ApiName}

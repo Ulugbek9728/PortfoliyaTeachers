@@ -147,6 +147,9 @@ function IlmiyNashrlar(props) {
         axios.get(`${ApiName}/api/publication/current-user`, {
             headers: {
                 Authorization: `Bearer ${fulInfo?.accessToken}`
+            },
+            params:{
+                type: 'SCIENTIFIC_PUBLICATIONS'
             }
         }).then((response) => {
             console.log('Fetched data:', response?.data?.data?.content);

@@ -171,38 +171,7 @@ function IlmiyNashrlar(props) {
         setEditingData(null);
     };
 
-    const handleFinish = (values) => {
-        if (editingData) {
-            const updatedValues = { ...values, id: editingData.id };
-            axios.put(`${ApiName}/api/publication/update`, updatedValues, {
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
-                const updatedItem = response.data;
-                setDataList(dataList.map(item => item.id === updatedItem.id ? updatedItem : item));
-                message.success('Maqola muvaffaqiyatli yangilandi');
-                setOpen(false);
-                setEditingData(null);
-            }).catch((error) => {
-                message.error('Maqolani yangilashda xatolik');
-            });
-        } else {
-            axios.post(`${ApiName}/api/publication`, values, {
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
-                setDataList([...dataList, { ...response.data, key: response.data.id }]);
-                message.success('Maqola muvaffaqiyatli qo\'shildi');
-                setOpen(false);
-            }).catch((error) => {
-                message.error('Maqolani qo\'shishda xatolik');
-            });
-        }
-    };
+
 
     return (
         <div className='p-4'>
@@ -215,7 +184,7 @@ function IlmiyNashrlar(props) {
                 style={{ right: "-80px" }}
                 footer={null} // Modal footerni o'chiring
             >
-                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel} />
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData}  handleCancel={handleCancel} />
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>

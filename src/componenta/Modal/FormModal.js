@@ -17,7 +17,7 @@ const FormModal = (props) => {
   })
   const [data, setData] = useState({
     authorCount: 0,
-    issueYear: moment(),
+    issueYear: '',
     publicationType: props?.publicationType,
     language: "",
     scientificName: "",
@@ -44,7 +44,7 @@ const FormModal = (props) => {
     if (props.editingData) {
       const editingValues = {
         ...props.editingData,
-        issueYear: moment(props.editingData.issueYear),
+        issueYear: props.editingData.issueYear,
         scientificField: props.editingData.scientificField,
         publicationType: props.editingData.publicationType,
         scientificPublicationType: props.editingData.scientificPublicationType?.code,
@@ -208,7 +208,7 @@ const FormModal = (props) => {
       message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
       setData({
         authorCount: 0,
-        issueYear: moment(),
+        issueYear:'',
         publicationType: props?.publicationType,
         language: '',
         scientificName: '',
@@ -222,7 +222,6 @@ const FormModal = (props) => {
       })
       props.getIlmiyNashir()
       // Forma maydonlarini tozalash uchun resetFields chaqirish
-      form.resetFields();
       if (props.onSuccess) {
         props.onSuccess();
       }
@@ -517,9 +516,9 @@ const FormModal = (props) => {
       className='col-6'
     >
       <DatePicker 
-        value={data.issueYear ? moment(data.issueYear) : null} 
+        value={data.issueYear} 
         name="issueYear" 
-        onChange={(date) => setData(prevState => ({ ...prevState, issueYear: date ? date.format('YYYY-MM-DD') : null }))} 
+        onChange={(date) => setData(prevState => ({ ...prevState, issueYear: date}))} 
         className='py-2' 
       />
     </Form.Item>

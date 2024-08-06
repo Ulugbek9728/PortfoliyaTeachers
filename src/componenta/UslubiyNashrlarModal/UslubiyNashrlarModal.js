@@ -29,7 +29,7 @@ const UslubiyNashrlarModal = (props) => {
   const [selectfile, setselectfile] = useState();
   const [data, setData] = useState({
     authorCount: 0,
-    issueYear: moment(),
+    issueYear: '',
     publicationType: props?.publicationType,
     language: "",
     scientificName: "",

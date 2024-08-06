@@ -215,7 +215,7 @@ function IlmiyNashrlar(props) {
                 style={{ right: "-80px" }}
                 footer={null} // Modal footerni o'chiring
             >
-                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel} />
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel} />
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>

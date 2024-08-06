@@ -51,7 +51,23 @@ const UslubiyNashrlarModal = (props) => {
   const [form2] = Form.useForm();
   const [name, setName] = useState("");
   const [items, setItems] = useState(["jack", "lucy"]);
-
+  useEffect((value) => {
+    ClassifairGet();
+    if (props.editingData) {
+      const editingValues = {
+        ...props.editingData,
+        issueYear: moment(props.editingData.issueYear),
+        scientificField: props.editingData.scientificField,
+        publicationType: props.editingData.publicationType,
+        scientificPublicationType: props.editingData.scientificPublicationType?.code,
+        fileType: props.editingData.fileType || 'Url'
+      };
+      setData(editingValues);
+      form.setFieldsValue(editingValues);
+      // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
+      // setUrl(props.editingData.fileType === 'Url');
+    }
+  }, [props.editingData, form]);
   useEffect(() => {
     return () => {
       handleSearch("");
@@ -146,17 +162,7 @@ const UslubiyNashrlarModal = (props) => {
       seturl(value === "Url");
     }
   };
-//   const onNameChange = (event) => {
-//     setName(event.target.value);
-//   };
-//   const addItem = (e) => {
-//     e.preventDefault();
-//     // setItems([...items, name || `New item ${index++}`]);
-//     setName("");
-//     setTimeout(() => {
-//       inputRef.current?.focus();
-//     }, 0);
-//   };
+
   const uploadProps = {
     name: "file",
     action: `${ApiName}/api/v1/attach/upload`,
@@ -174,23 +180,54 @@ const UslubiyNashrlarModal = (props) => {
       value: i.toString(36) + i,
     });
   }  
-  const handleSubmit = () => {
+  const handleSubmit = (values) => {
     const requestPayload = {
-        ...data,
-        issueYear: data.issueYear.format('YYYY-MM-DD')
-      };
-    axios.post(`${ApiName}/api/publication/create`, requestPayload, {
+      ...data,
+      issueYear: data.issueYear.format('YYYY-MM-DD')
+    };
+  const request = props.editingData
+    ? axios.put(`${ApiName}/api/publication/update`, requestPayload, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
-      }).then(res =>{
-        console.log(res);
-    message.success('maqola muvafaqiyatli yuklandi')
-    }).catch(error =>{
-        console.log(error);
-    message.error('xato')
+      })
+    : axios.post(`${ApiName}/api/publication/create`, requestPayload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+      })
+  request.then(response => {
+    message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
+    setData({
+      authorCount: 0,
+      issueYear: moment(),
+      publicationType: props?.publicationType,
+      language: '',
+      scientificName: '',
+      scientificField: '',
+      doiOrUrl: '',
+      publicationDatabase: '',
+      decisionScientificCouncil: '',
+      fileType: '',
+      mediaIds: [],
+      authorIds: []
     })
+    props.getIlmiyNashir()
+    // Forma maydonlarini tozalash uchun resetFields chaqirish
+    form.resetFields();
+    if (props.onSuccess) {
+      props.onSuccess();
+    }
+    // Modalni yopish
+    if (props.handleCancel) {
+      props.handleCancel();
+    }
+  }).catch(error => {
+    console.log(error);
+    message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
+  });
 };
   const onFinish = (values) => {
     const requestPayload2 = {
@@ -484,7 +521,7 @@ const UslubiyNashrlarModal = (props) => {
             className="py-2"
           />
         </Form.Item>
-        {/* <Form.Item
+        <Form.Item
           layout="vertical"
           label="Guvohnoma Raqami"
           name="IlmiyBazalar"
@@ -503,7 +540,7 @@ const UslubiyNashrlarModal = (props) => {
           className="col-3"
         >
           <DatePicker className="py-2" />
-        </Form.Item> */}
+        </Form.Item>
 
         <Form.Item className="col-12 d-flex justify-content-end">
           <Button  type="primary" htmlType="submit">

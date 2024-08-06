@@ -220,6 +220,7 @@ const FormModal = (props) => {
         mediaIds: [],
         authorIds: []
       })
+      props.getIlmiyNashir()
       // Forma maydonlarini tozalash uchun resetFields chaqirish
       form.resetFields();
       if (props.onSuccess) {
@@ -310,8 +311,7 @@ const FormModal = (props) => {
       rules={[{ required: true, message: 'Iltimos nashrning bibliografik matnini kiriting' }]}
       className='col-12'
     >
-      <Input 
-        value={data.scientificName} 
+      <Input value={data.scientificName} 
         name="scientificName" 
         onChange={handleInputChange} 
         placeholder='Nashrning bibliografik matni' 
@@ -380,8 +380,7 @@ const FormModal = (props) => {
       rules={[{ required: true, message: 'Iltimos ilmiy yo\'nalishni kiriting' }]}
       className='col-6'
     >
-      <Input 
-        value={data.scientificField} 
+      <Input value={data.scientificField} 
         name="scientificField" 
         onChange={handleInputChange} 
         placeholder='Ilmiy yo`nalish' 

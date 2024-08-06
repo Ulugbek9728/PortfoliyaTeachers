@@ -1,7 +1,7 @@
 import React, {useState, useRef} from 'react';
 import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
-    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
+    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input,Switch
 } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import FormModal from '../../componenta/Modal/FormModal';
@@ -65,8 +65,13 @@ const UslubiyNashrlar = () => {
         },
         {
             title: "So'rov Faol",
-            dataIndex: 'address',
-            width: 150
+            width: 150,
+            render: (text, record) => (
+                <Switch
+                    checked={record.publicationStatus === "ACTIVE"}
+                    onChange={() => toggleActiveStatus(record)}
+                />
+            )
         },
         {
             title: 'Harakatlar',
@@ -128,37 +133,30 @@ const UslubiyNashrlar = () => {
     useEffect(() => {
         getIlmiyNashir();
     }, []);
-    const handleFinish = (values) => {
-        if (editingData) {
-            const updatedValues = { ...values, id: editingData.id };
-            axios.put(`${ApiName}/api/publication/update`, updatedValues, {
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
-                const updatedItem = response.data;
-                setDataList(dataList.map(item => item.id === updatedItem.id ? updatedItem : item));
-                message.success('Maqola muvaffaqiyatli yangilandi');
-                setOpen(false);
-                setEditingData(null);
-            }).catch((error) => {
-                message.error('Maqolani yangilashda xatolik');
-            });
-        } else {
-            axios.post(`${ApiName}/api/publication`, values, {
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
-                setDataList([...dataList, { ...response.data, key: response.data.id }]);
-                message.success('Maqola muvaffaqiyatli qo\'shildi');
-                setOpen(false);
-            }).catch((error) => {
-                message.error('Maqolani qo\'shishda xatolik');
-            });
-        }
+    
+    const toggleActiveStatus = (record) => {
+        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
+        console.log(`Switching status for record id ${record.id} to ${newStatus}`);
+        
+        const requestData = { id: record.id, publicationStatus: newStatus };
+        console.log('Request data:', requestData);
+
+        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        }).then((response) => {
+            console.log('API response:', response.data);
+
+            const updatedItem = response.data;
+            setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
+            message.success('Publication status updated successfully');
+            getIlmiyNashir();
+        }).catch((error) => {
+            console.log('API error:', error.response ? error.response.data : error.message);
+            message.error('Failed to update publication status');
+        });
     };
     const handleCancel = () => {
         setOpen(false);
@@ -175,7 +173,7 @@ const UslubiyNashrlar = () => {
         width={1600}
         style={{right:"-80px"}}
       >
-        <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel}/>
+        <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData}  handleCancel={handleCancel}/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>

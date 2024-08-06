@@ -16,6 +16,7 @@ import { ApiName } from "../../api/APIname";
 import "./UslubiyNashrlarModal.scss";
 import IntURL from "../IntURL/IntURL";
 import moment from "moment";
+import dayjs from "dayjs";
 
 const UslubiyNashrlarModal = (props) => {
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
@@ -23,10 +24,9 @@ const UslubiyNashrlarModal = (props) => {
   const [searchResults, setSearchResults] = useState([]);
   const [Scientificpublication, setScientificpublication] = useState([]);
   const [form] = Form.useForm();
-  const [selected, setSelected] = useState("");
   const [fileList, setFileList] = useState([]);
   const [url, seturl] = useState(true);
-  const [selectfile, setselectfile] = useState();
+  const formRef = useRef(null);
   const [data, setData] = useState({
     authorCount: 0,
     issueYear: '',
@@ -56,7 +56,8 @@ const UslubiyNashrlarModal = (props) => {
     if (props.editingData) {
       const editingValues = {
         ...props.editingData,
-        issueYear: moment(props.editingData.issueYear),
+        issueYear: dayjs(props.editingData.issueYear),
+        authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
         scientificField: props.editingData.scientificField,
         publicationType: props.editingData.publicationType,
         scientificPublicationType: props.editingData.scientificPublicationType?.code,
@@ -67,6 +68,22 @@ const UslubiyNashrlarModal = (props) => {
       // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
       // setUrl(props.editingData.fileType === 'Url');
     }
+    else if (props.handleCancel){
+      setData({
+          authorCount: 0,
+          issueYear: '',
+          publicationType: props?.publicationType,
+          language: '',
+          scientificName: '',
+          scientificField: '',
+          doiOrUrl: '',
+          publicationDatabase: '',
+          decisionScientificCouncil: '',
+          fileType: '',
+          mediaIds: [],
+          authorIds: []
+      })
+  }
   }, [props.editingData, form]);
   useEffect(() => {
     return () => {
@@ -103,9 +120,7 @@ const UslubiyNashrlarModal = (props) => {
     }));
   };
 
-  useEffect(() => {
-    ClassifairGet();
-  }, []);
+
   function ClassifairGet() {
     axios
       .get(`${ApiName}/api/classifier`, {
@@ -173,26 +188,23 @@ const UslubiyNashrlarModal = (props) => {
     onChange: (info) => handleFileChange(info),
     showUploadList: false,
   };
-  const options = [];
-  for (let i = 10; i < 36; i++) {
-    options.push({
-      label: i.toString(36) + i,
-      value: i.toString(36) + i,
-    });
-  }  
+  // const options = [];
+  // for (let i = 10; i < 36; i++) {
+  //   options.push({
+  //     label: i.toString(36) + i,
+  //     value: i.toString(36) + i,
+  //   });
+  // }  
   const handleSubmit = (values) => {
-    const requestPayload = {
-      ...data,
-      issueYear: data.issueYear.format('YYYY-MM-DD')
-    };
+
   const request = props.editingData
-    ? axios.put(`${ApiName}/api/publication/update`, requestPayload, {
+    ? axios.put(`${ApiName}/api/publication/update`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
       })
-    : axios.post(`${ApiName}/api/publication/create`, requestPayload, {
+    : axios.post(`${ApiName}/api/publication/create`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${fulInfo?.accessToken}`,
@@ -254,7 +266,52 @@ const UslubiyNashrlarModal = (props) => {
 
   return (
     <div>
-      <Form className="row" form={form} initialValues={data} onFinish={handleSubmit}>
+      <Form 
+      className="row" 
+      form={form} 
+      ref={formRef}
+      initialValues={data} 
+      onFinish={handleSubmit}
+      fields={[
+        {
+          name: "scientificPublicationType",
+          value: data?.scientificPublicationType
+      },
+      {
+          name: "decisionScientificCouncil",
+          value: data?.decisionScientificCouncil
+      },
+      {
+          name: "language",
+          value: data?.language
+      },
+      {
+          name: "scientificName",
+          value: data?.scientificName
+      },
+      {
+          name: "fileType",
+          value: data?.fileType
+      },
+      {
+          name: "doiOrUrl",
+          value: data?.doiOrUrl
+      },
+
+      {
+          name: "scientificField",
+          value: data?.scientificField
+      },
+      {
+          name: "authorIds",
+          value: data.authorIds
+      },
+      {
+          name: "issueYear",
+          value: data.issueYear
+      },
+      ]}
+      >
         <Form.Item
           layout="vertical"
           label="Uslubiy nashr turi"
@@ -510,15 +567,12 @@ const UslubiyNashrlarModal = (props) => {
           className="col-6"
         >
           <DatePicker
-            value={data.issueYear ? moment(data.issueYear) : null}
+            format="YYYY-MM-DD"
             name="issueYear"
-            onChange={(date) =>
-              setData((prevState) => ({
-                ...prevState,
-                issueYear: date ? date.format("YYYY-MM-DD") : null,
-              }))
-            }
-            className="py-2"
+            onChange={(date) => {
+                setData({...data, issueYear: date})
+            }}
+            className='py-2'
           />
         </Form.Item>
         <Form.Item

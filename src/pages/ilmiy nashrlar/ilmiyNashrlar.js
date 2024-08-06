@@ -58,10 +58,7 @@ function IlmiyNashrlar(props) {
 
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        console.log(`Switching status for record id ${record.id} to ${newStatus}`);
-        
         const requestData = { id: record.id, publicationStatus: newStatus };
-        console.log('Request data:', requestData);
 
         axios.put(`${ApiName}/api/publication/update_status`, requestData, {
             headers: {
@@ -69,12 +66,11 @@ function IlmiyNashrlar(props) {
                 'Content-Type': 'application/json'
             }
         }).then((response) => {
-            console.log('API response:', response.data);
 
             const updatedItem = response.data;
             setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
             message.success('Publication status updated successfully');
-            getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
+            getIlmiyNashir(1, tableParams.pagination.total);
         }).catch((error) => {
             console.log('API error:', error.response ? error.response.data : error.message);
             message.error('Failed to update publication status');

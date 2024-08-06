@@ -26,7 +26,33 @@ function IlmiyNashrlar(props) {
         setDateListe(dateString);
     };
 
-    const onChange = () => {
+    const onChange = (e) => {
+
+        axios.get(`${ApiName}/api/publication/current-user`, {
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            },
+            params:{
+                size: tableParams.pagination.pageSize,
+                page: tableParams.pagination.current,
+                type: 'SCIENTIFIC_PUBLICATIONS',
+                publicationName:e.srcInput,
+                fromlocalDate:DateListe[0],
+                tolocalDate:DateListe[1]
+            }
+        }).then((res)=>{
+            console.log(res.data.data)
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: res.data.data.size,
+                    total: res.data.data.totalElements
+                }
+            })
+            const fetchedData = res?.data?.data?.content.map(item => ({ ...item, key: item.id }));
+            setDataList(fetchedData);
+        }).catch((error)=>{
+            console.log(error)})
 
     };
 
@@ -63,7 +89,7 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'Ilmiy nashr turi',
-            render: (item, record, index) => (<>{item?.classifierOptionsDTO?.name}</>),
+            render: (item, record, index) => (<>{item?.scientificPublicationType?.name}</>),
             width: 150
         },
         {
@@ -162,7 +188,6 @@ function IlmiyNashrlar(props) {
                 page: page - 1
             }
         }).then((response) => {
-            console.log(response.data.data)
             setTableParams({
                 ...tableParams,
                 pagination: {
@@ -189,38 +214,6 @@ function IlmiyNashrlar(props) {
         setEditingData(null);
     };
 
-    const handleFinish = (values) => {
-        if (editingData) {
-            const updatedValues = { ...values, id: editingData.id };
-            axios.put(`${ApiName}/api/publication/update`, updatedValues, {
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
-                const updatedItem = response.data;
-                setDataList(dataList.map(item => item.id === updatedItem.id ? updatedItem : item));
-                message.success('Maqola muvaffaqiyatli yangilandi');
-                setOpen(false);
-                setEditingData(null);
-            }).catch((error) => {
-                message.error('Maqolani yangilashda xatolik');
-            });
-        } else {
-            axios.post(`${ApiName}/api/publication`, values, {
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
-                setDataList([...dataList, { ...response.data, key: response.data.id }]);
-                message.success('Maqola muvaffaqiyatli qo\'shildi');
-                setOpen(false);
-            }).catch((error) => {
-                message.error('Maqolani qo\'shishda xatolik');
-            });
-        }
-    };
 
     return (
         <div className='p-4'>
@@ -233,7 +226,7 @@ function IlmiyNashrlar(props) {
                 style={{ right: "-80px" }}
                 footer={null} // Modal footerni o'chiring
             >
-                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} handleFinish={handleFinish} handleCancel={handleCancel} />
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} handleCancel={handleCancel} />
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>
@@ -241,12 +234,11 @@ function IlmiyNashrlar(props) {
                       onFinish={onChange}
                       className='d-flex align-items-center gap-4'
                 >
-                    <Form.Item label="Mudatini belgilang" name="MurojatYuklash">
-                        <DatePicker.RangePicker
-                            name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate} />
+                    <Form.Item label="Mudatini belgilang" name="srcDate">
+                        <DatePicker.RangePicker name="srcDate" format="YYYY-MM-DD" onChange={onChangeDate} />
                     </Form.Item>
-                    <Form.Item label="Ilmiy nashr nomi" name="MurojatYuklash">
-                        <Input style={{ width: '500px' }} placeholder="Nom bo'yicha qidirish" />
+                    <Form.Item label="Ilmiy nashr nomi" name="srcInput">
+                        <Input name='srcInput' style={{ width: '500px' }} placeholder="Ilmiy nashr nomi bo'yicha qidirish" />
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success mt-4" type="submit">

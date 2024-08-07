@@ -27,7 +27,14 @@ function Auth(props) {
                     setLoading(false)
                     setLogin(true)
                     localStorage.setItem("myInfo", JSON.stringify(response.data.data));
-                    navigate('/profile')
+                    // navigate('/profile/1')
+                    if (response?.data?.data?.roles[0]==="ROLE_ADMIN"){
+                        navigate('/pertfolia_admin')
+                    }
+                    else {
+                        navigate('profile/1')
+                    }
+                    console.log(response.data)
                 }
                 else {
                     setLoading(false)

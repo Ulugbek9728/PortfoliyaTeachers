@@ -16,20 +16,10 @@ const IntMulkModal = (props) => {
     const [selected, setSelected] = useState('')
     const [fileList, setFileList] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
+    const [Scientificpublication, setScientificpublication] = useState([]);
 
     const [data, setData] = useState({
-        authorCount: 0,
-        issueYear: '',
         publicationType: props?.publicationType,
-        language: "",
-        scientificName: "",
-        scientificField: "",
-        doiOrUrl: "",
-        publicationDatabase: "",
-        decisionScientificCouncil: "",
-        fileType: "",
-        mediaIds: [],
-        authorIds: []
     });
     const [data2, setData2] = useState({
         citizenship: "",
@@ -71,7 +61,6 @@ const IntMulkModal = (props) => {
                     Authorization: `Bearer ${fulInfo?.accessToken}`,
                 },
             });
-            console.log(response.data.data)
             if (response.data.isSuccess && !response.data.error) {
                 setSearchResults(response.data.data);
             } else {
@@ -84,13 +73,7 @@ const IntMulkModal = (props) => {
         }
 
     };
-    const handleChange = (value) => {
-        setData(prevState => ({
-            ...prevState,
-            authorIds: value,
-            authorCount: value.length + 1
-        }));
-    };
+
     const handleInputChange = (event) => {
         const {name, value} = event.target;
         setData(prevState => ({
@@ -103,6 +86,24 @@ const IntMulkModal = (props) => {
             [name]: value
         }));
     };
+    function ClassifairGet() {
+        axios.get(`${ApiName}/api/classifier`, {
+            params: {
+                key: 'h_patient_type'
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            }
+        })
+            .then(response => {
+                console.log(response.data)
+                setScientificpublication(response.data);
+            })
+            .catch(error => {
+                console.log(error, 'error');
+            });
+    }
     const onFinish = (values) => {
         const requestPayload2 = {
             ...data2
@@ -122,12 +123,36 @@ const IntMulkModal = (props) => {
         });
     };
     const handleSubmit = (event) => {
+        axios.post(`${ApiName}/api/publication/create`, {
+            ...data,
+            issueYear: event.data.format('YYYY-MM-DD'),
+            authorIds:event?.authorIds,
+            scientificName:event?.nashrBiblMatni,
+            intellectualPropertyNumber: event?.raqami
+
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`,
+            },
+        }).then(res=>{
+            console.log(res)
+            message.success(`Intelektual mulk ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
+            form.resetFields();
+
+            if (props.handleCancel) {
+                props.handleCancel();
+            }
+        }).catch(error=>console.log(error))
+        console.log(data)
         console.log(event)
     }
+
 
     useEffect(() => {
         return () => {
             handleSearch()
+            ClassifairGet()
         }
     }, [])
     return (
@@ -142,16 +167,22 @@ const IntMulkModal = (props) => {
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     className='col-6'>
-                    <Select name='mulkTuri' placeholder='Intelektual mulk turi'>
-                        <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
-                        <Select.Option className='py-2' value={'Ixtiro'}>Ixtiro</Select.Option>
-                        <Select.Option className='py-2' value={'Foydali modal'}>Foydali model</Select.Option>
-                        <Select.Option className='py-2' value={'Sanoat namunasi'}>Sanoat namunasi</Select.Option>
-                        <Select.Option className='py-2' value={'Seleksiya yutuqlari'}>Seleksiya yutuqlari</Select.Option>
-                        <Select.Option className='py-2' value={'Tovar belgisi'}>Tovar belgisi</Select.Option>
-                        <Select.Option className='py-2' value={'Firma nomlari'}>Firma nomlari</Select.Option>
-                        <Select.Option className='py-2' value={'EHM nomlari va ma`lumot bazasi'}>EHM nomlari va ma`lumot bazasi</Select.Option>
-                    </Select>
+                    <Select placeholder='Intelektual mulk turi'
+                            options={Scientificpublication[0]?.options?.map(item => ({label: item.name, value: item.code}))}
+                            name="scientificPublicationType"
+                            onChange={(value, option) => {
+                                setData({...data,
+                                    intellectualPropertyPublicationType: {
+                                    name: option.label,
+                                    code: option.value,
+                                    }
+                                })
+                            }
+
+
+                                // handleSelectChange(value, {name: "scientificPublicationType"})
+                    }
+                    />
                 </Form.Item>
                 <Form.Item
                     layout="vertical"
@@ -186,7 +217,6 @@ const IntMulkModal = (props) => {
                         allowClear
                         name='authorIds'
                         placeholder="Mualliflarni qidirish"
-                        onChange={handleChange}
                         filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
                         filterSort={(optionA, optionB) =>
                             (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
@@ -315,7 +345,7 @@ const IntMulkModal = (props) => {
                     className='col-6'
                 >
                     <Upload  {...uploadProps}>
-                        <Button>Fayl yuklash</Button>
+                        <Button>PDF</Button>
                     </Upload>
                 </Form.Item>
                 <Form.Item className='col-12 d-flex justify-content-end'>

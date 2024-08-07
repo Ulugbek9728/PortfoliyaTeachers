@@ -19,37 +19,31 @@ const items = [
         label: "Profile",
         key: '1',
         icon: <UserOutlined/>,
-        access: ['ROLE_DEPARTMENT']
     },
     {
         label: "Ilmiy nashrlar",
         key: "2",
         icon: <FileTextOutlined />,
-        access: ['ROLE_DEPARTMENT']
     },
     {
         label: "Uslubiy nashrlar",
         key: "3",
         icon: <FileTextOutlined/>,
-        access: ['ROLE_DEPARTMENT']
     },
     {
         label: "Intelektual mulk agentligi tomonidan berilgan ishlar",
         key: "4",
         icon: <FileTextOutlined/>,
-        access: ['ROLE_DEPARTMENT']
     },
     {
         label: "Ilmiy faollik",
         key: "5",
         icon: <FileTextOutlined/>,
-        access: ['ROLE_DEPARTMENT']
     },
     {
         label: "Ilmiy saloxiyatdagi oshirishdagi hissasi",
         key: "6",
         icon: <FileTextOutlined/>,
-        access: ['ROLE_DEPARTMENT']
     },
 
 ];

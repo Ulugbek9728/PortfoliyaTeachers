@@ -391,9 +391,6 @@ const FormModal = (props) => {
                     />
                 </Form.Item>
 
-
-
-
                 <Form.Item
                     layout="vertical"
                     label="Ilmiy yo'nalish"
@@ -424,7 +421,7 @@ const FormModal = (props) => {
                         onChange={(value, option) => handleSelectChange(value, {name: "fileType"})}
                     >
                         <Select.Option value="Url">Url</Select.Option>
-                        <Select.Option value="Upload">Upload</Select.Option>
+                        <Select.Option value="Upload">PDF yuklash</Select.Option>
                     </Select>
                 </Form.Item>
                 <Form.Item
@@ -568,13 +565,13 @@ const FormModal = (props) => {
                     <Form.Item
                         layout="vertical"
                         label="Fayl yuklash"
-                        name="file"
+                        name="PDF"
                         labelCol={{span: 24}}
                         wrapperCol={{span: 24}}
                         className='col-6'
                     >
                         <Upload {...uploadProps}>
-                            <Button>Fayl yuklash</Button>
+                            <Button>PDF</Button>
                         </Upload>
                     </Form.Item>
                 )}

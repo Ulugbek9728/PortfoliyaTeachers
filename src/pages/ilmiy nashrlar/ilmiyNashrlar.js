@@ -261,7 +261,7 @@ function IlmiyNashrlar(props) {
                         />
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr turi" name="srcType">
-                        <Select name="srcType" labelInValue style={{width: 300,}}
+                        <Select name="srcType" labelInValue style={{width: 300,}} placeholder='Ilmiy nashr turi'
                                 options={Scientificpublication[0]?.options?.map(item => ({
                                     label: item.name,
                                     value: item.code

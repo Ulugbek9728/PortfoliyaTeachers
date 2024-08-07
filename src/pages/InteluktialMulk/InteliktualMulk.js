@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
@@ -6,17 +6,55 @@ import {
 import "./InteliktualMulk.scss"
 import FormModal from '../../componenta/Modal/FormModal';
 import IntMulkModal from '../../componenta/Int.Mulk.Modal/IntMulkModal';
+import axios from "axios";
+import {ApiName} from "../../api/APIname";
 const InteliktualMulk = () => {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
-    const [open, setOpen] = useState(true)
+    const [open, setOpen] = useState(false)
     const [Scientificpublication, setScientificpublication] = useState([]);
+    const [dataList, setDataList] = useState([]);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 0,
+            pageSize: 5,
+            total: 10
+        },
+    });
 
     const [srcItem, setSrcItem] = useState({});
 
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
+    };
+    useEffect(() => {
+        ClassifairGet()
+        getIntelektualMulk()
+    }, []);
+    function ClassifairGet() {
+        axios.get(`${ApiName}/api/classifier`, {
+            params: {
+                key: 'h_patient_type'
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            }
+        })
+            .then(response => {
+                console.log(response.data)
+                setScientificpublication(response.data);
+            })
+            .catch(error => {
+                console.log(error, 'error');
+            });
+    }
+    const handleCancel = () => {
+        setOpen(false);
+        // setEditingData(null);
     };
     const columns = [
         {
@@ -25,28 +63,30 @@ const InteliktualMulk = () => {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
+            title: 'Int.mulk turi',
+            render: (item, record, index) => (<>{item?.intellectualPropertyPublicationType?.name}</>),
+            width: 150
+        },
+        {
             title: 'Int.mulk nomi',
-            dataIndex: 'name',
+            dataIndex: 'scientificName',
             width: 350,
         },
         {
             title: 'Mualliflar',
-            dataIndex: 'age',
-            width: 200,
+            render: (item) => (<ol>
+                <li>{fulInfo.secondName + ' ' + fulInfo.firstName + ' ' + fulInfo.thirdName}</li>
+                {JSON.parse(item?.authors).map((itemm) => (
+                    <li key={itemm.id}>
+                        {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
+                    </li>
+                ))}
+            </ol>),
+            width: 350
         },
         {
             title: 'Int.mulk raqami',
-            dataIndex: 'address',
-            width: 150
-        },
-        {
-            title: 'Int.mulk turi',
-            dataIndex: 'address',
-            width: 150
-        },
-        {
-            title: 'Xodim',
-            dataIndex: 'address',
+            dataIndex: 'intellectualPropertyNumber',
             width: 150
         },
         {
@@ -60,15 +100,38 @@ const InteliktualMulk = () => {
             width: 150
         },
     ];
-    const data = [];
-    for (let i = 0; i < 100; i++) {
-        data.push({
-            key: i,
-            name: `Edward King ${i}`,
-            age: 32,
-            address: `London, Park Lane no. ${i}`,
+
+    function getIntelektualMulk() {
+        axios.get(`${ApiName}/api/publication/current-user`, {
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            },
+            params: {
+                size: tableParams.pagination.pageSize,
+                page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
+                type: 'INTELLECTUAL_PROPERTY',
+                publicationName: srcItem?.srcInput,
+                scientificPublicationType: srcItem?.srcType,
+                fromlocalDate: DateListe[0],
+                tolocalDate: DateListe[1]
+            }
+        }).then((response) => {
+            console.log(response.data.data.content)
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: response.data.data.size,
+                    total: response.data.data.totalElements
+                }
+            })
+            const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
+            setDataList(fetchedData);
+        }).catch((error) => {
+            console.log('API error:', error);
+            message.error('Failed to fetch data');
         });
     }
+
   return (
     <div className='p-4'>
     <Modal
@@ -79,7 +142,7 @@ const InteliktualMulk = () => {
         width={1600}
         style={{right:"-80px"}}
       >
-        <IntMulkModal publicationType="INTELLECTUAL_PROPERTY"/>
+        <IntMulkModal publicationType="INTELLECTUAL_PROPERTY" handleCancel={handleCancel}/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>
@@ -127,10 +190,24 @@ const InteliktualMulk = () => {
             </div>
             <Table
                 columns={columns}
-                dataSource={data}
-                pagination={{
-                    pageSize: 50,
-                }}
+                dataSource={dataList}
+                pagination={
+                    {
+                        total: tableParams.pagination.total,
+                        pageSize: tableParams.pagination.pageSize,
+                        onChange: (page, pageSize) => {
+                            setTableParams({
+                                ...tableParams,
+                                pagination: {
+                                    pageSize: pageSize,
+                                    total: page
+                                }
+                            })
+
+                            getIntelektualMulk();
+                        }
+                    }
+                }
                 scroll={{
                     y: 660,
                 }}

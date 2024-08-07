@@ -8,7 +8,6 @@ import {   Button,Modal,
   InputNumber,
   Select,
   Upload, } from 'antd';
-import IntURL from '../IntURL/IntURL';
 const IIlmiyFaollik = () => {
   return (
     <>
@@ -38,12 +37,9 @@ const IIlmiyFaollik = () => {
           {
            type: 'url',
           }
-          // {
-          //   pattern: new RegExp(/(https):\/\/([\w.]+\/?)\S*/),
-          //   message: "notogri manzil"
-          // }
+
         ]}>
-               <IntURL/> 
+          <Input  className='py-2' placeholder='text'/>
         </Form.Item>
 
       <Form.Item         

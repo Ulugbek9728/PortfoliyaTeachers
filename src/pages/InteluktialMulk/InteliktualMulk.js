@@ -10,7 +10,10 @@ const InteliktualMulk = () => {
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [DateListe, setDateListe] = useState(['', '']);
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(true)
+    const [Scientificpublication, setScientificpublication] = useState([]);
+
+    const [srcItem, setSrcItem] = useState({});
 
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
@@ -76,30 +79,33 @@ const InteliktualMulk = () => {
         width={1600}
         style={{right:"-80px"}}
       >
-        <IntMulkModal/>
+        <IntMulkModal publicationType="INTELLECTUAL_PROPERTY"/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
 
-                      className=' d-flex align-items-center gap-4'
+                      className='d-flex align-items-center gap-4'
                 >
-                    <Form.Item label="Mudatini belgilang"
-                               name="MurojatYuklash"
-                               >
-                        <DatePicker.RangePicker
-                            // placeholder={["Bosh sana", 'Tugash sana']}
-                            name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate}/>
+                    <Form.Item label="Mudatini belgilang" name="srcDate">
+                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD"
+                                                onChange={onChangeDate}/>
                     </Form.Item>
-                    <Form.Item label="Ilmiy nashr nomi" name="MurojatYuklash">
-                        <Input style={{width: '500px'}} placeholder="Nom bo'yicha qidirish"/>
+
+                    <Form.Item label="Intelektual mulk turi" name="srcType">
+                        <Select name="srcType" style={{width: 300,}}  placeholder='Intelektual mulk turi'
+                                options={Scientificpublication[0]?.options?.map(item => ({
+                                    label: item.name,
+                                    value: item.code
+                                }))}
+                                onChange={(value, option) => setSrcItem({...srcItem, srcType: option.value})}
+                        />
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success mt-4" type="submit">
                             <span className="button__text">Ma'lumotni izlash</span>
                         </button>
                     </Form.Item>
-
                 </Form>
 
                 <button type="button" className="button1"
@@ -107,7 +113,7 @@ const InteliktualMulk = () => {
                         setOpen(true)
                     }}
                 >
-                    <span className="button__text">Ilmiy nashr yaratish</span>
+                    <span className="button__text">Intelektual mulk</span>
                     <span className="button__icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
                              strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" height="24"

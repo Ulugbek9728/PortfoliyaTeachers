@@ -220,6 +220,7 @@ function IlmiyNashrlar(props) {
             }
         })
             .then(response => {
+                console.log(response.data)
                 setScientificpublication(response.data);
             })
             .catch(error => {

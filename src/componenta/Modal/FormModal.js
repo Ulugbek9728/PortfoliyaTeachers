@@ -43,6 +43,7 @@ const FormModal = (props) => {
 
     useEffect((value) => {
         ClassifairGet();
+        handleSearch()
         if (props.editingData) {
             const editingValues = {
                 ...props.editingData,
@@ -50,7 +51,7 @@ const FormModal = (props) => {
                 authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
-                scientificPublicationType: props.editingData.scientificPublicationType?.code,
+                scientificPublicationType: props.editingData.scientificPublicationType,
                 fileType: props.editingData.fileType || 'Url'
             };
             setData(editingValues);
@@ -75,12 +76,6 @@ const FormModal = (props) => {
             })
         }
     }, [props.editingData, form]);
-
-    useEffect(() => {
-        return () => {
-            handleSearch()
-        }
-    }, [])
 
     function ClassifairGet() {
         axios.get(`${ApiName}/api/classifier`, {
@@ -184,7 +179,7 @@ const FormModal = (props) => {
         }
     };
 
-    const onFinish = (values) => {
+    const onFinish = () => {
         const requestPayload2 = {
             ...data2
         };
@@ -196,10 +191,12 @@ const FormModal = (props) => {
             },
         }).then(response => {
             console.log(data2);
-            message.success(`Maqola muvaffaqiyatli 'qo'shildi'}`);
+            form2.resetFields();
+            handleSearch()
+            message.success(`Muallif muvaffaqiyatli qo'shildi`);
         }).catch(error => {
             console.log(error);
-            message.error(`Maqolani 'qo'shishda'} xatolik`);
+            message.error(`Muallif 'qo'shishda xatolik`);
         });
     };
 
@@ -225,7 +222,7 @@ const FormModal = (props) => {
                 },
             })
         request.then(response => {
-            message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
+            message.success(`Ilmiy nashir ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             form.resetFields();
             props.getIlmiyNashir()
             setData({
@@ -253,7 +250,7 @@ const FormModal = (props) => {
             }
         }).catch(error => {
             console.log(error);
-            message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
+            message.error(`Ilmiy nashir ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
         });
     };
     return (
@@ -314,7 +311,7 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos ilmiy nashr turini tanlang'}]}
                     className='col-6'
                 >
-                    <Select
+                    <Select placeholder='Ilmiy nashr turi'
                         options={Scientificpublication[0]?.options?.map(item => ({label: item.name, value: item.code}))}
                         name="scientificPublicationType"
                         onChange={(value, option) => handleSelectChange(value, {name: "scientificPublicationType"})}
@@ -349,7 +346,7 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos tilni tanlang'}]}
                     className='col-6'
                 >
-                    <Select
+                    <Select placeholder='Til'
                         name="language"
                         onChange={(value, option) => handleSelectChange(value, {name: "language"})}
                     >
@@ -366,7 +363,7 @@ const FormModal = (props) => {
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
-                    className='col-12'
+                    className='col-6'
                 >
                     <Input
                         name="scientificName"
@@ -375,56 +372,27 @@ const FormModal = (props) => {
                         className='py-2'
                     />
                 </Form.Item>
-
                 <Form.Item
                     layout="vertical"
-                    label="Fayl yuklash turini tanlang"
-                    name="fileType"
+                    label="Nashr yili	"
+                    name="issueYear"
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
-                    rules={[{required: true, message: 'Iltimos fayl turini tanlang'}]}
+                    rules={[{required: true, message: 'Iltimos nashir yilini tanlang'}]}
                     className='col-6'
                 >
-                    <Select
-                        name="fileType"
-                        onChange={(value, option) => handleSelectChange(value, {name: "fileType"})}
-                    >
-                        <Select.Option value="Url">Url</Select.Option>
-                        <Select.Option value="Upload">Upload</Select.Option>
-                    </Select>
+                    <DatePicker
+                        format="YYYY-MM-DD"
+                        name="issueYear"
+                        onChange={(date) => {
+                            setData({...data, issueYear: date})
+                        }}
+                        className='py-2'
+                    />
                 </Form.Item>
 
-                {url ? (
-                    <Form.Item
-                        layout="vertical"
-                        label="URL manzil"
-                        name="doiOrUrl"
-                        labelCol={{span: 24}}
-                        wrapperCol={{span: 24}}
-                        rules={[{required: true, message: 'Iltimos URL manzil kiriting'}]}
-                        className='col-6'
-                    >
-                        <Input
-                            name="doiOrUrl"
-                            onChange={handleInputChange}
-                            placeholder='URL manzil'
-                            className='py-2'
-                        />
-                    </Form.Item>
-                ) : (
-                    <Form.Item
-                        layout="vertical"
-                        label="Fayl yuklash"
-                        name="file"
-                        labelCol={{span: 24}}
-                        wrapperCol={{span: 24}}
-                        className='col-6'
-                    >
-                        <Upload {...uploadProps}>
-                            <Button>Fayl yuklash</Button>
-                        </Upload>
-                    </Form.Item>
-                )}
+
+
 
                 <Form.Item
                     layout="vertical"
@@ -442,7 +410,23 @@ const FormModal = (props) => {
                         className='py-2'
                     />
                 </Form.Item>
-
+                <Form.Item
+                    layout="vertical"
+                    label="Fayl yuklash turini tanlang"
+                    name="fileType"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    rules={[{required: true, message: 'Iltimos fayl turini tanlang'}]}
+                    className='col-6'
+                >
+                    <Select
+                        name="fileType"
+                        onChange={(value, option) => handleSelectChange(value, {name: "fileType"})}
+                    >
+                        <Select.Option value="Url">Url</Select.Option>
+                        <Select.Option value="Upload">Upload</Select.Option>
+                    </Select>
+                </Form.Item>
                 <Form.Item
                     layout="vertical"
                     label="Mualliflar"
@@ -452,7 +436,7 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos mualliflarni tanlang'}]}
                     className='col-6'
                 >
-                    <Select
+                    <Select size='large'
                         mode="multiple"
                         allowClear
                         placeholder="Mualliflarni qidirish"
@@ -563,25 +547,40 @@ const FormModal = (props) => {
                         )}
                     />
                 </Form.Item>
+                {url ? (
+                    <Form.Item
+                        layout="vertical"
+                        label="URL manzil"
+                        name="doiOrUrl"
+                        labelCol={{span: 24}}
+                        wrapperCol={{span: 24}}
+                        rules={[{required: true, message: 'Iltimos URL manzil kiriting'}]}
+                        className='col-6'
+                    >
+                        <Input
+                            name="doiOrUrl"
+                            onChange={handleInputChange}
+                            placeholder='URL manzil'
+                            className='py-2'
+                        />
+                    </Form.Item>
+                ) : (
+                    <Form.Item
+                        layout="vertical"
+                        label="Fayl yuklash"
+                        name="file"
+                        labelCol={{span: 24}}
+                        wrapperCol={{span: 24}}
+                        className='col-6'
+                    >
+                        <Upload {...uploadProps}>
+                            <Button>Fayl yuklash</Button>
+                        </Upload>
+                    </Form.Item>
+                )}
 
-                <Form.Item
-                    layout="vertical"
-                    label="Nashr yili	"
-                    name="issueYear"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
-                    rules={[{required: true, message: 'Iltimos nashir yilini tanlang'}]}
-                    className='col-6'
-                >
-                    <DatePicker
-                        format="YYYY-MM-DD"
-                        name="issueYear"
-                        onChange={(date) => {
-                            setData({...data, issueYear: date})
-                        }}
-                        className='py-2'
-                    />
-                </Form.Item>
+
+
 
                 <Form.Item className='col-12 d-flex justify-content-end'>
                     <Button type="primary" htmlType="submit">Yuborish</Button>

@@ -78,7 +78,7 @@ const FormModal = (props) => {
 
     useEffect(() => {
         return () => {
-            handleSearch('')
+            handleSearch()
         }
     }, [])
 
@@ -100,16 +100,17 @@ const FormModal = (props) => {
             });
     }
 
-    const handleSearch = async (value) => {
+    const handleSearch = async () => {
         try {
             const response = await axios.get(`${ApiName}/api/author/search`, {
-                params: {query: value},
+                params: {query: ''},
                 headers: {
                     Authorization: `Bearer ${fulInfo?.accessToken}`,
                 },
             });
+            console.log(response.data.data)
             if (response.data.isSuccess && !response.data.error) {
-                setSearchResults(response.data.data || []);
+                setSearchResults(response.data.data);
             } else {
                 console.error('Error in response:', response.data.message);
                 setSearchResults([]);
@@ -125,7 +126,7 @@ const FormModal = (props) => {
         setData(prevState => ({
             ...prevState,
             authorIds: value,
-            authorCount: value.length
+            authorCount: value.length+1
         }));
     };
 
@@ -195,7 +196,6 @@ const FormModal = (props) => {
             },
         }).then(response => {
             console.log(data2);
-            handleSearch('')
             message.success(`Maqola muvaffaqiyatli 'qo'shildi'}`);
         }).catch(error => {
             console.log(error);
@@ -227,6 +227,7 @@ const FormModal = (props) => {
         request.then(response => {
             message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
             form.resetFields();
+            props.getIlmiyNashir()
             setData({
                 authorCount: 0,
                 issueYear: '',
@@ -244,6 +245,7 @@ const FormModal = (props) => {
             // Forma maydonlarini tozalash uchun resetFields chaqirish
             if (props.onSuccess) {
                 props.onSuccess();
+
             }
             // Modalni yopish
             if (props.handleCancel) {
@@ -254,7 +256,6 @@ const FormModal = (props) => {
             message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
         });
     };
-
     return (
         <div>
             <Form
@@ -266,7 +267,7 @@ const FormModal = (props) => {
                 fields={[
                     {
                         name: "scientificPublicationType",
-                        value: data?.scientificPublicationType
+                        value: data?.scientificPublicationType?.code
                     },
                     {
                         name: "decisionScientificCouncil",
@@ -302,6 +303,7 @@ const FormModal = (props) => {
                         value: data.issueYear
                     },
                 ]}
+
             >
                 <Form.Item
                     layout="vertical"
@@ -454,9 +456,11 @@ const FormModal = (props) => {
                         mode="multiple"
                         allowClear
                         placeholder="Mualliflarni qidirish"
-                        onSearch={handleSearch}
                         onChange={handleChange}
-                        options={searchResults.map(author => ({value: author.id, label: author.fullName}))}
+                        filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
+                        filterSort={(optionA, optionB) =>
+                            (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
+                        options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))}
                         dropdownRender={(menu) => (
                             <>
                                 {menu}

@@ -11,6 +11,13 @@ dayjs.extend(customParseFormat);
 const FormModal = (props) => {
     const [Scientificpublication, setScientificpublication] = useState([]);
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+    const [searchResults, setSearchResults] = useState([]);
+    const [monografiya, setMonografiya] = useState(false);
+    const [url, setUrl] = useState(true);
+    const [fileList, setFileList] = useState([]);
+    const [form] = Form.useForm();
+    const [form2] = Form.useForm();
+    const formRef = useRef(null);
     const [data2, setData2] = useState({
         citizenship: "",
         fullName: "",
@@ -32,13 +39,6 @@ const FormModal = (props) => {
         mediaIds: [],
         authorIds: []
     });
-    const [searchResults, setSearchResults] = useState([]);
-    const [monografiya, setMonografiya] = useState(false);
-    const [url, setUrl] = useState(true);
-    const [fileList, setFileList] = useState([]);
-    const [form] = Form.useForm();
-    const [form2] = Form.useForm();
-    const formRef = useRef(null);
 
 
     useEffect((value) => {

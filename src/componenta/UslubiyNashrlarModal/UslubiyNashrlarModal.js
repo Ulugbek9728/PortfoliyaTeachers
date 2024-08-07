@@ -360,8 +360,7 @@ const UslubiyNashrlarModal = (props) => {
           wrapperCol={{ span: 24 }}
           className="col-6"
         >
-          <Input
-            value={data.scientificName}
+          <Input value={data.scientificName}
             name="scientificName"
             onChange={handleInputChange}
             placeholder="Nashrning bibliografik matni"
@@ -510,7 +509,6 @@ const UslubiyNashrlarModal = (props) => {
                 </Form>
               </>
             )}
-            // options={options}
           />
         </Form.Item>
 

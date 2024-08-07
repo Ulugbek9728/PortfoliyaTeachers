@@ -18,6 +18,14 @@ const UslubiyNashrlar = () => {
     const [open, setOpen] = useState(false)
     const [editingData, setEditingData] = useState(null);
     const [dataList, setDataList] = useState([]);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 1,
+            pageSize: 2,
+            total: 10
+        },
+    });
+
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
     };
@@ -88,6 +96,36 @@ const UslubiyNashrlar = () => {
         
     ];
 
+    const onChange = (e) => {
+
+        axios.get(`${ApiName}/api/publication/current-user`, {
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            },
+            params:{
+                size: tableParams.pagination.pageSize,
+                page: tableParams.pagination.current,
+                type: 'SCIENTIFIC_PUBLICATIONS',
+                publicationName:e.srcInput,
+                fromlocalDate:DateListe[0],
+                tolocalDate:DateListe[1]
+            }
+        }).then((res)=>{
+            console.log(res.data.data)
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: res.data.data.size,
+                    total: res.data.data.totalElements
+                }
+            })
+            const fetchedData = res?.data?.data?.content.map(item => ({ ...item, key: item.id }));
+            setDataList(fetchedData);
+        }).catch((error)=>{
+            console.log(error)})
+
+    };
+
     const handleDelete = (id) => {
         axios.put(`${ApiName}/api/publication/update_status`, {
           id,
@@ -113,15 +151,24 @@ const UslubiyNashrlar = () => {
         setEditingData(record);
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
-    function getIlmiyNashir() {
+    function getIlmiyNashir(page, pageSize) {
         axios.get(`${ApiName}/api/publication/current-user`, {
             headers: {
                 Authorization: `Bearer ${fulInfo?.accessToken}`
             },
             params:{
-                type: 'STYLE_PUBLICATIONS'
+                type: 'STYLE_PUBLICATIONS',
+                size: pageSize,
+                page: page - 1
             }
         }).then((response) => {
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: response.data.data.size,
+                    total: response.data.data.totalElements
+                }
+            })
             console.log('Fetched data:', response?.data?.data?.content);
             const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
             setDataList(fetchedData);
@@ -131,14 +178,13 @@ const UslubiyNashrlar = () => {
         });
     }    
     useEffect(() => {
-        getIlmiyNashir();
+        getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
     }, []);
     
     const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        console.log(`Switching status for record id ${record.id} to ${newStatus}`);
-        
+        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";        
         const requestData = { id: record.id, publicationStatus: newStatus };
+
         console.log('Request data:', requestData);
 
         axios.put(`${ApiName}/api/publication/update_status`, requestData, {
@@ -152,7 +198,7 @@ const UslubiyNashrlar = () => {
             const updatedItem = response.data;
             setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
             message.success('Publication status updated successfully');
-            getIlmiyNashir();
+            getIlmiyNashir(1, tableParams.pagination.total);
         }).catch((error) => {
             console.log('API error:', error.response ? error.response.data : error.message);
             message.error('Failed to update publication status');
@@ -172,13 +218,14 @@ const UslubiyNashrlar = () => {
         onCancel={handleCancel}
         width={1600}
         style={{right:"-80px"}}
+        footer={null} 
       >
         <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData}  handleCancel={handleCancel}/>
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
-                    //   onFinish={onChange}
+                      onFinish={onChange}
                       className=' d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang"
@@ -217,14 +264,19 @@ const UslubiyNashrlar = () => {
 
             </div>
             <Table
-                columns={columns}
-                dataSource={dataList}
-                pagination={{
-                    pageSize: 50,
-                }}
-                scroll={{
-                    y: 660,
-                }}
+              columns={columns}
+              dataSource={dataList}
+              scroll={{ y:550 }}
+              pagination={
+                {
+                  total: tableParams.pagination.total,
+                  pageSize: tableParams.pagination.pageSize,
+                  onChange: (page, pageSize) => 
+                  {
+                     getIlmiyNashir(page, pageSize);
+                  }
+                }
+             }
             />
         </div>
     </>

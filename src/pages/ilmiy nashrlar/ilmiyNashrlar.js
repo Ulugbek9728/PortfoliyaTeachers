@@ -14,20 +14,51 @@ function IlmiyNashrlar(props) {
     const [open, setOpen] = useState(false);
     const [dataList, setDataList] = useState([]);
     const [editingData, setEditingData] = useState(null);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 1,
+            pageSize: 2,
+            total: 10
+        },
+    });
 
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString);
     };
 
-    const onChange = () => {
+    const onChange = (e) => {
+
+        axios.get(`${ApiName}/api/publication/current-user`, {
+            headers: {
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            },
+            params:{
+                size: tableParams.pagination.pageSize,
+                page: tableParams.pagination.current,
+                type: 'SCIENTIFIC_PUBLICATIONS',
+                publicationName:e.srcInput,
+                fromlocalDate:DateListe[0],
+                tolocalDate:DateListe[1]
+            }
+        }).then((res)=>{
+            console.log(res.data.data)
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: res.data.data.size,
+                    total: res.data.data.totalElements
+                }
+            })
+            const fetchedData = res?.data?.data?.content.map(item => ({ ...item, key: item.id }));
+            setDataList(fetchedData);
+        }).catch((error)=>{
+            console.log(error)})
+
     };
 
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        console.log(`Switching status for record id ${record.id} to ${newStatus}`);
-        
         const requestData = { id: record.id, publicationStatus: newStatus };
-        console.log('Request data:', requestData);
 
         axios.put(`${ApiName}/api/publication/update_status`, requestData, {
             headers: {
@@ -35,12 +66,11 @@ function IlmiyNashrlar(props) {
                 'Content-Type': 'application/json'
             }
         }).then((response) => {
-            console.log('API response:', response.data);
 
             const updatedItem = response.data;
             setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
             message.success('Publication status updated successfully');
-            getIlmiyNashir();
+            getIlmiyNashir(1, tableParams.pagination.total);
         }).catch((error) => {
             console.log('API error:', error.response ? error.response.data : error.message);
             message.error('Failed to update publication status');
@@ -55,7 +85,7 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'Ilmiy nashr turi',
-            render: (item, record, index) => (<>{item?.classifierOptionsDTO?.name}</>),
+            render: (item, record, index) => (<>{item?.scientificPublicationType?.name}</>),
             width: 150
         },
         {
@@ -64,14 +94,19 @@ function IlmiyNashrlar(props) {
             render: (item, record, index) => (<>{item?.language}</>)
         },
         {
-            title: 'Ilmiy ish nomi',
+            title: 'Nashrning bibliografik matni',
             dataIndex: 'scientificName',
-            width: 350,
+            width: 250,
+        },
+        {
+            title: 'Mualliflar soni',
+            dataIndex: 'authorCount',
+            width: 80,
         },
         {
             title: 'Mualliflar',
-            dataIndex: 'authorCount',
-            width: 200,
+            dataIndex: 'address',
+            width: 150
         },
         {
             title: 'Nashr yili',
@@ -80,13 +115,8 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'url',
-            render: (item, record, index) => (<a href={item?.doiOrUrl} target={"_blank"}>{item?.doiOrUrl}</a>),
-            width: 150
-        },
-        {
-            title: 'Xodim',
-            dataIndex: 'address',
-            width: 150
+            render: (item, record, index) => (<a href={item?.doiOrUrl} target={"_blank"}>file</a>),
+            width: 50
         },
         {
             title: 'Tekshirish',
@@ -108,8 +138,8 @@ function IlmiyNashrlar(props) {
             width: 100,
             render: (text, record) => (
               <Space size="middle">
-                <Button type="primary" ghost className='d-flex justify-content-center align-items-center w-10px' style={{"minWidth":'120px'}} onClick={() => onEdit(record)}><EditOutlined /></Button>
-                <Button className='d-flex justify-content-center align-items-center w-10px' style={{"minWidth":'120px'}} onClick={() => handleDelete(record.id)} type="primary" danger ghost>
+                <Button type="primary" ghost className='d-flex justify-content-center align-items-center ' style={{"minWidth":'30px'}} onClick={() => onEdit(record)}><EditOutlined /></Button>
+                <Button className='d-flex justify-content-center align-items-center' style={{"minWidth":'30px'}} onClick={() => handleDelete(record.id)} type="primary" danger ghost>
                 <DeleteOutlined />
                 </Button>
               </Space>
@@ -118,7 +148,7 @@ function IlmiyNashrlar(props) {
     ];
 
     useEffect(() => {
-        getIlmiyNashir();
+        getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
     }, []);
 
     const handleDelete = (id) => {
@@ -135,7 +165,7 @@ function IlmiyNashrlar(props) {
             console.log(response);
           if (response.data.message === "Success") {
             message.success('Maqola muvaffaqiyatli o`chirildi');
-            getIlmiyNashir(); 
+              getIlmiyNashir(tableParams.pagination.current, tableParams.pagination.total);
           }
         })
         .catch(error => {
@@ -143,15 +173,24 @@ function IlmiyNashrlar(props) {
         });
     };
 
-    function getIlmiyNashir() {
+    function getIlmiyNashir(page, pageSize) {
         axios.get(`${ApiName}/api/publication/current-user`, {
             headers: {
                 Authorization: `Bearer ${fulInfo?.accessToken}`
             },
             params:{
-                type: 'SCIENTIFIC_PUBLICATIONS'
+                type: 'SCIENTIFIC_PUBLICATIONS',
+                size: pageSize,
+                page: page - 1
             }
         }).then((response) => {
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: response.data.data.size,
+                    total: response.data.data.totalElements
+                }
+            })
             console.log('Fetched data:', response?.data?.data?.content);
             const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
             setDataList(fetchedData);
@@ -172,7 +211,6 @@ function IlmiyNashrlar(props) {
     };
 
 
-
     return (
         <div className='p-4'>
             <Modal
@@ -182,9 +220,9 @@ function IlmiyNashrlar(props) {
                 onCancel={handleCancel}
                 width={1600}
                 style={{ right: "-80px" }}
-                footer={null} // Modal footerni o'chiring
+                footer={null} 
             >
-                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData}  handleCancel={handleCancel} />
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel} />
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>
@@ -192,12 +230,11 @@ function IlmiyNashrlar(props) {
                       onFinish={onChange}
                       className='d-flex align-items-center gap-4'
                 >
-                    <Form.Item label="Mudatini belgilang" name="MurojatYuklash">
-                        <DatePicker.RangePicker
-                            name="MurojatYuklash" format="YYYY-MM-DD" onChange={onChangeDate} />
+                    <Form.Item label="Mudatini belgilang" name="srcDate">
+                        <DatePicker.RangePicker name="srcDate" format="YYYY-MM-DD" onChange={onChangeDate} />
                     </Form.Item>
-                    <Form.Item label="Ilmiy nashr nomi" name="MurojatYuklash">
-                        <Input style={{ width: '500px' }} placeholder="Nom bo'yicha qidirish" />
+                    <Form.Item label="Ilmiy nashr nomi" name="srcInput">
+                        <Input name='srcInput' style={{ width: '500px' }} placeholder="Ilmiy nashr nomi bo'yicha qidirish" />
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success mt-4" type="submit">
@@ -215,7 +252,17 @@ function IlmiyNashrlar(props) {
                 <Table
                     columns={columns}
                     dataSource={dataList}
-                    scroll={{ x: 1300 }}
+                    scroll={{ y:550 }}
+                    pagination={
+                        {
+                            total: tableParams.pagination.total,
+                            pageSize: tableParams.pagination.pageSize,
+                            onChange: (page, pageSize) => {
+
+                                getIlmiyNashir(page, pageSize);
+                            }
+                        }
+                    }
                 />
             </div>
         </div>

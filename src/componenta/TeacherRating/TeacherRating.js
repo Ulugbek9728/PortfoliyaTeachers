@@ -8,31 +8,29 @@ import moment from 'moment';
 
 const TeacherRating = () => {
 
-  const CurrentUser = () => {
-
-    axios.get(`${ApiName}/api/profile/current`, {
-      headers:{
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${fulInfo?.accessToken}`
-      }
-    }).then((response) => {
-      if (response.data.isSuccess === true) {
-        localStorage.setItem("getMyInfo", JSON.stringify(response.data.data));
-        console.log(getFullInfo); 
-    }
-    }).catch((error) => {
-
-      console.log(error);
-    })
-
-};
-
-useEffect(() => {
-  return ()=>{CurrentUser()}
- 
-}, []);
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-  const getFullInfo = JSON.parse(localStorage.getItem('getMyInfo'))
+  const [getFullInfo, setGetFullInfo] = useState(null);
+
+  useEffect(() => {  
+    fetchCurrentUser();
+  }, []);
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await axios.get(`${ApiName}/api/profile/current`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+      });
+
+      if (response.data.isSuccess === true) {
+        setGetFullInfo(response.data.data);
+      }
+    } catch (error) {
+      console.log('Xatolik yuz berdi:', error);
+    }
+  };
+
 
   const [data, setData] = useState({
     profileId: fulInfo?.id,
@@ -214,7 +212,7 @@ useEffect(() => {
             attachId: ""
           }
         }); 
-        CurrentUser();
+        fetchCurrentUser();
       })
       .catch(error => {
         console.error('Error:', error);
@@ -343,7 +341,6 @@ useEffect(() => {
                 <p> {getFullInfo?.profileTop1000?.university}</p>
               </div>
             </div>
-            
             </div>
           </div>
           <button className='btn btn-warning' style={{ height: 50 }} onClick={() => setEdite(!edite)}>

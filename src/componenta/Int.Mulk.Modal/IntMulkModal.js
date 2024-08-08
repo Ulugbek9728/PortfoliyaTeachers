@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react'
 import {Button, DatePicker, Divider, Form, Input, message, Select, Upload,} from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-
 import './IntModal.scss'
 import {ApiName} from "../../api/APIname";
 import {PlusOutlined} from "@ant-design/icons";
@@ -252,7 +251,6 @@ const IntMulkModal = (props) => {
                       },
                   ]}
             >
-
                 <Form.Item
                     layout="vertical"
                     label="Intelektual mulk turi"
@@ -309,7 +307,6 @@ const IntMulkModal = (props) => {
                                })
                            ]}/>
                 </Form.Item>
-
                 <Form.Item
                     layout="vertical"
                     label="Mualliflar"
@@ -434,7 +431,6 @@ const IntMulkModal = (props) => {
                         )}
                     />
                 </Form.Item>
-
                 <Form.Item
                     layout="vertical"
                     label="O'quv yili"

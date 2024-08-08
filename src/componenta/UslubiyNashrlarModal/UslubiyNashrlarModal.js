@@ -10,7 +10,7 @@ import {
   message,
   Divider,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { ApiName } from "../../api/APIname";
 import "./UslubiyNashrlarModal.scss";
@@ -23,7 +23,6 @@ const UslubiyNashrlarModal = (props) => {
   const [searchResults, setSearchResults] = useState([]);
   const [stylePublicationType, setStylePublicationType] = useState([]);
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState([]);
   const [url, seturl] = useState(true);
   const formRef = useRef(null);
   const [data, setData] = useState({
@@ -51,19 +50,18 @@ const UslubiyNashrlarModal = (props) => {
     degreeAndTitle: "",
   });
   const [form2] = Form.useForm();
-  const [name, setName] = useState("");
-  const [items, setItems] = useState(["jack", "lucy"]);
   useEffect((value) => {
     ClassifairGet();
     if (props.editingData) {
       const editingValues = {
         ...props.editingData,
+        mediaIds:props.editingData.mediaIds?.map((item)=>item.attachResDTO.id),
         styleCertificateDate: dayjs(props.editingData.styleCertificateDate),
         issueYear: dayjs(props.editingData.issueYear),
         authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
         scientificField: props.editingData.scientificField,
         publicationType: props.editingData.publicationType,
-        scientificPublicationType: props.editingData.scientificPublicationType?.code,
+        stylePublicationType: props.editingData.stylePublicationType,
         fileType: props.editingData.fileType || 'Url'
       };
       setData(editingValues);
@@ -153,53 +151,78 @@ const UslubiyNashrlarModal = (props) => {
   }));
   };
 
-  const handleFileChange = (info) => {
-    let newFileList = [...info.fileList];
-    setFileList(newFileList);
-    if (info.file.status === "done") {
-      message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
-      setData((prevState) => ({
-        ...prevState,
-        mediaIds: [info.file.response.id],
-      }));
-    } else if (info.file.status === "error") {
-      message.error(`${info.file.name} fayl yuklashda xato.`);
-    }
-  };
-
   const handleSelectChange = (value, option) => {
     const { name } = option;
-    setData((prevState) => ({
+    setData(prevState => ({
       ...prevState,
-      [name]:
-        name === "stylePublicationType"
-          ? stylePublicationType[0]?.options?.filter(
-              (item) => item.code === value
-            )[0]
-          : value,
-    }));
+      [name]: name === 'stylePublicationType' ? stylePublicationType[0]?.options?.filter(item => item.code === value)[0] : value
+  }));
     if (name === "fileType") {
       seturl(value === "Url");
     }
   };
 
   const uploadProps = {
-    name: "file",
+    name: 'file',
     action: `${ApiName}/api/v1/attach/upload`,
     headers: {
-      Authorization: `Bearer ${fulInfo?.accessToken}`,
+        Authorization: `Bearer ${fulInfo?.accessToken}`,
     },
-    fileList: fileList,
-    onChange: (info) => handleFileChange(info),
-    showUploadList: false,
-  };
-  // const options = [];
-  // for (let i = 10; i < 36; i++) {
-  //   options.push({
-  //     label: i.toString(36) + i,
-  //     value: i.toString(36) + i,
-  //   });
-  // }  
+    fileList: props.editingData?.mediaIds?.map((item)=> {
+        const attachResDTO = item.attachResDTO;
+        return { uid: attachResDTO.id,id:attachResDTO.id, name: attachResDTO.fileName, status: 'done', url: attachResDTO.url }
+    }),
+    onChange(info) {
+        console.log(info)
+        if (info.file.status === 'done') {
+            message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
+            setData(prevState => ({
+                ...prevState,
+                mediaIds: [info.file.response.id],
+            }));
+        }
+
+        else if (info.file.status === 'removed') {
+            if (props.editingData){
+                console.log(data.mediaIds)
+                const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.id);
+                console.log(result)
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: result,
+                }));
+                axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
+                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                }).then((res) => {
+                    message.success("File o'chirildi")
+
+                }).catch((error) => {
+                    message.error(`${info.file.name} file delete failed.`);
+                })
+            }
+            else {
+                const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: [result],
+                }));
+                axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
+                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                }).then((res) => {
+                    message.success("File o'chirildi")
+                }).catch((error) => {
+                    message.error(`${info.file.name} file delete failed.`);
+                })
+            }
+
+        }
+
+        else if (info.file.status === 'error') {
+            message.error(`${info.file.name} fayl yuklashda xato.`);
+        }
+    },
+};
+
   const handleSubmit = (values) => {
   const request = props.editingData
     ? axios.put(`${ApiName}/api/publication/update`,{
@@ -558,12 +581,10 @@ const UslubiyNashrlarModal = (props) => {
             wrapperCol={{ span: 24 }}
             className="col-6"
             name="file"
-            valuePropName="fileList"
-            onChange={handleFileChange}
+            // valuePropName="fileList"
           >
-            <Upload {...uploadProps}>
-              <Button>Fayl yuklash</Button>
-            </Upload>
+           <Upload name='file' {...uploadProps}>
+             <Button icon={<UploadOutlined />}>PDF</Button>                    </Upload>
           </Form.Item>
         )}
 

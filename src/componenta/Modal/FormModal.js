@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {Button, Form, Input, Select, Upload, message, DatePicker, Divider} from 'antd';
-import {PlusOutlined} from '@ant-design/icons';
+import {PlusOutlined,UploadOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import {ApiName} from '../../api/APIname';
 import dayjs from 'dayjs';
@@ -39,14 +39,6 @@ const FormModal = (props) => {
         mediaIds: [],
         authorIds: []
     });
-    const [searchResults, setSearchResults] = useState([]);
-    const [monografiya, setMonografiya] = useState(false);
-    const [url, setUrl] = useState(true);
-    const [fileList, setFileList] = useState([]);
-    const [form] = Form.useForm();
-    const [form2] = Form.useForm();
-    const formRef = useRef(null);
-
 
     useEffect(() => {
         ClassifairGet();
@@ -56,6 +48,7 @@ const FormModal = (props) => {
                 ...props.editingData,
                 issueYear: dayjs(props.editingData.issueYear),
                 authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
+                mediaIds:props.editingData.mediaIds?.map((item)=>item.attachResDTO.id),
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
                 scientificPublicationType: props.editingData.scientificPublicationType,
@@ -168,6 +161,10 @@ const FormModal = (props) => {
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
+        fileList: props.editingData?.mediaIds?.map((item)=> {
+            const attachResDTO = item.attachResDTO;
+            return { uid: attachResDTO.id,id:attachResDTO.id, name: attachResDTO.fileName, status: 'done', url: attachResDTO.url }
+        }),
         onChange: (info) => {
 
             if (info.file.status === 'done') {
@@ -178,18 +175,34 @@ const FormModal = (props) => {
                 }));
             }
             else if (info.file.status === 'removed') {
-                const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
-                setData(prevState => ({
-                    ...prevState,
-                    mediaIds: [result],
-                }));
-                axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
-                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
-                }).then((res) => {
-                    message.success("File o'chirildi")
-                }).catch((error) => {
-                    message.error(`${info.file.name} file delete failed.`);
-                })
+                if(props.editingData){  
+                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.id);
+                    setData(prevState => ({
+                        ...prevState,
+                        mediaIds: [result],
+                    }));
+                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
+                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                    }).then((res) => {
+                        message.success("File o'chirildi")
+                    }).catch((error) => {
+                        message.error(`${info.file.name} file delete failed.`);
+                    })
+                }
+                else{
+                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
+                    setData(prevState => ({
+                        ...prevState,
+                        mediaIds: [result],
+                    }));
+                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
+                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                    }).then((res) => {
+                        message.success("File o'chirildi")
+                    }).catch((error) => {
+                        message.error(`${info.file.name} file delete failed.`);
+                    })
+                }
             }
             else if (info.file.status === 'error') {
                 message.error(`${info.file.name} fayl yuklashda xato.`);
@@ -260,8 +273,10 @@ const FormModal = (props) => {
             })
             if (props.onSuccess) {
                 props.onSuccess();
-
             }
+            if (props.handleCancel) {
+                props.handleCancel();
+              }
 
         }).catch(error => {
             console.log(error);
@@ -293,7 +308,7 @@ const FormModal = (props) => {
                     },
                     {
                         name: "fileType",
-                        value: data?.fileType
+                        value: data.fileType
                     },
                     {
                         name: "doiOrUrl",
@@ -359,9 +374,6 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos tilni tanlang'}]}
                     className='col-6'
                 >
-
-                    <Select
-                        name="language" onChange={(value, option) => handleSelectChange(value, {name: "language"})}
 
                     <Select placeholder='Til'
                         name="language"
@@ -580,13 +592,13 @@ const FormModal = (props) => {
                     <Form.Item
                         layout="vertical"
                         label="Fayl yuklash"
-                        name="PDF"
+                        name="file"
                         labelCol={{span: 24}}
                         wrapperCol={{span: 24}}
                         className='col-6'
                     >
-                        <Upload {...uploadProps}>
-                            <Button>PDF</Button>
+                        <Upload name='file' {...uploadProps}>
+                        <Button icon={<UploadOutlined />}>PDF</Button>
                         </Upload>
                     </Form.Item>
                 )}

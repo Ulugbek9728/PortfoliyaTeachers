@@ -15,7 +15,6 @@ const IntMulkModal = (props) => {
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
-    const [fileList, setFileList] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [Scientificpublication, setScientificpublication] = useState([]);
     const [data, setData] = useState({
@@ -37,6 +36,7 @@ const IntMulkModal = (props) => {
                 ...props.editingData,
                 issueYear: dayjs(props.editingData.issueYear),
                 authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item => item.id) : [],
+                mediaIds:props.editingData.mediaIds?.map((item)=>item.attachResDTO.id),
                 scientificName: props.editingData.scientificName,
                 intellectualPropertyNumber: props.editingData.intellectualPropertyNumber,
             };
@@ -62,8 +62,12 @@ const IntMulkModal = (props) => {
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
-
+        fileList: props.editingData?.mediaIds?.map((item)=> {
+            const attachResDTO = item.attachResDTO;
+            return { uid: attachResDTO.id,id:attachResDTO.id, name: attachResDTO.fileName, status: 'done', url: attachResDTO.url }
+        }),
         onChange(info) {
+            console.log(info)
             if (info.file.status === 'done') {
                 message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
                 setData(prevState => ({
@@ -71,19 +75,40 @@ const IntMulkModal = (props) => {
                     mediaIds: [info.file.response.id],
                 }));
             }
+
             else if (info.file.status === 'removed') {
-                const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
-                setData(prevState => ({
-                    ...prevState,
-                    mediaIds: [result],
-                }));
-                axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
-                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
-                }).then((res) => {
-                    message.success("File o'chirildi")
-                }).catch((error) => {
-                    message.error(`${info.file.name} file delete failed.`);
-                })
+                if (props.editingData){
+                    console.log(data.mediaIds)
+                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.id);
+                    console.log(result)
+                    setData(prevState => ({
+                        ...prevState,
+                        mediaIds: result,
+                    }));
+                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
+                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                    }).then((res) => {
+                        message.success("File o'chirildi")
+
+                    }).catch((error) => {
+                        message.error(`${info.file.name} file delete failed.`);
+                    })
+                }
+                else {
+                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
+                    setData(prevState => ({
+                        ...prevState,
+                        mediaIds: [result],
+                    }));
+                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
+                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                    }).then((res) => {
+                        message.success("File o'chirildi")
+                    }).catch((error) => {
+                        message.error(`${info.file.name} file delete failed.`);
+                    })
+                }
+
             }
 
             else if (info.file.status === 'error') {
@@ -116,7 +141,6 @@ const IntMulkModal = (props) => {
             }
         })
             .then(response => {
-                console.log(response.data)
                 setScientificpublication(response.data);
             })
             .catch(error => {
@@ -168,10 +192,6 @@ const IntMulkModal = (props) => {
             ? axios.put(`${ApiName}/api/publication/update`, {
                 ...data,
                 issueYear: event.issueYear.format('YYYY-MM-DD'),
-                authorIds: event?.authorIds,
-                scientificName: event?.scientificName,
-                intellectualPropertyNumber: event?.intellectualPropertyNumber
-
             }, {
                 headers: {
                     'Content-Type': 'application/json',

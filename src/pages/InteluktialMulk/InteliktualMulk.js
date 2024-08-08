@@ -27,6 +27,7 @@ const InteliktualMulk = () => {
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString)
     };
+
     useEffect(() => {
         ClassifairGet()
         getIntelektualMulk()

@@ -27,6 +27,7 @@ function IlmiyNashrlar(props) {
         setDateListe(dateString);
     };
 
+
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
         const requestData = {id: record.id, publicationStatus: newStatus};
@@ -235,12 +236,11 @@ function IlmiyNashrlar(props) {
                 open={open}
                 onCancel={handleCancel}
                 width={1600}
-
                 style={{ right: "-80px" }}
                 footer={null} 
             >
                 <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel} />
-                
+
 
             </Modal>
 
@@ -250,8 +250,7 @@ function IlmiyNashrlar(props) {
                       className='d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang" name="srcDate">
-                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD"
-                                                onChange={onChangeDate}/>
+                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD" onChange={onChangeDate}/>
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr nomi" name="srcInput">
                         <Input name='srcInput' size="large" style={{width: '400px'}}
@@ -299,7 +298,6 @@ function IlmiyNashrlar(props) {
                                         total: page
                                     }
                                 })
-
                                 getIlmiyNashir();
                             }
                         }

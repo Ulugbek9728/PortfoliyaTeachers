@@ -22,7 +22,7 @@ const UslubiyNashrlarModal = (props) => {
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const inputRef = useRef(null);
   const [searchResults, setSearchResults] = useState([]);
-  const [Scientificpublication, setScientificpublication] = useState([]);
+  const [stylePublicationType, setStylePublicationType] = useState([]);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [url, seturl] = useState(true);
@@ -40,6 +40,9 @@ const UslubiyNashrlarModal = (props) => {
     fileType: "",
     mediaIds: [],
     authorIds: [],
+    stylePublisher: "",
+    styleCertificateNumber: "",
+    styleCertificateDate: ""
   });
   const [data2, setData2] = useState({
     citizenship: "",
@@ -56,6 +59,7 @@ const UslubiyNashrlarModal = (props) => {
     if (props.editingData) {
       const editingValues = {
         ...props.editingData,
+        styleCertificateDate: dayjs(props.editingData.styleCertificateDate),
         issueYear: dayjs(props.editingData.issueYear),
         authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
         scientificField: props.editingData.scientificField,
@@ -87,15 +91,14 @@ const UslubiyNashrlarModal = (props) => {
   }, [props.editingData, form]);
   useEffect(() => {
     return () => {
-      handleSearch("");
+      handleSearch();
     };
   }, []);
-  const handleSearch = async (value) => {
-    console.log(value);
+  const handleSearch = async () => {
 
     try {
       const response = await axios.get(`${ApiName}/api/author/search`, {
-        params: { query: value },
+        params: { query: '' },
         headers: {
           Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
@@ -116,7 +119,7 @@ const UslubiyNashrlarModal = (props) => {
     setData((prevState) => ({
       ...prevState,
       authorIds: value,
-      authorCount: value.length,
+      authorCount: value.length+1,
     }));
   };
 
@@ -133,7 +136,7 @@ const UslubiyNashrlarModal = (props) => {
         },
       })
       .then((response) => {
-        setScientificpublication(response.data);
+        setStylePublicationType(response.data);
       })
       .catch((error) => {
         console.log(error, "error");
@@ -145,6 +148,10 @@ const UslubiyNashrlarModal = (props) => {
       ...prevState,
       [name]: value,
     }));
+    setData2(prevState => ({
+      ...prevState,
+      [name]: value
+  }));
   };
 
   const handleFileChange = (info) => {
@@ -163,12 +170,11 @@ const UslubiyNashrlarModal = (props) => {
 
   const handleSelectChange = (value, option) => {
     const { name } = option;
-    console.log(Scientificpublication);
     setData((prevState) => ({
       ...prevState,
       [name]:
-        name === "scientificPublicationType"
-          ? Scientificpublication[0]?.options?.filter(
+        name === "stylePublicationType"
+          ? stylePublicationType[0]?.options?.filter(
               (item) => item.code === value
             )[0]
           : value,
@@ -196,15 +202,24 @@ const UslubiyNashrlarModal = (props) => {
   //   });
   // }  
   const handleSubmit = (values) => {
-
   const request = props.editingData
-    ? axios.put(`${ApiName}/api/publication/update`, {
+    ? axios.put(`${ApiName}/api/publication/update`,{
+      ...data,
+      issueYear: data.issueYear.format('YYYY-MM-DD'),
+      styleCertificateDate: data.styleCertificateDate.format('YYYY-MM-DD')
+    }, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
       })
-    : axios.post(`${ApiName}/api/publication/create`, {
+    : axios.post(`${ApiName}/api/publication/create`, 
+    {
+      ...data,
+      issueYear: data.issueYear.format('YYYY-MM-DD'),
+      styleCertificateDate: data.styleCertificateDate.format('YYYY-MM-DD')
+  },
+    {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${fulInfo?.accessToken}`,
@@ -212,9 +227,10 @@ const UslubiyNashrlarModal = (props) => {
       })
   request.then(response => {
     message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
+    form.resetFields();
     setData({
       authorCount: 0,
-      issueYear: moment(),
+      issueYear: '',
       publicationType: props?.publicationType,
       language: '',
       scientificName: '',
@@ -223,12 +239,14 @@ const UslubiyNashrlarModal = (props) => {
       publicationDatabase: '',
       decisionScientificCouncil: '',
       fileType: '',
+      stylePublisher: "",
+      styleCertificateNumber: "",
+      styleCertificateDate: "",
       mediaIds: [],
       authorIds: []
     })
     props.getIlmiyNashir()
     // Forma maydonlarini tozalash uchun resetFields chaqirish
-    form.resetFields();
     if (props.onSuccess) {
       props.onSuccess();
     }
@@ -274,8 +292,8 @@ const UslubiyNashrlarModal = (props) => {
       onFinish={handleSubmit}
       fields={[
         {
-          name: "scientificPublicationType",
-          value: data?.scientificPublicationType
+          name: "stylePublicationType",
+          value: data?.stylePublicationType?.code
       },
       {
           name: "decisionScientificCouncil",
@@ -310,38 +328,48 @@ const UslubiyNashrlarModal = (props) => {
           name: "issueYear",
           value: data.issueYear
       },
+      {
+        name: "styleCertificateDate",
+        value: data?.styleCertificateDate
+    },
+    {
+      name: "styleCertificateNumber",
+      value: data?.styleCertificateNumber
+  },
+  {
+    name: "stylePublisher",
+    value: data?.stylePublisher
+},
       ]}
       >
         <Form.Item
           layout="vertical"
           label="Uslubiy nashr turi"
-          name="IlmiyNashr"
+          name="stylePublicationType"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-3"
         >
           <Select
-            value={data.scientificPublicationType}
-            options={Scientificpublication[0]?.options?.map((item) => ({
+            options={stylePublicationType[0]?.options?.map((item) => ({
               label: item.name,
               value: item.code,
             }))}
-            name="scientificPublicationType"
+            name="stylePublicationType"
             onChange={(value, option) =>
-              handleSelectChange(value, { name: "scientificPublicationType" })
+              handleSelectChange(value, { name: "stylePublicationType" })
             }
           />
         </Form.Item>
         <Form.Item
           layout="vertical"
           label="Til"
-          name="Til"
+          name="language"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-3"
         >
           <Select
-            value={data.language}
             name="language"
             onChange={(value, option) =>
               handleSelectChange(value, { name: "language" })
@@ -355,12 +383,12 @@ const UslubiyNashrlarModal = (props) => {
         <Form.Item
           layout="vertical"
           label="Nashrning bibliografik matni"
-          name="nashr"
+          name="scientificName"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-6"
         >
-          <Input value={data.scientificName}
+          <Input 
             name="scientificName"
             onChange={handleInputChange}
             placeholder="Nashrning bibliografik matni"
@@ -371,13 +399,12 @@ const UslubiyNashrlarModal = (props) => {
         <Form.Item
           layout="vertical"
           label="fayl joylash turi"
-          name="IlmFan"
+          name="fileType"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-6"
         >
           <Select
-            value={data.fileType}
             name="fileType"
             onChange={(value, option) =>
               handleSelectChange(value, { name: "fileType" })
@@ -391,23 +418,20 @@ const UslubiyNashrlarModal = (props) => {
         <Form.Item
           layout="vertical"
           label="Mualliflar"
-          name="Mualliflar"
+          name="authorIds"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-6"
         >
           <Select
-            size="large"
-            placeholder="Mualilfar"
-            mode="multiple"
-            allowClear
-            value={data.authorIds}
-            onSearch={handleSearch}
-            onChange={handleChange}
-            options={searchResults.map((author) => ({
-              value: author.id,
-              label: author.fullName,
-            }))}
+              mode="multiple"
+              allowClear
+              placeholder="Mualliflarni qidirish"
+              onChange={handleChange}
+              filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
+                 options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))}
             dropdownRender={(menu) => (
               <>
                 {menu}
@@ -516,14 +540,13 @@ const UslubiyNashrlarModal = (props) => {
           <Form.Item
             layout="vertical"
             label="URL"
-            name="URL"
+            name="doiOrUrl"
             labelCol={{ span: 24 }}
             wrapperCol={{ span: 24 }}
             className="col-6"
             rules={[{ required: true, message: "Iltimos URL manzil kiriting" }]}
           >
             <Input
-              value={data.doiOrUrl}
               name="doiOrUrl"
               onChange={handleInputChange}
               placeholder="URL manzil"
@@ -535,6 +558,7 @@ const UslubiyNashrlarModal = (props) => {
             labelCol={{ span: 24 }}
             wrapperCol={{ span: 24 }}
             className="col-6"
+            name="file"
             valuePropName="fileList"
             onChange={handleFileChange}
           >
@@ -550,8 +574,12 @@ const UslubiyNashrlarModal = (props) => {
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-6"
+          name='stylePublisher'
         >
-          <Input className="py-2" />
+          <Input name="stylePublisher"
+            onChange={handleInputChange}
+            placeholder="Nashriyot"
+            className="py-2" />
         </Form.Item>
         <Form.Item
           layout="vertical"
@@ -576,22 +604,34 @@ const UslubiyNashrlarModal = (props) => {
         <Form.Item
           layout="vertical"
           label="Guvohnoma Raqami"
-          name="IlmiyBazalar"
+          name="styleCertificateNumber"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-3"
         >
-          <InputNumber className="py-1" />
+          <Input 
+            name="styleCertificateNumber"
+            onChange={handleInputChange}
+            placeholder="Guvohnoma raqami"
+            className="py-2" 
+            />
         </Form.Item>
         <Form.Item
           layout="vertical"
           label="Guvonoma sanasi"
-          name="data"
+          name="styleCertificateDate"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
           className="col-3"
         >
-          <DatePicker className="py-2" />
+          <DatePicker 
+          className="py-2"
+          format="YYYY-MM-DD"
+          name="styleCertificateDate"
+          onChange={(date) => {
+              setData({...data, styleCertificateDate: date})
+          }}
+          />
         </Form.Item>
 
         <Form.Item className="col-12 d-flex justify-content-end">

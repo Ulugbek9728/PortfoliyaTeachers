@@ -110,7 +110,7 @@ const FormModal = (props) => {
             });
             console.log(response.data.data)
             if (response.data.isSuccess && !response.data.error) {
-                setSearchResults(response.data.data);
+                setSearchResults(response.data.data || []);
             } else {
                 console.error('Error in response:', response.data.message);
                 setSearchResults([]);
@@ -218,7 +218,8 @@ const FormModal = (props) => {
             : axios.post(`${ApiName}/api/publication/create`, {
                 ...data,
                 issueYear: data.issueYear.format('YYYY-MM-DD')
-            }, {
+            },
+             {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${fulInfo?.accessToken}`,

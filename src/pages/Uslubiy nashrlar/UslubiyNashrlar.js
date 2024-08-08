@@ -1,10 +1,12 @@
 import React, {useState, useRef} from 'react';
+
 import {
     Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
     message, Empty, Drawer, Form, DatePicker, Popconfirm, Input,Switch
 } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import FormModal from '../../componenta/Modal/FormModal';
+
 import './UslubiyNashrlar.scss'
 import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
 import axios from 'axios';

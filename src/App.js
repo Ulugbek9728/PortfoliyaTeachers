@@ -14,6 +14,7 @@ import TeachersDiogramm from "./pages/TeachersDiogramm";
 import UniversitetStatic from "./pages/universitetStatic";
 import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
+import Admin from "./pages/admin/admin";
 
 
 const router = createBrowserRouter([
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
     {
         path:'/profile/*',
         element:<Profile/>,
+    },
+    {
+        path:'/pertfolia_admin/*',
+        element:<Admin/>,
     },
 ]);
 

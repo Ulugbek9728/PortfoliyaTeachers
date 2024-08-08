@@ -1,205 +1,472 @@
+import React, {useEffect, useRef, useState} from 'react'
+import {Button, DatePicker, Divider, Form, Input, message, Select, Upload,} from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 
-import React, { useState } from 'react'
-import { PlusOutlined } from '@ant-design/icons';
-import {   Button,Modal,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Upload, } from 'antd';
 import './IntModal.scss'
-
-import IntURL from '../IntURL/IntURL';
-const IntMulkModal = () => {
-   
-    const [url, seturl] = useState(true) 
-    const [selected, setSelected] = useState('')
-    const [open, setOpen] = useState(false);
-    const [selectfile, setselectfile] = useState()
-    const [error, seterror] = useState('')
-    const [isSucses, setIsSucses] = useState(false);
-    const { RangePicker } = DatePicker;
+import {ApiName} from "../../api/APIname";
+import {PlusOutlined} from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
 
 
-  const handlechangefile = (event) =>{
-    if(event.target.files.length>0){
-     setselectfile(event.target.files[0])
-     console.log(event);
-   }
- }
- const handleSubmit = (event) => { 
-  event.preventDefault()
-  console.log(event);
-  const MIN_FILE_SIZE = 1024
-  const MAX_FILE_SIZE = 5120
+const IntMulkModal = (props) => {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
 
+    const formRef = useRef(null);
+    const [form] = Form.useForm();
+    const [form2] = Form.useForm();
+    const [searchResults, setSearchResults] = useState([]);
+    const [Scientificpublication, setScientificpublication] = useState([]);
+    const [data, setData] = useState({
+        publicationType: props?.publicationType,
+    });
+    const [data2, setData2] = useState({
+        citizenship: "",
+        fullName: "",
+        workplace: "",
+        position: "",
+        degreeAndTitle: ""
+    })
 
-  const fileSizeKilobytes = selectfile.size /1024
-  if( fileSizeKilobytes < MIN_FILE_SIZE ){
-   seterror('Minimum size 1 mb')
-   setIsSucses(false)
-   return;
-  }
-  if( fileSizeKilobytes > MAX_FILE_SIZE ){
-    seterror('Maximum size 5 mb')
-    setIsSucses(false)
-  }
-  seterror("")
-  setIsSucses(true)
-}
-  return (
-    <div>
-    <Form className='row'>
-    <Form.Item         
-           layout="vertical"
-           label="Ism Familya"
-           name="name"
-           labelCol={{ span: 24 }}
-           wrapperCol={{ span: 24 }}
-           className='col-6'>
-        <Input  placeholder='Name' className='py-2'/>
-      </Form.Item>
-      <Form.Item
-           layout="vertical"
-           label="Ilmiy nashr turi"
-           name="IlmiyNashr"
-           labelCol={{ span: 24 }}
-           wrapperCol={{ span: 24 }}  
-           className='col-3'>
-      <Select>
-        <Select.Option className='py-2' value={'demo'}>Boshqa</Select.Option>
-        <Select.Option className='py-2' value={'Ixtiro'}>Ixtiro</Select.Option>
-        <Select.Option className='py-2' value={'Foydali modal'}>Foydali model</Select.Option>
-        <Select.Option className='py-2' value={'Sanoat namunasi'}>Sanoat namunasi</Select.Option>
-        <Select.Option className='py-2' value={'Seleksiya yutuqlari'}>Seleksiya yutuqlari</Select.Option>
-        <Select.Option className='py-2' value={'Tovar belgisi'}>Tovar belgisi</Select.Option>
-        <Select.Option className='py-2' value={'Firma nomlari'}>Firma nomlari</Select.Option>
-        <Select.Option className='py-2' value={'EHM nomlari va ma`lumot bazasi'}>EHM nomlari va ma`lumot bazasi</Select.Option>
-      </Select>
-      </Form.Item>
-      <Form.Item  
-          layout="vertical"
-          label="Til"
-          name="Til"
-          labelCol={{ span: 24 }}
-          wrapperCol={{ span: 24 }}
-          className='col-3'>
-      <Select>
-        <Select.Option value="o`zbek">o`zbek</Select.Option>
-        <Select.Option value="rus">rus</Select.Option>
-        <Select.Option value="eng">eng</Select.Option>
-      </Select>
-      </Form.Item>
+    useEffect(() => {
+        handleSearch()
+        ClassifairGet()
+        if (props.editingData) {
+            const editingValues = {
+                ...props.editingData,
+                issueYear: dayjs(props.editingData.issueYear),
+                authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item => item.id) : [],
+                mediaIds:props.editingData.mediaIds?.map((item)=>item.attachResDTO.id),
+                scientificName: props.editingData.scientificName,
+                intellectualPropertyNumber: props.editingData.intellectualPropertyNumber,
+            };
+            setData(editingValues);
+            form.setFieldsValue(editingValues);
+        } else if (props.handleCancel) {
 
-      <Form.Item
-          layout="vertical"
-          label="Nashrning bibliografik matni"
-          name="nashr"
-          labelCol={{ span: 24 }}
-          wrapperCol={{ span: 24 }}
-          className='col-6'>
-      <Input className='py-2'  placeholder='text'/>
-      </Form.Item>      
-        <Form.Item        
-        layout="vertical"
-        label="fayl joylash"
-        name="IlmFan"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}  
-        className='col-2'>
-      <Select value={selected} defaultValue="Url"  onChange={(e)=> seturl(prevValue => !prevValue)}>
-        <Select.Option value={"Url"} >Url</Select.Option>
-        <Select.Option value={"Upload"}>Upload</Select.Option>
-      </Select>
-      </Form.Item>       
+            setData({
+                issueYear: '',
+                publicationType: props?.publicationType,
+                scientificName: '',
+                publicationDatabase: '',
+                mediaIds: [],
+                authorIds: []
+            })
+            form.resetFields();
+        }
+    }, [props.editingData, form, props.handleCancel]);
 
-      <Form.Item        
-        layout="vertical"
-        label="Ilm-fan soxasi"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}  
-        className='col-6'>
-      <Select>
-        <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
-        <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
-      </Select>
-      </Form.Item>
-     {url === true ? <Form.Item         
-        layout="vertical"
-        label="URL"
-        name="URL"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} 
-        className='col-6'
-        rules={[
-          {  message: "请输入有效的网址" },
+    const uploadProps = {
+        name: 'file',
+        action: `${ApiName}/api/v1/attach/upload`,
+        headers: {
+            Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+        fileList: props.editingData?.mediaIds?.map((item)=> {
+            const attachResDTO = item.attachResDTO;
+            return { uid: attachResDTO.id,id:attachResDTO.id, name: attachResDTO.fileName, status: 'done', url: attachResDTO.url }
+        }),
+        onChange(info) {
+            console.log(info)
+            if (info.file.status === 'done') {
+                message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: [info.file.response.id],
+                }));
+            }
 
-          {
-           type: 'url',
-          }
-          // {
-          //   pattern: new RegExp(/(https):\/\/([\w.]+\/?)\S*/),
-          //   message: "notogri manzil"
-          // }
-        ]}>
-           <IntURL/>
-        </Form.Item> :
-      <Form.Item  labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} className='col-6' valuePropName="fileList" onChange={handlechangefile}>
+            else if (info.file.status === 'removed') {
+                if (props.editingData){
+                    console.log(data.mediaIds)
+                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.id);
+                    console.log(result)
+                    setData(prevState => ({
+                        ...prevState,
+                        mediaIds: result,
+                    }));
+                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
+                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                    }).then((res) => {
+                        message.success("File o'chirildi")
 
-      {isSucses ? <p className='sucsses_msg'>File uploaded successfully</p> : null}
-      <p className='error_msg'>{error}</p>
-      </Form.Item>
-      }
+                    }).catch((error) => {
+                        message.error(`${info.file.name} file delete failed.`);
+                    })
+                }
+                else {
+                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
+                    setData(prevState => ({
+                        ...prevState,
+                        mediaIds: [result],
+                    }));
+                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
+                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                    }).then((res) => {
+                        message.success("File o'chirildi")
+                    }).catch((error) => {
+                        message.error(`${info.file.name} file delete failed.`);
+                    })
+                }
 
-      <Form.Item         
-        layout="vertical"
-        label="Mualliflar somi"
-        name="number"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} 
-        className='col-2' >
-      <InputNumber className='py-1'/>
-      </Form.Item>
-      <Form.Item         
-        layout="vertical"
-        label="Mualliflar"
-        name="Mualliflar"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} 
-        className='col-4'>
-      <Input className='py-2'  placeholder='text'/>
-      </Form.Item>
-      <Form.Item          
-        layout="vertical"
-        label="Xalqaro Ilmiy bazalar"
-        name="IlmiyBazalar"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}  
-        className='col-3'>
-      <Select>
-          <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
-          <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
-      </Select>
-      </Form.Item>
-      <Form.Item         
-        layout="vertical"
-        label="Nashr yili"
-        name="data"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }} 
-        className='col-2'>
-          <DatePicker className='py-2' />
-      </Form.Item>
-      <Form.Item className='col-12 d-flex justify-content-end'>
-        <Button onClick={handleSubmit} type="primary" htmlType="submit">
-           Submit
-        </Button>
-      </Form.Item>
-     </Form>
-    </div>
-  )
+            }
+
+            else if (info.file.status === 'error') {
+                message.error(`${info.file.name} fayl yuklashda xato.`);
+            }
+        },
+    };
+
+    const handleInputChange = (event) => {
+        const {name, value} = event.target;
+        setData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+
+        setData2(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
+    function ClassifairGet() {
+        axios.get(`${ApiName}/api/classifier`, {
+            params: {
+                key: 'h_patient_type'
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            }
+        })
+            .then(response => {
+                setScientificpublication(response.data);
+            })
+            .catch(error => {
+                console.log(error, 'error');
+            });
+    }
+
+    const handleSearch = async () => {
+        try {
+            const response = await axios.get(`${ApiName}/api/author/search`, {
+                params: {query: ''},
+                headers: {
+                    Authorization: `Bearer ${fulInfo?.accessToken}`,
+                },
+            });
+            if (response.data.isSuccess && !response.data.error) {
+                setSearchResults(response.data.data);
+            } else {
+                console.error('Error in response:', response.data.message);
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+            setSearchResults([]);
+        }
+
+    };
+
+    const onFinish = (values) => {
+        const requestPayload2 = {
+            ...data2
+        };
+        console.log(data2);
+        axios.post(`${ApiName}/api/author/create`, requestPayload2, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`,
+            },
+        }).then(response => {
+            console.log(data2);
+            message.success(`Muallif muvaffaqiyatli qo'shildi`);
+        }).catch(error => {
+            console.log(error);
+            message.error(`Muallif 'qo'shishda xatolik`);
+        });
+    };
+    const handleSubmit = (event) => {
+        const request = props.editingData
+            ? axios.put(`${ApiName}/api/publication/update`, {
+                ...data,
+                issueYear: event.issueYear.format('YYYY-MM-DD'),
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${fulInfo?.accessToken}`,
+                },
+            })
+            : axios.post(`${ApiName}/api/publication/create`, {
+                ...data,
+                issueYear: data.issueYear.format('YYYY-MM-DD')
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${fulInfo?.accessToken}`,
+                },
+            })
+        request.then(res => {
+            message.success(`Intelektual mulk ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
+            form.resetFields();
+            props.getIntelektualMulk()
+            if (props.handleCancel) {
+                props.handleCancel();
+            }
+        }).catch(error => console.log(error))
+
+    }
+    const handleChange = (value) => {
+        setData(prevState => ({
+            ...prevState,
+            authorIds: value,
+            authorCount: value.length + 1
+        }));
+    };
+
+    return (
+        <div>
+            <Form className='row' form={form} layout="vertical" ref={formRef} onFinish={handleSubmit}
+                  colon={false}
+                  fields={[
+                      {
+                          name: "intellectualPropertyPublicationType",
+                          value: data?.intellectualPropertyPublicationType?.code
+                      },
+                      {
+                          name: "issueYear",
+                          value: data.issueYear
+                      },
+                      {
+                          name: "authorIds",
+                          value: data.authorIds
+                      },
+                      {
+                          name: "scientificName",
+                          value: data?.scientificName
+                      },
+                      {
+                          name: "intellectualPropertyNumber",
+                          value: data?.intellectualPropertyNumber
+                      },
+                  ]}
+            >
+
+                <Form.Item
+                    layout="vertical"
+                    label="Intelektual mulk turi"
+                    name="intellectualPropertyPublicationType"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    className='col-6'>
+                    <Select placeholder='Intelektual mulk turi'
+                            options={Scientificpublication[0]?.options?.map(item => ({
+                                label: item.name,
+                                value: item.code
+                            }))}
+                            name="intellectualPropertyPublicationType"
+                            onChange={(value, option) => {
+                                setData({
+                                    ...data,
+                                    intellectualPropertyPublicationType: {
+                                        name: option.label,
+                                        code: option.value,
+                                    }
+                                })
+                            }
+
+                            }
+                    />
+                </Form.Item>
+                <Form.Item
+                    layout="vertical"
+                    label="Nashrning bibliografik matni"
+                    name="scientificName"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    className='col-6'>
+                    <Input name='scientificName' className='py-2' placeholder='text'
+                           onChange={(e) => [
+                               setData({
+                                   ...data,
+                                   scientificName: e.target.value
+                               })
+                           ]}/>
+                </Form.Item>
+                <Form.Item
+                    layout="vertical"
+                    label="Intelektual mulk raqami"
+                    name="intellectualPropertyNumber"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    className='col-6'>
+                    <Input name='intellectualPropertyNumber' className='py-2' placeholder='text'
+                           onChange={(e) => [
+                               setData({
+                                   ...data,
+                                   intellectualPropertyNumber: e.target.value
+                               })
+                           ]}/>
+                </Form.Item>
+
+                <Form.Item
+                    layout="vertical"
+                    label="Mualliflar"
+                    name="authorIds"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    className='col-6'
+                >
+                    <Select
+                        mode="multiple"
+                        allowClear
+                        name='authorIds'
+                        placeholder="Mualliflarni qidirish"
+                        onChange={handleChange}
+
+                        filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
+                        filterSort={(optionA, optionB) =>
+                            (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
+                        options={searchResults.map(author => ({
+                            value: author.id,
+                            label: author.fullName + ' (' + author.workplace + ' ' + author.position + ') '
+                        }))}
+                        dropdownRender={(menu) => (
+                            <>
+                                {menu}
+                                <Divider
+                                    style={{
+                                        margin: '8px 0',
+                                    }}
+                                />
+                                <Form
+                                    name="wrap"
+                                    form={form2}
+                                >
+                                    <div className="d-flex gap-2">
+                                        <Form.Item
+                                            name="username"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                },
+                                            ]}
+                                        >
+                                            <Input
+                                                placeholder="Hammuallif F.I.Sh"
+                                                value={data2.fullName}
+                                                name={'fullName'}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Form.Item>
+                                        <Form.Item
+                                            name="fuqaroligi"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                },
+                                            ]}
+                                        >
+                                            <Input
+                                                placeholder="Hammuallif fuqaroligi"
+                                                value={data2.citizenship}
+                                                onChange={handleInputChange}
+                                                name={'citizenship'}
+                                            />
+                                        </Form.Item>
+                                        <Form.Item
+                                            name="ish joyi"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                },
+                                            ]}
+                                        >
+                                            <Input
+                                                placeholder="Hammuallif ish joyi"
+                                                value={data2.workplace}
+                                                onChange={handleInputChange}
+                                                name={'workplace'}
+                                            />
+                                        </Form.Item>
+                                        <Form.Item
+                                            name="lavozimi"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                },
+                                            ]}
+                                        >
+                                            <Input
+                                                placeholder="Hammuallif lavozimi"
+                                                value={data2.position}
+                                                onChange={handleInputChange}
+                                                name={'position'}
+                                            />
+                                        </Form.Item>
+                                    </div>
+                                    <div className="d-flex gap-2">
+                                        <Form.Item
+                                            name="ilmiy daraja va unvoni"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                },
+                                            ]}
+                                        >
+                                            <Input
+                                                placeholder="Hammuallif ilmiy daraja va unvoni"
+                                                onChange={handleInputChange}
+                                                value={data2.degreeAndTitle}
+                                                name={'degreeAndTitle'}
+                                            />
+                                        </Form.Item>
+                                        <Form.Item>
+                                            <Button type="primary" icon={<PlusOutlined/>} onClick={onFinish}
+                                                    htmlType="submit">
+                                                Qo'shish
+                                            </Button>
+                                        </Form.Item>
+                                    </div>
+                                </Form>
+                            </>
+                        )}
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    layout="vertical"
+                    label="O'quv yili"
+                    name="issueYear"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    className='col-6'>
+                    <DatePicker name='data' className='py-2'
+                                onChange={(date) => {
+                                    setData({...data, issueYear: date})
+                                }}/>
+                </Form.Item>
+                <Form.Item
+                    layout="vertical"
+                    label="Fayl yuklash"
+                    name="file"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    className='col-6'
+                >
+                    <Upload name='file' {...uploadProps}>
+                        <Button icon={<UploadOutlined />}>PDF</Button>
+                    </Upload>
+                </Form.Item>
+                <Form.Item className='col-12 d-flex justify-content-end'>
+                    <Button type="primary" htmlType="submit">
+                        Submit
+                    </Button>
+                </Form.Item>
+            </Form>
+        </div>
+    )
 }
 
 export default IntMulkModal

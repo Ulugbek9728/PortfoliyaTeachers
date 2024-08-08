@@ -39,10 +39,18 @@ const FormModal = (props) => {
         mediaIds: [],
         authorIds: []
     });
+    const [searchResults, setSearchResults] = useState([]);
+    const [monografiya, setMonografiya] = useState(false);
+    const [url, setUrl] = useState(true);
+    const [fileList, setFileList] = useState([]);
+    const [form] = Form.useForm();
+    const [form2] = Form.useForm();
+    const formRef = useRef(null);
 
 
-    useEffect((value) => {
+    useEffect(() => {
         ClassifairGet();
+        handleSearch()
         if (props.editingData) {
             const editingValues = {
                 ...props.editingData,
@@ -50,13 +58,12 @@ const FormModal = (props) => {
                 authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
-                scientificPublicationType: props.editingData.scientificPublicationType?.code,
+                scientificPublicationType: props.editingData.scientificPublicationType,
                 fileType: props.editingData.fileType || 'Url'
             };
             setData(editingValues);
             form.setFieldsValue(editingValues);
-            // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
-            // setUrl(props.editingData.fileType === 'Url');
+
         }
         else if (props.handleCancel){
             setData({
@@ -73,14 +80,10 @@ const FormModal = (props) => {
                 mediaIds: [],
                 authorIds: []
             })
-        }
-    }, [props.editingData, form]);
+            form.resetFields();
 
-    useEffect(() => {
-        return () => {
-            handleSearch()
         }
-    }, [])
+    }, [props.editingData, form, props.handleCancel]);
 
     function ClassifairGet() {
         axios.get(`${ApiName}/api/classifier`, {
@@ -165,26 +168,37 @@ const FormModal = (props) => {
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
-        fileList: fileList,
-        onChange: (info) => handleFileChange(info),
-        showUploadList: false,
-    };
+        onChange: (info) => {
 
-    const handleFileChange = (info) => {
-        let newFileList = [...info.fileList];
-        setFileList(newFileList);
-        if (info.file.status === 'done') {
-            message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
-            setData(prevState => ({
-                ...prevState,
-                mediaIds: [info.file.response.id],
-            }));
-        } else if (info.file.status === 'error') {
-            message.error(`${info.file.name} fayl yuklashda xato.`);
+            if (info.file.status === 'done') {
+                message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: [info.file.response.id],
+                }));
+            }
+            else if (info.file.status === 'removed') {
+                const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: [result],
+                }));
+                axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
+                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                }).then((res) => {
+                    message.success("File o'chirildi")
+                }).catch((error) => {
+                    message.error(`${info.file.name} file delete failed.`);
+                })
+            }
+            else if (info.file.status === 'error') {
+                message.error(`${info.file.name} fayl yuklashda xato.`);
+            }
         }
+
     };
 
-    const onFinish = (values) => {
+    const onFinish = () => {
         const requestPayload2 = {
             ...data2
         };
@@ -196,15 +210,16 @@ const FormModal = (props) => {
             },
         }).then(response => {
             console.log(data2);
-            message.success(`Maqola muvaffaqiyatli 'qo'shildi'}`);
+            form2.resetFields();
+            handleSearch()
+            message.success(`Muallif muvaffaqiyatli qo'shildi`);
         }).catch(error => {
             console.log(error);
-            message.error(`Maqolani 'qo'shishda'} xatolik`);
+            message.error(`Muallif 'qo'shishda xatolik`);
         });
     };
 
     const handleSubmit = (values) => {
-        console.log(data)
         const request = props.editingData
             ? axios.put(`${ApiName}/api/publication/update`, {
                 ...data,
@@ -226,7 +241,7 @@ const FormModal = (props) => {
                 },
             })
         request.then(response => {
-            message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
+            message.success(`Ilmiy nashir ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             form.resetFields();
             props.getIlmiyNashir()
             setData({
@@ -243,27 +258,21 @@ const FormModal = (props) => {
                 mediaIds: [],
                 authorIds: []
             })
-            // Forma maydonlarini tozalash uchun resetFields chaqirish
             if (props.onSuccess) {
                 props.onSuccess();
 
             }
-            // Modalni yopish
-            if (props.handleCancel) {
-                props.handleCancel();
-            }
+
         }).catch(error => {
             console.log(error);
-            message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
+            message.error(`Ilmiy nashir ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
         });
     };
     return (
         <div>
             <Form
-                form={form}
-                ref={formRef}
-                initialValues={data}
-                className='row'
+                form={form} ref={formRef}
+                initialValues={data} className='row'
                 onFinish={handleSubmit}
                 fields={[
                     {
@@ -315,7 +324,7 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos ilmiy nashr turini tanlang'}]}
                     className='col-6'
                 >
-                    <Select
+                    <Select placeholder='Ilmiy nashr turi'
                         options={Scientificpublication[0]?.options?.map(item => ({label: item.name, value: item.code}))}
                         name="scientificPublicationType"
                         onChange={(value, option) => handleSelectChange(value, {name: "scientificPublicationType"})}
@@ -350,8 +359,13 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos tilni tanlang'}]}
                     className='col-6'
                 >
+
                     <Select
                         name="language" onChange={(value, option) => handleSelectChange(value, {name: "language"})}
+
+                    <Select placeholder='Til'
+                        name="language"
+                        onChange={(value, option) => handleSelectChange(value, {name: "language"})}
                     >
                         <Select.Option value="uz">uz</Select.Option>
                         <Select.Option value="ru">ru</Select.Option>
@@ -366,7 +380,7 @@ const FormModal = (props) => {
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
-                    className='col-12'
+                    className='col-6'
                 >
                     <Input
                         name="scientificName"
@@ -375,6 +389,142 @@ const FormModal = (props) => {
                         className='py-2'
                     />
                 </Form.Item>
+
+                <Form.Item
+                    layout="vertical"
+                    label="Ilm-fan sohasi"
+                    name="scientificField"
+                    labelCol={{ span: 24 }}
+                    wrapperCol={{ span: 24 }}
+                    className='col-6'
+                >
+                    <Select value={data.scientificField} name="scientificField"
+                            onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}>
+                        <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
+                        <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    layout="vertical"
+                    label="Mualliflar"
+                    name="authorIds"
+                    labelCol={{span: 24}}
+                    wrapperCol={{span: 24}}
+                    rules={[{required: true, message: 'Iltimos mualliflarni tanlang'}]}
+                    className='col-6'
+                >
+                    <Select size='large'
+                            mode="multiple"
+                            allowClear
+                            placeholder="Mualliflarni qidirish"
+                            onChange={handleChange}
+                            filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
+                            filterSort={(optionA, optionB) =>
+                                (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
+                            options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))}
+                            dropdownRender={(menu) => (
+                                <>
+                                    {menu}
+                                    <Divider
+                                        style={{
+                                            margin: '8px 0',
+                                        }}
+                                    />
+                                    <Form
+                                        name="wrap"
+                                        form={form2}
+                                    >
+                                        <div className="d-flex gap-2">
+                                            <Form.Item
+                                                name="username"
+                                                rules={[
+                                                    {
+                                                        required: true,
+                                                    },
+                                                ]}
+                                            >
+                                                <Input
+                                                    placeholder="Hammuallif F.I.Sh"
+                                                    value={data2.fullName}
+                                                    name={'fullName'}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </Form.Item>
+                                            <Form.Item
+                                                name="fuqaroligi"
+                                                rules={[
+                                                    {
+                                                        required: true,
+                                                    },
+                                                ]}
+                                            >
+                                                <Input
+                                                    placeholder="Hammuallif fuqaroligi"
+                                                    value={data2.citizenship}
+                                                    onChange={handleInputChange}
+                                                    name={'citizenship'}
+                                                />
+                                            </Form.Item>
+                                            <Form.Item
+                                                name="ish joyi"
+                                                rules={[
+                                                    {
+                                                        required: true,
+                                                    },
+                                                ]}
+                                            >
+                                                <Input
+                                                    placeholder="Hammuallif ish joyi"
+                                                    value={data2.workplace}
+                                                    onChange={handleInputChange}
+                                                    name={'workplace'}
+                                                />
+                                            </Form.Item>
+                                            <Form.Item
+                                                name="lavozimi"
+                                                rules={[
+                                                    {
+                                                        required: true,
+                                                    },
+                                                ]}
+                                            >
+                                                <Input
+                                                    placeholder="Hammuallif lavozimi"
+                                                    value={data2.position}
+                                                    onChange={handleInputChange}
+                                                    name={'position'}
+                                                />
+                                            </Form.Item>
+                                        </div>
+                                        <div className="d-flex gap-2">
+                                            <Form.Item
+                                                name="ilmiy daraja va unvoni"
+                                                rules={[
+                                                    {
+                                                        required: true,
+                                                    },
+                                                ]}
+                                            >
+                                                <Input
+                                                    placeholder="Hammuallif ilmiy daraja va unvoni"
+                                                    onChange={handleInputChange}
+                                                    value={data2.degreeAndTitle}
+                                                    name={'degreeAndTitle'}
+                                                />
+                                            </Form.Item>
+                                            <Form.Item>
+                                                <Button type="primary" icon={<PlusOutlined/>} onClick={onFinish}
+                                                        htmlType="submit">
+                                                    Qo'shish
+                                                </Button>
+                                            </Form.Item>
+                                        </div>
+                                    </Form>
+                                </>
+                            )}
+                    />
+                </Form.Item>
+
 
                 <Form.Item
                     layout="vertical"
@@ -390,9 +540,24 @@ const FormModal = (props) => {
                         onChange={(value, option) => handleSelectChange(value, {name: "fileType"})}
                     >
                         <Select.Option value="Url">Url</Select.Option>
-                        <Select.Option value="Upload">Upload</Select.Option>
+                        <Select.Option value="Upload">PDF yuklash</Select.Option>
                     </Select>
                 </Form.Item>
+                <Form.Item
+                    layout="vertical"
+                    label="Xalqaro ilmiy bazalar"
+                    name="publicationDatabase"
+                    labelCol={{ span: 24 }}
+                    wrapperCol={{ span: 24 }}
+                    className='col-6'
+                >
+                    <Select value={data.scientificField} name="scientificField"
+                            onChange={(value, option) => handleSelectChange(value, { name: "publicationDatabase" })}>
+                        <Select.Option value="Xalqaro ilmiy bazalar1">Xalqaro ilmiy bazalar 1</Select.Option>
+                        <Select.Option value="Xalqaro ilmiy bazalar2">Xalqaro ilmiy bazalar 2</Select.Option>
+                    </Select>
+                </Form.Item>
+
 
                 {url ? (
                     <Form.Item
@@ -415,154 +580,16 @@ const FormModal = (props) => {
                     <Form.Item
                         layout="vertical"
                         label="Fayl yuklash"
-                        name="file"
+                        name="PDF"
                         labelCol={{span: 24}}
                         wrapperCol={{span: 24}}
                         className='col-6'
                     >
                         <Upload {...uploadProps}>
-                            <Button>Fayl yuklash</Button>
+                            <Button>PDF</Button>
                         </Upload>
                     </Form.Item>
                 )}
-
-                <Form.Item
-                    layout="vertical"
-                    label="Ilmiy yo'nalish"
-                    name="scientificField"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
-                    rules={[{required: true, message: 'Iltimos ilmiy yo\'nalishni kiriting'}]}
-                    className='col-6'
-                >
-                    <Input
-                        name="scientificField"
-                        onChange={handleInputChange}
-                        placeholder='Ilmiy yo`nalish'
-                        className='py-2'
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    layout="vertical"
-                    label="Mualliflar"
-                    name="authorIds"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
-                    rules={[{required: true, message: 'Iltimos mualliflarni tanlang'}]}
-                    className='col-6'
-                >
-                    <Select
-                        mode="multiple"
-                        allowClear
-                        placeholder="Mualliflarni qidirish"
-                        onChange={handleChange}
-                        filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
-                        filterSort={(optionA, optionB) =>
-                            (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
-                        options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))}
-                        dropdownRender={(menu) => (
-                            <>
-                                {menu}
-                                <Divider
-                                    style={{
-                                        margin: '8px 0',
-                                    }}
-                                />
-                                <Form
-                                    name="wrap"
-                                    form={form2}
-                                >
-                                    <div className="d-flex gap-2">
-                                        <Form.Item
-                                            name="username"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                },
-                                            ]}
-                                        >
-                                            <Input
-                                                placeholder="Hammuallif F.I.Sh"
-                                                value={data2.fullName}
-                                                name={'fullName'}
-                                                onChange={handleInputChange}
-                                            />
-                                        </Form.Item>
-                                        <Form.Item
-                                            name="fuqaroligi"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                },
-                                            ]}
-                                        >
-                                            <Input
-                                                placeholder="Hammuallif fuqaroligi"
-                                                value={data2.citizenship}
-                                                onChange={handleInputChange}
-                                                name={'citizenship'}
-                                            />
-                                        </Form.Item>
-                                        <Form.Item
-                                            name="ish joyi"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                },
-                                            ]}
-                                        >
-                                            <Input
-                                                placeholder="Hammuallif ish joyi"
-                                                value={data2.workplace}
-                                                onChange={handleInputChange}
-                                                name={'workplace'}
-                                            />
-                                        </Form.Item>
-                                        <Form.Item
-                                            name="lavozimi"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                },
-                                            ]}
-                                        >
-                                            <Input
-                                                placeholder="Hammuallif lavozimi"
-                                                value={data2.position}
-                                                onChange={handleInputChange}
-                                                name={'position'}
-                                            />
-                                        </Form.Item>
-                                    </div>
-                                    <div className="d-flex gap-2">
-                                        <Form.Item
-                                            name="ilmiy daraja va unvoni"
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                },
-                                            ]}
-                                        >
-                                            <Input
-                                                placeholder="Hammuallif ilmiy daraja va unvoni"
-                                                onChange={handleInputChange}
-                                                value={data2.degreeAndTitle}
-                                                name={'degreeAndTitle'}
-                                            />
-                                        </Form.Item>
-                                        <Form.Item>
-                                            <Button type="primary" icon={<PlusOutlined/>} onClick={onFinish}
-                                                    htmlType="submit">
-                                                Qo'shish
-                                            </Button>
-                                        </Form.Item>
-                                    </div>
-                                </Form>
-                            </>
-                        )}
-                    />
-                </Form.Item>
 
                 <Form.Item
                     layout="vertical"
@@ -582,6 +609,7 @@ const FormModal = (props) => {
                         className='py-2'
                     />
                 </Form.Item>
+
 
                 <Form.Item className='col-12 d-flex justify-content-end'>
                     <Button type="primary" htmlType="submit">Yuborish</Button>

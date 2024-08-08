@@ -14,7 +14,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { ApiName } from "../../api/APIname";
 import "./UslubiyNashrlarModal.scss";
-import IntURL from "../IntURL/IntURL";
 import moment from "moment";
 import dayjs from "dayjs";
 

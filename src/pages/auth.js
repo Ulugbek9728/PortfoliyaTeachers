@@ -23,11 +23,20 @@ function Auth(props) {
                     state: searchParams.get('state')
                 }
             }).then((response) => {
+                console.log(response.data)
+
                 if (response.data.isSuccess === true) {
                     setLoading(false)
                     setLogin(true)
                     localStorage.setItem("myInfo", JSON.stringify(response.data.data));
-                    navigate('/profile')
+                    navigate('/profile/1')
+                    if (response?.data?.data?.roles[0]==="ROLE_ADMIN"){
+                        // navigate('/pertfolia_admin')
+                        // navigate('/profile/1')
+                    }
+                    else {
+                        // navigate('/profile/1')
+                    }
                 }
                 else {
                     setLoading(false)

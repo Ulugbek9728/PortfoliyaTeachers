@@ -10,28 +10,6 @@ const TeacherRating = () => {
 
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const [getFullInfo, setGetFullInfo] = useState(null);
-
-  useEffect(() => {  
-    fetchCurrentUser();
-  }, []);
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await axios.get(`${ApiName}/api/profile/current`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${fulInfo?.accessToken}`,
-        },
-      });
-
-      if (response.data.isSuccess === true) {
-        setGetFullInfo(response.data.data);
-      }
-    } catch (error) {
-      console.log('Xatolik yuz berdi:', error);
-    }
-  };
-
-
   const [data, setData] = useState({
     profileId: fulInfo?.id,
     specialist: {
@@ -71,6 +49,68 @@ const TeacherRating = () => {
   const [edite, setEdite] = useState(false);
   const [radio, setRadio] = useState(false);
   const [radio2, setRadio2] = useState(data.isTop1000);
+
+  useEffect(() => {
+    if (edite) {
+      setData({
+        profileId: fulInfo?.id,
+        specialist: {
+          name: getFullInfo?.specialist?.name || "",
+          date: getFullInfo?.specialist?.date || "",
+          number: getFullInfo?.specialist?.number || null,
+
+        },
+        scientificTitle: {
+          name: getFullInfo?.scientificTitle?.name || "",
+          date: getFullInfo?.scientificTitle?.date || "",
+          number: getFullInfo?.scientificTitle?.number || null,
+          
+        },
+        profileRating: {
+          scopusURL: getFullInfo?.profileRating?.scopusURL || "",
+          wosURL: getFullInfo?.profileRating?.wosURL || "",
+          googleScholarURL: getFullInfo?.profileRating?.googleScholarURL || ""
+        },
+        scientificDegree: {
+          name: getFullInfo?.scientificDegree?.name || "",
+          date: getFullInfo?.scientificDegree?.date || "",
+          number: getFullInfo?.scientificDegree?.number || null, 
+        },
+        isTop1000: getFullInfo?.isTop1000 || false,
+        profileTop1000: {
+          country: getFullInfo?.profileTop1000?.country || "",
+          university: getFullInfo?.profileTop1000?.university || ""
+        },
+        profileStateAwardDTO: {
+          nameStateAward: getFullInfo?.profileStateAwardDTO?.nameStateAward || "",
+          date: getFullInfo?.profileStateAwardDTO?.date || "",
+        }
+      });
+      setRadio(getFullInfo?.scientificDegree?.name ? true : false);
+      setRadio2(getFullInfo?.isTop1000 || false);
+    }
+  }, [edite, getFullInfo]);
+  useEffect(() => {  
+    fetchCurrentUser();
+  }, []);
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await axios.get(`${ApiName}/api/profile/current`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+      });
+
+      if (response.data.isSuccess === true) {
+        setGetFullInfo(response.data.data);
+      }
+    } catch (error) {
+      console.log('Xatolik yuz berdi:', error);
+    }
+  };
+
+
 
   const handleDateChange = (date, name) => {
     const formattedDate = date ? date.format('YYYY-MM-DD') : null;
@@ -176,42 +216,6 @@ const TeacherRating = () => {
       .then(response => {
         message.success('Form submitted successfully');
         setEdite(false);
-        setData({
-          profileId: fulInfo?.id,
-          specialist: {
-            name: "",
-            date: "",
-            number: null,
-            attachId: ""
-          },
-          scientificTitle: {
-            name: "",
-            date: "",
-            number: null,
-            attachId: ""
-          },
-          profileRating: {
-            scopusURL: "",
-            wosURL: "",
-            googleScholarURL: ""
-          },
-          scientificDegree: {
-            name: "",
-            date: "",
-            number: null,
-            attachId: ""
-          },
-          isTop1000: false,
-          profileTop1000: {
-            country: "",
-            university: ""
-          },
-          profileStateAwardDTO: {
-            nameStateAward: "",
-            date: "",
-            attachId: ""
-          }
-        }); 
         fetchCurrentUser();
       })
       .catch(error => {

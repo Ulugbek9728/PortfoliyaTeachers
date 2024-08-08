@@ -41,7 +41,7 @@ const FormModal = (props) => {
     const formRef = useRef(null);
 
 
-    useEffect((value) => {
+    useEffect(() => {
         ClassifairGet();
         handleSearch()
         if (props.editingData) {
@@ -56,8 +56,7 @@ const FormModal = (props) => {
             };
             setData(editingValues);
             form.setFieldsValue(editingValues);
-            // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
-            // setUrl(props.editingData.fileType === 'Url');
+
         }
         else if (props.handleCancel){
             setData({
@@ -74,8 +73,10 @@ const FormModal = (props) => {
                 mediaIds: [],
                 authorIds: []
             })
+            form.resetFields();
+
         }
-    }, [props.editingData, form]);
+    }, [props.editingData, form, props.handleCancel]);
 
     function ClassifairGet() {
         axios.get(`${ApiName}/api/classifier`, {
@@ -201,7 +202,6 @@ const FormModal = (props) => {
     };
 
     const handleSubmit = (values) => {
-        console.log(data)
         const request = props.editingData
             ? axios.put(`${ApiName}/api/publication/update`, {
                 ...data,
@@ -239,15 +239,11 @@ const FormModal = (props) => {
                 mediaIds: [],
                 authorIds: []
             })
-            // Forma maydonlarini tozalash uchun resetFields chaqirish
             if (props.onSuccess) {
                 props.onSuccess();
 
             }
-            // Modalni yopish
-            if (props.handleCancel) {
-                props.handleCancel();
-            }
+
         }).catch(error => {
             console.log(error);
             message.error(`Ilmiy nashir ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
@@ -256,10 +252,8 @@ const FormModal = (props) => {
     return (
         <div>
             <Form
-                form={form}
-                ref={formRef}
-                initialValues={data}
-                className='row'
+                form={form} ref={formRef}
+                initialValues={data} className='row'
                 onFinish={handleSubmit}
                 fields={[
                     {

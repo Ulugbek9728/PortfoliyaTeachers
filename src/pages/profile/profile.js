@@ -3,6 +3,7 @@ import TeacherRating from "../../componenta/TeacherRating/TeacherRating";
 import {UserOutlined,FileTextOutlined} from '@ant-design/icons';
 import {NavLink, Route, Routes,} from "react-router-dom";
 import "./profile.scss"
+import "../../style/buttons.scss"
 
 import {Layout} from 'antd';
 import Navbar from "../../componenta/Navbar";
@@ -54,10 +55,7 @@ function Profile(props) {
         <div>
             <Navbar/>
             <Layout hasSider>
-                <Sider style={{overflow: 'auto', height: '84.5vh',
-                    // zIndex: 1, position: 'fixed', left: 0,
-                    // top: '140px', bottom: 0,
-                }}>
+                <Sider style={{overflow: 'auto', height: '84.5vh',}}>
                     <div className='verticalMenu'>
                         {items.map((i, index)=>{
                                 return<NavLink key={index} to={`${i.key}`}>

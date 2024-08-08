@@ -1,9 +1,5 @@
 import React, {useState, useRef} from 'react';
-import {
-    Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
-    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
-} from 'antd';
-import FormModal from '../../componenta/Modal/FormModal';
+import {Table, Modal, Form, DatePicker, Input} from 'antd';
 import './UslubiyNashrlar.scss'
 import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
 const UslubiyNashrlar = () => {

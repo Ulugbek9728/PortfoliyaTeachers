@@ -95,7 +95,7 @@ useEffect(() => {
     });
   };
 
-  const handleFileChange = (info, section) => {
+  const handleFileChange = (info, section) =>   {
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
       setData((prevState) => ({

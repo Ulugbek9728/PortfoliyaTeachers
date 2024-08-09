@@ -64,11 +64,6 @@ function IlmiyNashrlar(props) {
             width: 150
         },
         {
-            title: 'Ilmiy yoki ilmiy texnik kengash qarori',
-            dataIndex: 'decisionScientificCouncil',
-            width: 150
-        },
-        {
             title: 'Ilmiy nashr tili',
             width: 100,
             render: (item, record, index) => (<>{item?.language}</>)
@@ -79,8 +74,13 @@ function IlmiyNashrlar(props) {
             width: 250,
         },
         {
-            title: "Ilmiy yo'nalish",
-            dataIndex: 'scientificField',
+            title: "Ilm-fan sohasi",
+            render: (item, record, index) => (<>{item?.scientificField?.name}</>),
+            width: 200,
+        },
+        {
+            title: "Xalqaro ilmiy bazalar",
+            render: (item, record, index) => (<>{item?.publicationDatabase?.name}</>),
             width: 200,
         },
         {
@@ -110,6 +110,11 @@ function IlmiyNashrlar(props) {
             render: (item, record, index) => (
                 <a href={item.doiOrUrl===''? item.mediaIds[0].attachResDTO.url: item.doiOrUrl} target={"_blank"}>file</a>),
             width: 50
+        },
+        {
+            title: 'Ilmiy yoki ilmiy texnik kengash qarori',
+            dataIndex: 'decisionScientificCouncil',
+            width: 150
         },
         {
             title: 'Tekshirish',
@@ -233,7 +238,6 @@ function IlmiyNashrlar(props) {
                 tolocalDate: DateListe[1]
             }
         }).then((response) => {
-            console.log(response.data.data.content)
             setTableParams({
                 ...tableParams,
                 pagination: {
@@ -270,7 +274,6 @@ function IlmiyNashrlar(props) {
             }
         })
             .then(response => {
-                console.log(response.data)
                 setScientificpublication(response.data);
             })
             .catch(error => {

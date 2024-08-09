@@ -10,7 +10,6 @@ import Navbar from "../../componenta/Navbar";
 import IlmiyNashrlar from "../ilmiy nashrlar/ilmiyNashrlar";
 import UslubiyNashrlar from '../Uslubiy nashrlar/UslubiyNashrlar';
 import InteliktualMulk from '../InteluktialMulk/InteliktualMulk';
-import IlmiyFaollik from '../IlmiyFaollik/IlmiyFaollik';
 import IlmiySaloxiyati from '../IlmiySaloxiyati/IlmiySaloxiyati';
 
 const {Content, Sider} = Layout;
@@ -36,14 +35,10 @@ const items = [
         key: "4",
         icon: <FileTextOutlined/>,
     },
-    {
-        label: "Ilmiy faollik",
-        key: "5",
-        icon: <FileTextOutlined/>,
-    },
+
     {
         label: "Ilmiy saloxiyatdagi oshirishdagi hissasi",
-        key: "6",
+        key: "5",
         icon: <FileTextOutlined/>,
     },
 
@@ -75,8 +70,7 @@ function Profile(props) {
                             <Route path={"/2"} element={ <IlmiyNashrlar/>}/>
                             <Route path={"/3"} element={ <UslubiyNashrlar/>}/>
                             <Route path={"/4"} element={ <InteliktualMulk/>}/>
-                            <Route path={"/5"} element={ <IlmiyFaollik/>}/>
-                            <Route path={"/6"} element={ <IlmiySaloxiyati/>}/>
+                            <Route path={"/5"} element={ <IlmiySaloxiyati/>}/>
                         </Routes>
                     </Content>
                 </Layout>

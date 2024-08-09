@@ -10,6 +10,8 @@ dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
     const [Scientificpublication, setScientificpublication] = useState([]);
+    const [IlmFan, setIlmFan] = useState([]);
+    const [XalqaroIlmiyBaza, setXalqaroIlmiyBaza] = useState([]);
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [searchResults, setSearchResults] = useState([]);
     const [monografiya, setMonografiya] = useState(false);
@@ -41,7 +43,9 @@ const FormModal = (props) => {
     });
 
     useEffect(() => {
-        ClassifairGet();
+        ClassifairGet('h_scientific_publication_type');
+        ClassifairGet('h_science_branch');
+        ClassifairGet('h_publication_database');
         handleSearch()
         if (props.editingData) {
             const editingValues = {
@@ -78,10 +82,10 @@ const FormModal = (props) => {
         }
     }, [props.editingData, form, props.handleCancel]);
 
-    function ClassifairGet() {
+    function ClassifairGet(e) {
         axios.get(`${ApiName}/api/classifier`, {
             params: {
-                key: 'h_scientific_publication_type'
+                key: e
             },
             headers: {
                 'Content-Type': 'application/json',
@@ -89,12 +93,23 @@ const FormModal = (props) => {
             }
         })
             .then(response => {
-                setScientificpublication(response.data);
+                if (e==='h_scientific_publication_type'){
+                    setScientificpublication(response.data[0]?.options);
+                }
+                if (e==='h_science_branch'){
+                    setIlmFan(response.data[0]?.options?.filter(item=>item?.code?.endsWith('00.00')))
+                }
+                if (e==='h_publication_database'){
+                    setXalqaroIlmiyBaza(response.data[0]?.options)
+                }
+
             })
             .catch(error => {
                 console.log(error, 'error');
             });
     }
+
+
 
     const handleSearch = async () => {
         try {
@@ -104,7 +119,6 @@ const FormModal = (props) => {
                     Authorization: `Bearer ${fulInfo?.accessToken}`,
                 },
             });
-            console.log(response.data.data)
             if (response.data.isSuccess && !response.data.error) {
                 setSearchResults(response.data.data || []);
             } else {
@@ -140,14 +154,20 @@ const FormModal = (props) => {
     };
 
     const handleSelectChange = (value, option) => {
+        console.log(value)
+        console.log(option)
         const {name} = option;
         setData(prevState => ({
             ...prevState,
-            [name]: name === 'scientificPublicationType' ? Scientificpublication[0]?.options?.filter(item => item.code === value)[0] : value
+
+            [name]: name === 'scientificPublicationType' ? Scientificpublication.filter(item => item.code === value)[0] :
+             name === 'scientificField' ? IlmFan.filter(item => item.code === value)[0] :
+             name === 'publicationDatabase' ? XalqaroIlmiyBaza.filter(item => item.code === value)[0] : value,
         }));
+        console.log(data)
 
         if (name === "scientificPublicationType") {
-            setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
+            setMonografiya(Scientificpublication.filter(item => item.code === value)[0]?.name === 'Monografiya');
         }
 
         if (name === "fileType") {
@@ -314,10 +334,13 @@ const FormModal = (props) => {
                         name: "doiOrUrl",
                         value: data?.doiOrUrl
                     },
-
                     {
                         name: "scientificField",
-                        value: data?.scientificField
+                        value: data?.scientificField?.code
+                    },
+                    {
+                        name: "publicationDatabase",
+                        value: data?.publicationDatabase?.code
                     },
                     {
                         name: "authorIds",
@@ -328,33 +351,25 @@ const FormModal = (props) => {
                         value: data.issueYear
                     },
                 ]}
-
             >
-                <Form.Item
-                    layout="vertical"
+                <Form.Item layout="vertical" className='col-6'
                     label="Ilmiy nashr turi"
                     name="scientificPublicationType"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
+                    labelCol={{span: 24}} wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos ilmiy nashr turini tanlang'}]}
-                    className='col-6'
                 >
                     <Select placeholder='Ilmiy nashr turi'
-                        options={Scientificpublication[0]?.options?.map(item => ({label: item.name, value: item.code}))}
+                        options={Scientificpublication.map(item => ({label: item.name, value: item.code}))}
                         name="scientificPublicationType"
                         onChange={(value, option) => handleSelectChange(value, {name: "scientificPublicationType"})}
                     />
                 </Form.Item>
 
                 {monografiya && (
-                    <Form.Item
-                        layout="vertical"
+                    <Form.Item layout="vertical" className='col-6'
                         label="Ilmiy yoki ilmiy texnik kengash qarori"
-                        name="decisionScientificCouncil"
-                        labelCol={{span: 24}}
-                        wrapperCol={{span: 24}}
+                        name="decisionScientificCouncil" labelCol={{span: 24}} wrapperCol={{span: 24}}
                         rules={[{required: true, message: 'Iltimos monografiya ma`lumotlarini kiriting'}]}
-                        className='col-6'
                     >
                         <Input
                             name="decisionScientificCouncil"
@@ -365,16 +380,11 @@ const FormModal = (props) => {
                     </Form.Item>
                 )}
 
-                <Form.Item
-                    layout="vertical"
-                    label="Til"
-                    name="language"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
+                <Form.Item layout="vertical" label="Til"
+                    name="language" labelCol={{span: 24}} wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos tilni tanlang'}]}
                     className='col-6'
                 >
-
                     <Select placeholder='Til'
                         name="language"
                         onChange={(value, option) => handleSelectChange(value, {name: "language"})}
@@ -385,12 +395,9 @@ const FormModal = (props) => {
                     </Select>
                 </Form.Item>
 
-                <Form.Item
-                    layout="vertical"
+                <Form.Item layout="vertical"
                     label="Nashrning bibliografik matni"
-                    name="scientificName"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
+                    name="scientificName" labelCol={{span: 24}} wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
                     className='col-6'
                 >
@@ -402,18 +409,14 @@ const FormModal = (props) => {
                     />
                 </Form.Item>
 
-                <Form.Item
-                    layout="vertical"
+                <Form.Item layout="vertical"
                     label="Ilm-fan sohasi"
-                    name="scientificField"
-                    labelCol={{ span: 24 }}
-                    wrapperCol={{ span: 24 }}
-                    className='col-6'
+                    name="scientificField" labelCol={{ span: 24 }} wrapperCol={{ span: 24 }} className='col-6'
                 >
-                    <Select value={data.scientificField} name="scientificField"
+                    <Select name="scientificField" placeholder='Ilm-fan sohasi'
+                            options={IlmFan.map(item => ({label: item.name, value: item.code}))}
                             onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}>
-                        <Select.Option value="Aniq fanlar">Aniq fanlar</Select.Option>
-                        <Select.Option value="Amaliy fanlar">Amaliy fanlar</Select.Option>
+
                     </Select>
                 </Form.Item>
                 <Form.Item
@@ -564,9 +567,8 @@ const FormModal = (props) => {
                     className='col-6'
                 >
                     <Select value={data.scientificField} name="scientificField"
+                            options={XalqaroIlmiyBaza.map(item => ({label: item.name, value: item.code}))}
                             onChange={(value, option) => handleSelectChange(value, { name: "publicationDatabase" })}>
-                        <Select.Option value="Xalqaro ilmiy bazalar1">Xalqaro ilmiy bazalar 1</Select.Option>
-                        <Select.Option value="Xalqaro ilmiy bazalar2">Xalqaro ilmiy bazalar 2</Select.Option>
                     </Select>
                 </Form.Item>
 

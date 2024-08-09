@@ -1,10 +1,8 @@
 import React, {useState, useRef} from 'react';
 import {
-    Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
-    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input
+    Table, Select, Modal,  Form,
 } from 'antd';
 import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySaloxiyatModal';
-import IlmiyFaollik from '../IlmiyFaollik/IlmiyFaollik';
 const IlmiySaloxiyati = () => {
     const formRef = useRef(null);
     const [form] = Form.useForm();

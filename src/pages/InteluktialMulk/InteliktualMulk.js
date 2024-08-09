@@ -14,11 +14,7 @@ const InteliktualMulk = () => {
     const [Scientificpublication, setScientificpublication] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [tableParams, setTableParams] = useState({
-        pagination: {
-            current: 0,
-            pageSize: 5,
-            total: 10
-        },
+        pagination: {current: 0, pageSize: 5, total: 10},
     });
     const [editingData, setEditingData] = useState(null);
 

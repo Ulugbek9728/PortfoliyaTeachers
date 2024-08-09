@@ -37,7 +37,7 @@ const items = [
     },
 
     {
-        label: "Ilmiy saloxiyatdagi oshirishdagi hissasi",
+        label: "Ilmiy saloxiyatni oshirishdagi hissasi",
         key: "5",
         icon: <FileTextOutlined/>,
     },

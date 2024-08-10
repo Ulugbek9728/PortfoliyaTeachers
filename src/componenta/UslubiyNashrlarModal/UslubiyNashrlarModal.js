@@ -31,9 +31,7 @@ const UslubiyNashrlarModal = (props) => {
     publicationType: props?.publicationType,
     language: "",
     scientificName: "",
-    scientificField: "",
     doiOrUrl: "",
-    publicationDatabase: "",
     decisionScientificCouncil: "",
     fileType: "",
     mediaIds: [],
@@ -59,7 +57,6 @@ const UslubiyNashrlarModal = (props) => {
         styleCertificateDate: dayjs(props.editingData.styleCertificateDate),
         issueYear: dayjs(props.editingData.issueYear),
         authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
-        scientificField: props.editingData.scientificField,
         publicationType: props.editingData.publicationType,
         stylePublicationType: props.editingData.stylePublicationType,
         fileType: props.editingData.fileType || 'Url'
@@ -76,9 +73,7 @@ const UslubiyNashrlarModal = (props) => {
           publicationType: props?.publicationType,
           language: '',
           scientificName: '',
-          scientificField: '',
           doiOrUrl: '',
-          publicationDatabase: '',
           decisionScientificCouncil: '',
           fileType: '',
           mediaIds: [],
@@ -256,9 +251,7 @@ const UslubiyNashrlarModal = (props) => {
       publicationType: props?.publicationType,
       language: '',
       scientificName: '',
-      scientificField: '',
       doiOrUrl: '',
-      publicationDatabase: '',
       decisionScientificCouncil: '',
       fileType: '',
       stylePublisher: "",
@@ -336,11 +329,6 @@ const UslubiyNashrlarModal = (props) => {
       {
           name: "doiOrUrl",
           value: data?.doiOrUrl
-      },
-
-      {
-          name: "scientificField",
-          value: data?.scientificField
       },
       {
           name: "authorIds",

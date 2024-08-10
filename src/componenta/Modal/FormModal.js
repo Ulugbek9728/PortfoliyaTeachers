@@ -56,7 +56,8 @@ const FormModal = (props) => {
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
                 scientificPublicationType: props.editingData.scientificPublicationType,
-                fileType: props.editingData.fileType || 'Url'
+                fileType: props.editingData.fileType || 'Url',
+                // fileType: props.editingData.fileType || 'Upload'
             };
             setData(editingValues);
             form.setFieldsValue(editingValues);

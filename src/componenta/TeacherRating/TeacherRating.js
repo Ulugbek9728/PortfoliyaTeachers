@@ -51,6 +51,7 @@ const TeacherRating = () => {
   const [radio2, setRadio2] = useState(data.isTop1000);
 
   useEffect(() => {
+console.log(getFullInfo);
     if (edite) {
       setData({
         profileId: fulInfo?.id,
@@ -58,6 +59,7 @@ const TeacherRating = () => {
           name: getFullInfo?.specialist?.name || "",
           date: getFullInfo?.specialist?.date || "",
           number: getFullInfo?.specialist?.number || null,
+          attachResDTO:getFullInfo?.attachResDTO?.map((item)=>item.attachResDTO.id),
 
         },
         scientificTitle: {
@@ -79,11 +81,13 @@ const TeacherRating = () => {
         isTop1000: getFullInfo?.isTop1000 || false,
         profileTop1000: {
           country: getFullInfo?.profileTop1000?.country || "",
-          university: getFullInfo?.profileTop1000?.university || ""
+          university: getFullInfo?.profileTop1000?.university || "",
+          attachResDTO:getFullInfo?.attachResDTO?.map((item)=>item.attachResDTO.id),
         },
         profileStateAwardDTO: {
           nameStateAward: getFullInfo?.profileStateAwardDTO?.nameStateAward || "",
           date: getFullInfo?.profileStateAwardDTO?.date || "",
+          attachResDTO:getFullInfo?.attachResDTO?.map((item)=>item.attachResDTO.id),
         }
       });
       setRadio(getFullInfo?.scientificDegree?.name ? true : false);
@@ -273,9 +277,13 @@ const TeacherRating = () => {
                 <b >Diplom sanasi</b>
                 <p> {getFullInfo?.specialist?.date}</p>
               </div>
-              <div className=''>
+              <div >
                 <b>Diplom soni</b>
                 <p> {getFullInfo?.specialist?.number}</p>
+              </div>
+              <div >
+                <b>Diplom</b> <br/>
+                <a href={getFullInfo?.specialist?.attachResDTO?.url} target={"_blank"}>file</a>
               </div>
               <hr/>
             </div>
@@ -291,6 +299,10 @@ const TeacherRating = () => {
               <div className=''>
                 <b>Diplom raqami</b>
                 <p> {getFullInfo?.scientificTitle?.number}</p>
+              </div>
+              <div >
+                <b>Diplom</b> <br/>
+                <a href={getFullInfo?.scientificTitle?.attachResDTO?.url} target={"_blank"}>file</a>
               </div>
               <hr/>
             </div>
@@ -318,6 +330,10 @@ const TeacherRating = () => {
                 <b>Davlat mukofotini olgan sanasi</b>
                 <p> {getFullInfo?.profileStateAwardDTO?.date}</p>
               </div>
+              <div >
+                <b>Diplom</b> <br/>
+                <a href={getFullInfo?.profileStateAwardDTO?.attachResDTO?.url} target={"_blank"}>file</a>
+              </div>
               <hr/>
             </div>
             <div  className='col-4'>
@@ -343,6 +359,10 @@ const TeacherRating = () => {
               <div className=''>
                 <b>Universituti</b>
                 <p> {getFullInfo?.profileTop1000?.university}</p>
+              </div>
+              <div >
+                <b>Diplom</b> <br/>
+                <a href={getFullInfo?.profileTop1000?.attachResDTO?.url} target={"_blank"}>file</a>
               </div>
             </div>
             </div>

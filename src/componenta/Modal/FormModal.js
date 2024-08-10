@@ -110,8 +110,6 @@ const FormModal = (props) => {
             });
     }
 
-
-
     const handleSearch = async () => {
         try {
             const response = await axios.get(`${ApiName}/api/author/search`, {
@@ -184,7 +182,12 @@ const FormModal = (props) => {
         },
         fileList: props.editingData?.mediaIds?.map((item)=> {
             const attachResDTO = item.attachResDTO;
-            return { uid: attachResDTO.id,id:attachResDTO.id, name: attachResDTO.fileName, status: 'done', url: attachResDTO.url }
+            return {
+                uid: attachResDTO.id,
+                id:attachResDTO.id,
+                name: attachResDTO.fileName,
+                status: 'done',
+                url: attachResDTO.url }
         }),
         onChange: (info) => {
 
@@ -233,17 +236,12 @@ const FormModal = (props) => {
     };
 
     const onFinish = () => {
-        const requestPayload2 = {
-            ...data2
-        };
-        console.log(data2);
-        axios.post(`${ApiName}/api/author/create`, requestPayload2, {
+        axios.post(`${ApiName}/api/author/create`, data2, {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${fulInfo?.accessToken}`,
             },
         }).then(response => {
-            console.log(data2);
             form2.resetFields();
             handleSearch()
             message.success(`Muallif muvaffaqiyatli qo'shildi`);
@@ -417,15 +415,10 @@ const FormModal = (props) => {
                     <Select name="scientificField" placeholder='Ilm-fan sohasi'
                             options={IlmFan.map(item => ({label: item.name, value: item.code}))}
                             onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}>
-
                     </Select>
                 </Form.Item>
-                <Form.Item
-                    layout="vertical"
-                    label="Mualliflar"
-                    name="authorIds"
-                    labelCol={{span: 24}}
-                    wrapperCol={{span: 24}}
+                <Form.Item layout="vertical" label="Mualliflar" name="authorIds"
+                    labelCol={{span: 24}} wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos mualliflarni tanlang'}]}
                     className='col-6'
                 >
@@ -446,7 +439,7 @@ const FormModal = (props) => {
                                             margin: '8px 0',
                                         }}
                                     />
-                                    <Form
+                                    <Form onFinish={onFinish}
                                         name="wrap"
                                         form={form2}
                                     >
@@ -529,7 +522,7 @@ const FormModal = (props) => {
                                                 />
                                             </Form.Item>
                                             <Form.Item>
-                                                <Button type="primary" icon={<PlusOutlined/>} onClick={onFinish}
+                                                <Button type="primary" icon={<PlusOutlined/>}
                                                         htmlType="submit">
                                                     Qo'shish
                                                 </Button>

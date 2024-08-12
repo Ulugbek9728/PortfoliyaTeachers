@@ -245,7 +245,7 @@ function IlmiyNashrlar(props) {
                     total: response.data.data.totalElements
                 }
             })
-            const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
+            const fetchedData = response?.data?.data?.content.map(item => ({...item, key:item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
             console.log('API error:', error);
@@ -293,7 +293,6 @@ function IlmiyNashrlar(props) {
                 footer={null} 
             >
                 <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel} />
-
 
             </Modal>
 

@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {
-    Table, Select, Modal, Form, message, Switch, Space, Popconfirm,
+    Table, Select, Modal, Form, message, Switch, Space, Popconfirm,Input
 } from 'antd';
 import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySaloxiyatModal';
 import axios from "axios";
@@ -19,6 +19,7 @@ const IlmiySaloxiyati = () => {
             total: 10
         },
     });
+    const [srcItem, setSrcItem] = useState({});
     const [dataList, setDataList] = useState([]);
     const [editingData, setEditingData] = useState(null);
 
@@ -134,6 +135,7 @@ const IlmiySaloxiyati = () => {
     }, []);
 
     function getIlmiySaloxiyat() {
+        console.log();
         axios.get(`${ApiName}/api/employee-student`, {
             headers: {
                 Authorization: `Bearer ${fulInfo?.accessToken}`
@@ -142,7 +144,7 @@ const IlmiySaloxiyati = () => {
                 size: tableParams.pagination.pageSize,
                 page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
                 // type: 'SCIENTIFIC_PUBLICATIONS',
-                // publicationName: srcItem?.srcInput,
+                scientificLeadershipType: srcItem?.srcType,
                 // scientificPublicationType: srcItem?.srcType,
                 // fromlocalDate: DateListe[0],
                 // tolocalDate: DateListe[1]
@@ -155,7 +157,7 @@ const IlmiySaloxiyati = () => {
                     total: response.data.data.totalElements
                 }
             })
-            console.log(response.data.data.content[0])
+            console.log(response.data.data.content)
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
@@ -202,8 +204,12 @@ const IlmiySaloxiyati = () => {
         <IlmiySaloxiyatModal editingData={editingData} handleCancel={handleCancel} getIlmiySaloxiyat={getIlmiySaloxiyat}/>
       </Modal>      
             <div className=' d-flex  align-items-center justify-content-between'>
-                <Form form={form} layout="vertical" ref={formRef} colon={false}
-                      className=' d-flex align-items-center gap-4'>
+     <Form form={form}
+      layout="vertical"
+      onFinish={()=> getIlmiySaloxiyat()}
+      ref={formRef} 
+      colon={false}
+      className=' d-flex align-items-center gap-4'>
       <Form.Item  
           layout="vertical" label="Til" name="Til"
           labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
@@ -213,8 +219,31 @@ const IlmiySaloxiyati = () => {
         <Select.Option value="eng">eng</Select.Option>
       </Select>
       </Form.Item>
-
-                </Form>
+      <Form.Item layout="vertical" label="Ilmiy raxbarlik turi" name="scientificLeadershipType"
+                           labelCol={{span: 24}}
+                           wrapperCol={{span: 24}} className='col-6'>
+                    <Select name='scientificLeadershipType' onChange={(e) => {
+                        setSrcItem({
+                            ...srcItem,
+                            srcType: e
+                        })
+                    }}>
+                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'>
+                            Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird
+                        </Select.Option>
+                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'>
+                            Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird
+                        </Select.Option>
+                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'>
+                            Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird</Select.Option>
+                    </Select>
+                </Form.Item>
+      <Form.Item>
+         <button className="btn btn-success mt-4" type="submit">
+             <span className="button__text">Ma'lumotni izlash</span>
+         </button>
+        </Form.Item>
+     </Form>
 
                 <button type="button" className="button1"
                     onClick={() => {

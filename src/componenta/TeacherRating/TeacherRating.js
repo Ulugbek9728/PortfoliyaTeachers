@@ -147,19 +147,46 @@ console.log(getFullInfo);
           attachId: info.file.response.id,
         },
       }));
-    } else if (info.file.status === 'error') {
+    } 
+    else if (info.file.status === 'removed') {
+      if (edite){
+          console.log(data.attachId)
+          const result = data.attachId.filter((idAll) => idAll !== info?.file?.id);
+          console.log(result)
+          setData(prevState => ({
+              ...prevState,
+              attachId: result,
+          }));
+          axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
+              headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+          }).then((res) => {
+              message.success("File o'chirildi")
+
+          }).catch((error) => {
+              message.error(`${info.file.name} file delete failed.`);
+          })
+      }
+      else {
+          const result = data.attachId.filter((idAll) => idAll !== info?.file?.response?.id);
+          setData(prevState => ({
+              ...prevState,
+              attachId: [result],
+          }));
+          axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
+              headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+          }).then((res) => {
+              message.success("File o'chirildi")
+          }).catch((error) => {
+              message.error(`${info.file.name} file delete failed.`);
+          })
+      }
+
+  }
+    
+     else if (info.file.status === 'error') {
       message.error(`${info.file.name} file upload failed.`);
-    } else if (info.file.status === 'removed') {
-      message.success(`${info.file.name} file removed successfully`);
-      setData((prevState) => ({
-        ...prevState,
-        [section]: {
-          ...prevState[section],
-          attachId: '',
-        },
-      }));
-    }
   };
+}
 
   const propsss = (section) => ({
     name: 'file',
@@ -167,6 +194,10 @@ console.log(getFullInfo);
     headers: {
       Authorization: `Bearer ${fulInfo?.accessToken}`,
     },
+    fileList: edite?.attachResDTO?.map((item)=> {
+      const attachResDTO = item.attachResDTO;
+      return { uid: attachResDTO.id,id:attachResDTO.id, name: attachResDTO.fileName, status: 'done', url: attachResDTO.url }
+  }),
     onChange: (info) => handleFileChange(info, section),
   });
 

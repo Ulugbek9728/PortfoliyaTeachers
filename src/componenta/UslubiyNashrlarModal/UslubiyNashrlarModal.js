@@ -64,7 +64,7 @@ const UslubiyNashrlarModal = (props) => {
       setData(editingValues);
       form.setFieldsValue(editingValues);
       // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
-      // setUrl(props.editingData.fileType === 'Url');
+      seturl(props.editingData.fileType === 'Url');
     }
     else if (props.handleCancel){
       setData({
@@ -572,7 +572,8 @@ const UslubiyNashrlarModal = (props) => {
             // valuePropName="fileList"
           >
            <Upload name='file' {...uploadProps}>
-             <Button icon={<UploadOutlined />}>PDF</Button>                    </Upload>
+             <Button icon={<UploadOutlined />}>PDF</Button>                   
+           </Upload>
           </Form.Item>
         )}
 

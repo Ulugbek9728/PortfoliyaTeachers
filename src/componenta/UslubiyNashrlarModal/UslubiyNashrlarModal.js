@@ -49,6 +49,7 @@ const UslubiyNashrlarModal = (props) => {
   });
   const [form2] = Form.useForm();
   useEffect((value) => {
+    console.log(props.editingData);
     ClassifairGet();
     if (props.editingData) {
       const editingValues = {
@@ -59,12 +60,13 @@ const UslubiyNashrlarModal = (props) => {
         authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
         publicationType: props.editingData.publicationType,
         stylePublicationType: props.editingData.stylePublicationType,
-        fileType: props.editingData.fileType || 'Url'
+        fileType: props.editingData.doiOrUrl ? "Url" : 'Upload'
       };
+      seturl(editingValues.fileType ==='Url');
+
       setData(editingValues);
       form.setFieldsValue(editingValues);
       // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
-      seturl(props.editingData.fileType === 'Url');
     }
     else if (props.handleCancel){
       setData({

@@ -1,10 +1,10 @@
 import React, {useState, useRef} from 'react';
 
 import {
-    Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
-    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input,Switch
+    Space, Table, Select, Modal,
+    message, Form, DatePicker, Popconfirm, Input,Switch
 } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import {SearchOutlined } from '@ant-design/icons';
 import './UslubiyNashrlar.scss'
 import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
 import axios from 'axios';
@@ -273,7 +273,7 @@ const UslubiyNashrlar = () => {
         centered
         open={open}
         onCancel={handleCancel}
-        width={1600}
+        width={1300}
         style={{right:"-80px"}}
         footer={null} 
       >
@@ -310,7 +310,7 @@ const UslubiyNashrlar = () => {
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success mt-4" type="submit">
-                            <span className="button__text">Ma'lumotni izlash</span>
+                            <span className="button__text"><SearchOutlined /></span>
                         </button>
                     </Form.Item>
 

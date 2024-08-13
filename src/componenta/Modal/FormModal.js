@@ -306,7 +306,8 @@ const FormModal = (props) => {
         <div>
             <Form
                 form={form} ref={formRef}
-                initialValues={data} className='row'
+                initialValues={data}
+                className='row'
                 onFinish={handleSubmit}
                 fields={[
                     {
@@ -379,20 +380,6 @@ const FormModal = (props) => {
                     </Form.Item>
                 )}
 
-                <Form.Item layout="vertical" label="Til"
-                    name="language" labelCol={{span: 24}} wrapperCol={{span: 24}}
-                    rules={[{required: true, message: 'Iltimos tilni tanlang'}]}
-                    className='col-6'
-                >
-                    <Select placeholder='Til'
-                        name="language"
-                        onChange={(value, option) => handleSelectChange(value, {name: "language"})}
-                    >
-                        <Select.Option value="uz">uz</Select.Option>
-                        <Select.Option value="ru">ru</Select.Option>
-                        <Select.Option value="en">en</Select.Option>
-                    </Select>
-                </Form.Item>
 
                 <Form.Item layout="vertical"
                     label="Nashrning bibliografik matni"
@@ -606,7 +593,7 @@ const FormModal = (props) => {
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos nashir yilini tanlang'}]}
-                    className='col-6'
+                    className='col-3'
                 >
                     <DatePicker
                         format="YYYY-MM-DD"
@@ -616,6 +603,20 @@ const FormModal = (props) => {
                         }}
                         className='py-2'
                     />
+                </Form.Item>
+                <Form.Item layout="vertical" label="Til"
+                           name="language" labelCol={{span: 24}} wrapperCol={{span: 24}}
+                           rules={[{required: true, message: 'Iltimos tilni tanlang'}]}
+                           className='col-3'
+                >
+                    <Select placeholder='Til'
+                            name="language"
+                            onChange={(value, option) => handleSelectChange(value, {name: "language"})}
+                    >
+                        <Select.Option value="uz">uz</Select.Option>
+                        <Select.Option value="ru">ru</Select.Option>
+                        <Select.Option value="en">en</Select.Option>
+                    </Select>
                 </Form.Item>
 
 

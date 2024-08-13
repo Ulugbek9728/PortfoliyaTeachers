@@ -1,16 +1,15 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {
-    Table, Select, Modal, Form, message, Switch, Space, Popconfirm,Input
-} from 'antd';
+import {Table, Select, Modal, Form, message, Space, Popconfirm} from 'antd';
+import { SearchOutlined} from '@ant-design/icons';
+
 import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySaloxiyatModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
+
 const IlmiySaloxiyati = () => {
     const formRef = useRef(null);
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-
     const [form] = Form.useForm();
-    const [DateListe, setDateListe] = useState(['', '']);
     const [open, setOpen] = useState(false)
     const [tableParams, setTableParams] = useState({
         pagination: {
@@ -142,7 +141,7 @@ const IlmiySaloxiyati = () => {
             },
             params: {
                 size: tableParams.pagination.pageSize,
-                page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
+                page: tableParams.pagination.current > 0 ? tableParams.pagination.current - 1 : 0,
                 // type: 'SCIENTIFIC_PUBLICATIONS',
                 scientificLeadershipType: srcItem?.srcType,
                 // scientificPublicationType: srcItem?.srcType,
@@ -165,8 +164,9 @@ const IlmiySaloxiyati = () => {
             message.error('Failed to fetch data');
         });
     }
+
     const handleDelete = (id) => {
-        axios.delete(`${ApiName}/api/employee-student/${id}`,  {
+        axios.delete(`${ApiName}/api/employee-student/${id}`, {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${fulInfo?.accessToken}`
@@ -191,64 +191,55 @@ const IlmiySaloxiyati = () => {
         setOpen(false);
         setEditingData(null);
     };
-  return (
-    <div className='p-4'>
-    <Modal
-        title={editingData ? "Ilmiy raxbarlik tahrirlash" : "Ilmiy raxbarlik ostidagi shogird qoshish punkti"}
-        centered
-        open={open}
-        onCancel={handleCancel}
-        width={1600}
-        style={{right:"-80px"}}
-      >
-        <IlmiySaloxiyatModal editingData={editingData} handleCancel={handleCancel} getIlmiySaloxiyat={getIlmiySaloxiyat}/>
-      </Modal>      
+    return (
+        <div className='p-4'>
+            <Modal
+                title={editingData ? "Ilmiy raxbarlik tahrirlash" : "Ilmiy raxbarlik ostidagi shogird qoshish punkti"}
+                centered
+                open={open}
+                onCancel={handleCancel}
+                width={1000}
+                style={{right: "-80px"}}
+            >
+                <IlmiySaloxiyatModal editingData={editingData} handleCancel={handleCancel}
+                                     getIlmiySaloxiyat={getIlmiySaloxiyat}/>
+            </Modal>
             <div className=' d-flex  align-items-center justify-content-between'>
-     <Form form={form}
-      layout="vertical"
-      onFinish={()=> getIlmiySaloxiyat()}
-      ref={formRef} 
-      colon={false}
-      className=' d-flex align-items-center gap-4'>
-      <Form.Item  
-          layout="vertical" label="Til" name="Til"
-          labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
-      <Select  style={{width: '300px'}}>
-        <Select.Option value="o`zbek">o`zbek</Select.Option>
-        <Select.Option value="rus">rus</Select.Option>
-        <Select.Option value="eng">eng</Select.Option>
-      </Select>
-      </Form.Item>
-      <Form.Item layout="vertical" label="Ilmiy raxbarlik turi" name="scientificLeadershipType"
-                           labelCol={{span: 24}}
-                           wrapperCol={{span: 24}} className='col-6'>
-                    <Select name='scientificLeadershipType' onChange={(e) => {
-                        setSrcItem({
-                            ...srcItem,
-                            srcType: e
-                        })
-                    }}>
-                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'>
-                            Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird
-                        </Select.Option>
-                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'>
-                            Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird
-                        </Select.Option>
-                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'>
-                            Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird</Select.Option>
-                    </Select>
-                </Form.Item>
-      <Form.Item>
-         <button className="btn btn-success mt-4" type="submit">
-             <span className="button__text">Ma'lumotni izlash</span>
-         </button>
-        </Form.Item>
-     </Form>
+                <Form form={form} ref={formRef} colon={false}
+                      layout="vertical"
+                      onFinish={() => getIlmiySaloxiyat()}
+                      className=' col-3 d-flex align-items-center gap-4'>
+
+                    <Form.Item layout="vertical" label="Ilmiy raxbarlik turi" name="scientificLeadershipType"
+                               labelCol={{span: 24}}
+                               wrapperCol={{span: 24}} className='col-12'>
+                        <Select name='scientificLeadershipType' onChange={(e) => {
+                            setSrcItem({
+                                ...srcItem,
+                                srcType: e
+                            })
+                        }}>
+                            <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'>
+                                Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird
+                            </Select.Option>
+                            <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'>
+                                Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird
+                            </Select.Option>
+                            <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'>
+                                Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item label='  '>
+                        <button className="btn btn-success" type="submit">
+                            <span className="button__text"><SearchOutlined /></span>
+                        </button>
+                    </Form.Item>
+                </Form>
 
                 <button type="button" className="button1"
-                    onClick={() => {
-                        setOpen(true)
-                    }}
+                        onClick={() => {
+                            setOpen(true)
+                        }}
                 >
                     <span className="button__text">Ilmiy nashr yaratish</span>
                     <span className="button__icon">
@@ -273,7 +264,7 @@ const IlmiySaloxiyati = () => {
                 }}
             />
         </div>
-  )
+    )
 }
 
 export default IlmiySaloxiyati

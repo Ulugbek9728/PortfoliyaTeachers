@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {Space, Table, Modal, Button, Form, DatePicker, Input, Switch, message, Select, Popconfirm} from 'antd';
-import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
+import {Space, Table, Modal, Form, DatePicker, Input, Switch, message, Select, Popconfirm} from 'antd';
+import { SearchOutlined} from '@ant-design/icons';
 import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
@@ -26,7 +26,6 @@ function IlmiyNashrlar(props) {
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString);
     };
-
 
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
@@ -288,12 +287,11 @@ function IlmiyNashrlar(props) {
                 centered
                 open={open}
                 onCancel={handleCancel}
-                width={1600}
+                width={1300}
                 style={{ right: "-80px" }}
                 footer={null} 
             >
                 <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel} />
-
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>
@@ -321,9 +319,9 @@ function IlmiyNashrlar(props) {
                                 onChange={(value, option) => setSrcItem({...srcItem, srcType: option.value})}
                         />
                     </Form.Item>
-                    <Form.Item>
+                    <Form.Item label=''>
                         <button className="btn btn-success mt-4" type="submit">
-                            <span className="button__text">Ma'lumotni izlash</span>
+                            <span className="button__text"><SearchOutlined /></span>
                         </button>
                     </Form.Item>
                 </Form>

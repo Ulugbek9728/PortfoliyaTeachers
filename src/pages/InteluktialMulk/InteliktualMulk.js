@@ -4,7 +4,9 @@ import "./InteliktualMulk.scss"
 import IntMulkModal from '../../componenta/Int.Mulk.Modal/IntMulkModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
-import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {SearchOutlined} from "@ant-design/icons";
+
+
 const InteliktualMulk = () => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
@@ -261,7 +263,7 @@ const InteliktualMulk = () => {
         centered
         open={open}
         onCancel={handleCancel}
-        width={1600}
+        width={1000}
         style={{right:"-80px"}}
       >
         <IntMulkModal publicationType="INTELLECTUAL_PROPERTY" editingData={editingData}
@@ -288,7 +290,7 @@ const InteliktualMulk = () => {
                     </Form.Item>
                     <Form.Item label=" ">
                         <button className="btn btn-success" type="submit">
-                            <span className="button__text">Ma'lumotni izlash</span>
+                            <span className="button__text"><SearchOutlined /></span>
                         </button>
                     </Form.Item>
                 </Form>

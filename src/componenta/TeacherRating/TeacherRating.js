@@ -1,15 +1,49 @@
 import React, {useEffect, useState} from 'react';
 import './teacherRating.css';
 import {EditOutlined, UploadOutlined, CloseSquareOutlined} from '@ant-design/icons';
-import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal } from 'antd';
+import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal} from 'antd';
 import {ApiName} from "../../api/APIname";
 import axios from 'axios';
 import moment from 'moment';
 
-
+const defaultDatabaseProfiles = [
+    {
+        urlOrOrcid: '',
+        profileType: {
+            name: "Scopus",
+            code: "11"
+        },
+        counts: {
+            citedByCount: "",
+            citationCount: "",
+            hindex: ""
+        }
+    }, {
+        urlOrOrcid: '',
+        profileType: {
+            name: "Google scholar",
+            code: "13"
+        },
+        counts: {
+            citedByCount: "",
+            citationCount: "",
+            hindex: ""
+        }
+    }, {
+        urlOrOrcid: '',
+        profileType: {
+            name: "Boshqa",
+            code: "10"
+        },
+        counts: {
+            citedByCount: "",
+            citationCount: "",
+            hindex: ""
+        }
+    }
+];
 
 const TeacherRating = () => {
-
 
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [getFullInfo, setGetFullInfo] = useState(null);
@@ -19,22 +53,22 @@ const TeacherRating = () => {
             name: "",
             date: "",
             number: null,
-            attachId: ""
+            attach: ""
         },
         scientificTitle: {
             name: "",
             date: "",
             number: null,
-            attachId: ""
+            attach: ""
         },
         scientificDegree: {
             name: "",
             date: "",
             number: null,
-            attachId: ""
+            attach: ""
         },
         isTop1000: false,
-        databaseProfiles:[],
+        databaseProfiles: defaultDatabaseProfiles,
         profileTop1000: {
             country: "",
             university: ""
@@ -42,70 +76,35 @@ const TeacherRating = () => {
         profileStateAwardDTO: {
             nameStateAward: "",
             date: "",
-            attachId: ""
+            attach: ""
         }
 
     });
-    const [webOfScines, setWebOfScines]= useState({
-        urlOrOrcid:'',
-        profileType:{
-            name:"Boshqa",
-            code:'10'
-        },
-        counts:{
-            citedByCount:'',
-            citationCount:'',
-            hindex:''
-        }
-    })
 
     const [edite, setEdite] = useState(false);
     const [radio, setRadio] = useState(false);
     const [radio2, setRadio2] = useState(data.isTop1000);
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         if (edite) {
             setData({
                 profileId: fulInfo?.id,
-                specialist: {
-                    name: getFullInfo?.specialist?.name || "",
-                    date: getFullInfo?.specialist?.date || "",
-                    number: getFullInfo?.specialist?.number || null,
-                    attachResDTO: getFullInfo?.attachResDTO?.map((item) => item.attachResDTO.id),
-
-                },
-                scientificTitle: {
-                    name: getFullInfo?.scientificTitle?.name || "",
-                    date: getFullInfo?.scientificTitle?.date || "",
-                    number: getFullInfo?.scientificTitle?.number || null,
-
-                },
-                scientificDegree: {
-                    name: getFullInfo?.scientificDegree?.name || "",
-                    date: getFullInfo?.scientificDegree?.date || "",
-                    number: getFullInfo?.scientificDegree?.number || null,
-                },
-                isTop1000: getFullInfo?.isTop1000 || false,
-                profileTop1000: {
-                    country: getFullInfo?.profileTop1000?.country || "",
-                    university: getFullInfo?.profileTop1000?.university || "",
-                    attachResDTO: getFullInfo?.attachResDTO?.map((item) => item.attachResDTO.id),
-                },
-                profileStateAwardDTO: {
-                    nameStateAward: getFullInfo?.profileStateAwardDTO?.nameStateAward || "",
-                    date: getFullInfo?.profileStateAwardDTO?.date || "",
-                    attachResDTO: getFullInfo?.attachResDTO?.map((item) => item.attachResDTO.id),
-                },
-                databaseProfiles:[]
+                specialist: getFullInfo?.specialist,
+                scientificTitle: getFullInfo?.scientificTitle,
+                scientificDegree: getFullInfo?.scientificDegree,
+                isTop1000: getFullInfo?.isTop1000,
+                profileTop1000: getFullInfo?.profileTop1000,
+                profileStateAwardDTO: getFullInfo?.profileStateAwardDTO,
+                databaseProfiles: data.databaseProfiles
             });
             setRadio(!!getFullInfo?.scientificDegree?.name);
             setRadio2(getFullInfo?.isTop1000 || false);
         }
     }, [edite, getFullInfo]);
-
+    console.log(data)
     useEffect(() => {
         fetchCurrentUser();
+        getprofilLink()
     }, []);
 
     const fetchCurrentUser = async () => {
@@ -118,12 +117,80 @@ const TeacherRating = () => {
             });
 
             if (response.data.isSuccess === true) {
-                setGetFullInfo(response.data.data);
+                setGetFullInfo({
+                    ...getFullInfo,
+                    firstName: response.data.data.firstName,
+                    fullName: response.data.data.fullName,
+                    secondName: response.data.data.secondName,
+                    shortName: response.data.data.shortName,
+                    thirdName: response.data.data.thirdName,
+                    imageUrl: response.data.data.imageUrl,
+                    isTop1000: response.data.data.isTop1000,
+                    profileId: response.data.data.profileId,
+                    profileStateAwardDTO: {
+                        attach: JSON.parse(response.data.data.profileStateAwardDTO.attach),
+                        data: response.data.data.profileStateAwardDTO.data,
+                        nameStateAward: response.data.data.profileStateAwardDTO.nameStateAward
+                    },
+                    profileTop1000: {
+                        attach: JSON.parse(response.data.data.profileTop1000.attach),
+                        country: response.data.data.profileTop1000.country,
+                        university: response.data.data.profileTop1000.university,
+                    },
+                    roles: response.data.data.roles,
+                    scientificDegree: response.data.data.scientificDegree,
+                    scientificTitle: {
+                        attach: JSON.parse(response.data.data.scientificTitle.attach),
+                        date: response.data.data.scientificTitle.date,
+                        name: response.data.data.scientificTitle.name,
+                        number: response.data.data.scientificTitle.number,
+                    },
+                    specialist: {
+                        attach: JSON.parse(response.data.data.specialist.attach),
+                        date: response.data.data.specialist.date,
+                        name: response.data.data.specialist.name,
+                        number: response.data.data.specialist.number,
+                    }
+
+                });
+
             }
         } catch (error) {
             console.log('Xatolik yuz berdi:', error);
         }
     };
+    console.log(getFullInfo)
+
+    function getprofilLink() {
+        axios.get(`${ApiName}/api/author-profile/current`, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`,
+            }
+        }).then(res => {
+
+            const resDatabaseType = res.data.data;
+            setData({
+                ...data,
+                databaseProfiles: defaultDatabaseProfiles.map(item => {
+                    let resData = resDatabaseType?.filter(d => d.profileType.code === item.profileType.code);
+                    if (resData?.length === 0) return item;
+                    return {
+                        ...item,
+                        counts: {
+                            hindex: resData[0]?.databaseProfile?.hindex,
+                            citationCount: resData[0]?.databaseProfile?.citationCount,
+                            citedByCount: resData[0]?.databaseProfile?.citedByCount
+                        },
+                        urlOrOrcid: resData[0].urlOrOrcid
+                    }
+                })
+            })
+            // data.databaseProfiles = res.data.data
+        }).catch(error => {
+            console.log(error)
+        })
+    }
 
     const handleDateChange = (date, name) => {
         const formattedDate = date ? date.format('YYYY-MM-DD') : null;
@@ -148,22 +215,26 @@ const TeacherRating = () => {
 
     const handleFileChange = (info, section) => {
         if (info.file.status === 'done') {
+            console.log(info)
             message.success(`${info.file.name} file uploaded successfully`);
             setData((prevState) => ({
                 ...prevState,
                 [section]: {
                     ...prevState[section],
-                    attachId: info.file.response.id,
+                    attach: info.file.response,
+
                 },
             }));
         } else if (info.file.status === 'removed') {
             if (edite) {
-                console.log(data.attachId)
-                const result = data.attachId.filter((idAll) => idAll !== info?.file?.id);
+                const result = data[section]?.attach?.id;
                 console.log(result)
                 setData(prevState => ({
                     ...prevState,
-                    attachId: result,
+                    [section]: {
+                        ...prevState[section],
+                        attach: null
+                    }
                 }));
                 axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
                     headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
@@ -191,7 +262,7 @@ const TeacherRating = () => {
         } else if (info.file.status === 'error') {
             message.error(`${info.file.name} file upload failed.`);
         }
-        ;
+
     }
 
     const propsss = (section) => ({
@@ -200,23 +271,23 @@ const TeacherRating = () => {
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
-        fileList: edite?.attachResDTO?.map((item) => {
-            const attachResDTO = item.attachResDTO;
-            return {
-                uid: attachResDTO.id,
-                id: attachResDTO.id,
-                name: attachResDTO.fileName,
-                status: 'done',
-                url: attachResDTO.url
-            }
-        }),
         onChange: (info) => handleFileChange(info, section),
     });
+
+    const propsFileList = (itemData) => ({
+        fileList: itemData?.attach ?
+            [{
+                uid: itemData?.attach.id,
+                id: itemData?.attach.id,
+                name: itemData?.attach.fileName,
+                status: 'done',
+                url: itemData?.attach.url
+            }] : undefined
+    })
 
     const handleInputChange = (event) => {
         const {name, value} = event.target;
         const [section, field] = name.split('.');
-
         if (field) {
             setData(prevState => ({
                 ...prevState,
@@ -254,12 +325,36 @@ const TeacherRating = () => {
     };
 
     const handleSubmit = () => {
-        axios.put(`${ApiName}/api/profile/update`, data, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
+        axios.put(`${ApiName}/api/profile/update`,
+            {
+                ...data,
+                specialist: {
+                    ...data.specialist,
+                    attach: JSON.stringify(data.specialist.attach)
+                },
+                scientificTitle: {
+                    ...data.scientificTitle,
+                    attach: JSON.stringify(data.scientificTitle?.attach)
+                },
+                scientificDegree: {
+                    ...data.scientificDegree,
+                    attach: JSON.stringify(data.scientificDegree?.attach)
+                },
+                profileStateAwardDTO: {
+                    ...data.profileStateAwardDTO,
+                    attach: JSON.stringify(data.profileStateAwardDTO?.attach)
+                },
+                profileTop1000: {
+                    ...data.profileTop1000,
+                    attach: JSON.stringify(data.profileTop1000?.attach)
+                },
             },
-        })
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${fulInfo?.accessToken}`,
+                },
+            })
             .then(response => {
                 message.success('Form submitted successfully');
                 setEdite(false);
@@ -274,6 +369,7 @@ const TeacherRating = () => {
     const handleRadioChange = (e) => {
         const {value} = e.target;
         setRadio(value === 'ha');
+
     };
 
     const handleRadioChange2 = (e) => {
@@ -286,57 +382,64 @@ const TeacherRating = () => {
         }));
     };
 
-    function profilLinke(key,value,id) {
-        const date123 ={
+
+    function profilLinke(key, value, id) {
+        const date123 = {
             urlOrOrcid: value,
-            profileType:{
-                name:key,
-                code:id
+            profileType: {
+                name: key,
+                code: id
             }
         }
-        if (key==='Scopus'){
+        if (key === 'Scopus') {
             let databaseProfiles = data.databaseProfiles;
 
-            if (data.databaseProfiles?.filter(item=>item.profileType.key === 'Scopus')) {
+            if (data.databaseProfiles?.filter(item => item.profileType.name === 'Scopus')) {
                 databaseProfiles[0] = date123
-            }else {
+            } else {
                 databaseProfiles.push(date123)
             }
             setData({...data, databaseProfiles: databaseProfiles})
         }
-        if (key==='Google scholar'){
+        if (key === 'Google scholar') {
             let databaseProfiles = data.databaseProfiles;
 
-            if (data.databaseProfiles?.filter(item=>item.profileType.key === 'Google scholar')) {
+            if (data.databaseProfiles?.filter(item => item.profileType.name === 'Google scholar')) {
                 databaseProfiles[1] = date123
-            }else {
+            } else {
                 databaseProfiles.push(date123)
             }
             setData({...data, databaseProfiles: databaseProfiles})
         }
     }
 
-
     function webOfCounts(key, value) {
         let databaseProfiles = data.databaseProfiles;
-
-        if (key==='hindex'){
-            webOfScines.counts.hindex=value
+        if (databaseProfiles?.length > 2) {
+            const date123 = {
+                urlOrOrcid: data?.databaseProfiles[2]?.urlOrOrcid,
+                profileType: {
+                    name: "Boshqa",
+                    code: '10'
+                },
+                counts: data?.databaseProfiles[2]?.counts
+            }
+            if (key === 'url') {
+                date123.urlOrOrcid = value
+            }
+            if (key === 'hindex') {
+                date123.counts.hindex = value;
+            }
+            if (key === 'citedByCount') {
+                date123.counts.citedByCount = value;
+            }
+            if (key === 'citationCount') {
+                date123.counts.citationCount = value;
+            }
+            databaseProfiles[2] = date123
+            setData({...data, databaseProfiles: databaseProfiles})
+            console.log(data)
         }
-        if (key==='citationCount'){
-            webOfScines.counts.citationCount=value
-        }
-        if (key==='citedByCount'){
-            webOfScines.counts.citedByCount=value
-        }
-        if (key==='url'){
-            webOfScines.urlOrOrcid=value
-
-        }
-        databaseProfiles[2] = webOfScines
-        setData({...data, databaseProfiles: databaseProfiles})
-
-
     }
 
 
@@ -345,45 +448,138 @@ const TeacherRating = () => {
 
             {edite ?
                 <div className="TeacherRating"
-                    >
+                >
                     <div className="d-flex justify-content-end">
-                        <button className='btn btn-danger' style={{height: 50}} onClick={()=> {
+                        <button className='btn btn-danger' style={{height: 50}} onClick={() => {
                             setEdite(false)
-                        }} ><CloseSquareOutlined /></button>
+                        }}><CloseSquareOutlined/></button>
                     </div>
                     <Form onFinish={handleSubmit} labelAlign="left" layout="vertical" colon={false}
+                          fields={[
+                              {
+                                  name: "specialist.name",
+                                  value: data.specialist?.name
+                              },
+                              {
+                                  name: "specialist.date",
+                                  value: data.specialist?.date ? moment(data.specialist.date) : null
+                              },
+                              {
+                                  name: "specialist.number",
+                                  value: data.specialist?.number
+                              },
+                              {
+                                  name: "scientificTitle.name",
+                                  value: data.scientificTitle?.name || undefined
+                              },
+                              {
+                                  name: "scientificTitle.date",
+                                  value: data.scientificTitle?.date ? moment(data.scientificTitle.date) : null
+                              },
+                              {
+                                  name: "scientificTitle.number",
+                                  value: data.scientificTitle?.number
+                              },
+                              {
+                                  name: "ScopusOrcidId",
+                                  value: data?.databaseProfiles[0]?.urlOrOrcid
+                              },
+                              {
+                                  name: "GoogleOrcidId",
+                                  value: data?.databaseProfiles[1]?.urlOrOrcid
+                              },
+                              {
+                                  name: "WEB.OF.SCIENCE.Link",
+                                  value: data?.databaseProfiles[2]?.urlOrOrcid
+                              },
+                              {
+                                  name: "WEB.OF.SCIENCE.index",
+                                  value: data?.databaseProfiles[2]?.counts?.hindex
+                              },
+                              {
+                                  name: "WEB.OF.SCIENCE.ilmiy.ishlar",
+                                  value: data?.databaseProfiles[2]?.counts?.citationCount
+                              },
+                              {
+                                  name: "WEB.OF.SCIENCE.iqtiboslar",
+                                  value: data?.databaseProfiles[2]?.counts?.citedByCount
+                              },
+                              {
+                                  name: "profileStateAwardDTO.nameStateAward",
+                                  value: data?.profileStateAwardDTO?.nameStateAward
+                              },
+                              {
+                                  name: "profileStateAwardDTO.date",
+                                  value: data?.profileStateAwardDTO?.date ? moment(data.profileStateAwardDTO.date) : null
+                              },
+                              {
+                                  name: "Ilmiy_daraja",
+                                  value: radio ? 'ha' : "yoq"
+                              },
+                              {
+                                  name: "scientificDegree.name",
+                                  value: data.scientificDegree?.name || undefined
+                              },
+                              {
+                                  name: "scientificDegree.date",
+                                  value: data.scientificDegree?.date ? moment(data.scientificDegree.date) : null
+                              },
+                              {
+                                  name: "scientificDegree.number",
+                                  value: data.scientificDegree?.number
+                              },
+                              {
+                                  name: "Ilmiy_darajaTop",
+                                  value: radio2 ? 'ha1' : 'yoq1'
+                              },
+                              {
+                                  name: "profileTop1000.country",
+                                  value: data.profileTop1000?.country
+                              },
+                              {
+                                  name: "profileTop1000.university",
+                                  value: data.profileTop1000?.university
+                              },
+                          ]}
                           style={{maxWidth: '100%'}}>
-                        <div className="d-flex gap-5">
+                        <div className="d-flex gap-5 labelForm">
                             <div style={{width: '33%'}}>
-                                <Form.Item label="Mutaxassislik">
-                                    <Input value={data.specialist.name} name="specialist.name"
+                                <Form.Item label={<p className='labelForm'>Mutaxassislik nomi</p>}
+                                           name="specialist.name">
+                                    <Input name="specialist.name"
                                            onChange={handleInputChange} placeholder="Mutaxasislik nomi"/>
-                                    <DatePicker
-                                        value={data.specialist.date ? moment(data.specialist.date) : null}
-                                        name='specialist.date'
-                                        onChange={(date) => handleDateChange(date, 'specialist.date')}
-                                        className='my-2'
-                                        placeholder="Diplom sanasi"
-                                    />
-                                    <InputNumber value={data.specialist.number} name='specialist.number'
-                                                 onChange={(value) => handleInputChange({
-                                                     target: {
-                                                         name: 'specialist.number',
-                                                         value
-                                                     }
-                                                 })} placeholder="Diplom raqami" style={{width: '100%'}}/>
                                 </Form.Item>
-                                <Form.Item name='file'>
-                                    <Upload {...propsss('specialist')}>
+                                <div className="d-flex gap-2">
+                                    <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
+                                               name='specialist.date'>
+                                        <DatePicker
+                                            name='specialist.date'
+                                            onChange={(date) => handleDateChange(date, 'specialist.date')}
+                                            placeholder="Diplom sanasi"
+                                        />
+                                    </Form.Item>
+                                    <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
+                                               name='specialist.number'>
+                                        <InputNumber name='specialist.number'
+                                                     onChange={(value) => handleInputChange({
+                                                         target: {name: 'specialist.number', value}
+                                                     })} placeholder="Diplom raqami" style={{width: '100%'}}/>
+                                    </Form.Item>
+                                </div>
+
+                                <Form.Item name='specialist'>
+                                    <Upload {...propsss('specialist')}
+                                            {...propsFileList(data.specialist)}
+                                    >
                                         <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
                                     </Upload>
                                 </Form.Item>
                                 <hr/>
-                                <Form.Item label="Ilmiy unvon" >
+                                <Form.Item label={<p className='labelForm'>Ilmiy unvon nomi</p>}
+                                           name='scientificTitle.name'>
                                     <Select
                                         name='scientificTitle.name'
                                         placeholder="Ilmiy unvon nomi"
-                                        value={data.scientificTitle.name || undefined}
                                         onChange={(value, option) => handleSelectChange(value, {name: "scientificTitle.name"})}
                                         options={[
                                             {value: 'katta ilmiy xodim', label: 'Katta ilmiy xodim'},
@@ -392,147 +588,192 @@ const TeacherRating = () => {
                                             {value: 'tayanch dotsent', label: 'Tayanch dotsent'}
                                         ]}
                                     />
-                                    <DatePicker
-                                        value={data.scientificTitle.date ? moment(data.scientificTitle.date) : null}
-                                        name='scientificTitle.date'
-                                        onChange={(date) => handleDateChange(date, 'scientificTitle.date')}
-                                        className='my-2'
-                                        placeholder="Diplom sanasi"
-                                    />
-                                    <InputNumber value={data.scientificTitle.number} name='scientificTitle.number'
-                                                 onChange={(value) => handleInputChange({
-                                                     target: {
-                                                         name: 'scientificTitle.number',
-                                                         value
-                                                     }
-                                                 })} placeholder="Diplom raqami" style={{width: '100%'}}/>
                                 </Form.Item>
-                                <Form.Item name='file'>
-                                    <Upload {...propsss('scientificTitle')}>
+                                <div className="d-flex gap-2">
+                                    <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
+                                               name='scientificTitle.date'>
+                                        <DatePicker
+                                            name='scientificTitle.date'
+                                            onChange={(date) => handleDateChange(date, 'scientificTitle.date')}
+                                            placeholder="Diplom sanasi"
+                                        />
+                                    </Form.Item>
+                                    <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
+                                               name='scientificTitle.number'>
+                                        <InputNumber name='scientificTitle.number'
+                                                     onChange={(value) => handleInputChange({
+                                                         target: {
+                                                             name: 'scientificTitle.number',
+                                                             value
+                                                         }
+                                                     })} placeholder="Diplom raqami" style={{width: '100%'}}/>
+                                    </Form.Item>
+                                </div>
+
+                                <Form.Item name='scientificTitle'>
+                                    <Upload {...propsss('scientificTitle',)}
+                                            {...propsFileList(data.scientificTitle)}
+                                    >
                                         <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
                                     </Upload>
                                 </Form.Item>
                                 <hr/>
                             </div>
                             <div style={{width: '33%'}}>
-                                <Form.Item label="Scopus (ORCID ID)">
-                                    <Input placeholder="ORCID ID"
-                                           onChange={(e)=> profilLinke("Scopus",e.target.value ,'11')} />
+                                <Form.Item label={<p className='labelForm'>Scopus (ORCID ID)</p>} name='ScopusOrcidId'>
+                                    <Input placeholder="ORCID ID" name='ScopusOrcidId'
+                                           onChange={(e) => profilLinke("Scopus", e.target.value, '11')}/>
                                 </Form.Item>
-                                <Form.Item label="Google scholar (ORCID ID)">
-                                    <Input placeholder="ORCID ID"
-                                           onChange={(e)=> profilLinke("Google scholar",e.target.value, '13')}/>
+                                <Form.Item label={<p className='labelForm'>Google scholar (ORCID ID)</p>}
+                                           name='GoogleOrcidId'>
+                                    <Input placeholder="ORCID ID" name='GoogleOrcidId'
+                                           onChange={(e) => profilLinke("Google scholar", e.target.value, '13')}/>
                                 </Form.Item>
                                 <hr/>
+                                <p>WEB OF SCIENCE</p>
                                 <div className="d-flex">
-                                    <Form.Item label="WEB OF SCIENCE (Profil linki)" className='col-6'>
-                                        <Input placeholder="Profil linki"
-                                               onChange={(e)=>webOfCounts('url',e.target.value)}/>
+                                    <Form.Item label={<p className='labelForm'> (Profil linki)</p>}
+                                               name='WEB.OF.SCIENCE.Link'
+                                               className='col-6'>
+                                        <Input placeholder="Profil linki" name='WEB.OF.SCIENCE.Link'
+                                               onChange={(e) => webOfCounts('url', e.target.value)}/>
                                     </Form.Item>
-                                    <Form.Item label="WEB OF SCIENCE (h-indeks)" className='col-6'>
-                                        <Input placeholder="h-indeks" onChange={(e)=> webOfCounts('hindex',e.target.value)}/>
+                                    <Form.Item label={<p className='labelForm'>(h-indeks)</p>}
+                                               name='WEB.OF.SCIENCE.index'
+                                               className='col-6'>
+                                        <Input placeholder="h-indeks" name='WEB.OF.SCIENCE.index'
+                                               onChange={(e) => webOfCounts('hindex', e.target.value)}/>
                                     </Form.Item>
                                 </div>
                                 <div className="d-flex">
-                                    <Form.Item label="WEB OF SCIENCE (Ilmiy ishlar soni)" className='col-6'>
-                                        <Input placeholder="Ilmiy ishlar soni" onChange={(e)=> webOfCounts('citationCount',e.target.value)}/>
+                                    <Form.Item label={<p className='labelForm'>(Ilmiy ishlar soni)</p>}
+                                               name='WEB.OF.SCIENCE.ilmiy.ishlar' className='col-6'>
+                                        <Input placeholder="Ilmiy ishlar soni" name='WEB.OF.SCIENCE.ilmiy.ishlar'
+                                               onChange={(e) => webOfCounts('citationCount', e.target.value)}/>
                                     </Form.Item>
-                                    <Form.Item label="WEB OF SCIENCE (Iqtiboslar soni)" className='col-6'>
-                                        <Input placeholder="Iqtiboslar soni" onChange={(e)=> webOfCounts('citedByCount',e.target.value)}/>
+                                    <Form.Item label={<p className='labelForm'>(Iqtiboslar soni)</p>}
+                                               name='WEB.OF.SCIENCE.iqtiboslar'
+                                               className='col-6'>
+                                        <Input placeholder="Iqtiboslar soni" name='WEB.OF.SCIENCE.iqtiboslar'
+                                               onChange={(e) => webOfCounts('citedByCount', e.target.value)}/>
                                     </Form.Item>
                                 </div>
                                 <hr/>
-                                <Form.Item label="Davlat mukofoti bilan tag`dirlanganligi">
-                                    <Input value={data.profileStateAwardDTO.nameStateAward}
-                                           name="profileStateAwardDTO.nameStateAward" onChange={handleInputChange}
+                                <Form.Item label={<p className='labelForm'>Davlat mukofoti nomi</p>}
+                                           name="profileStateAwardDTO.nameStateAward">
+                                    <Input name="profileStateAwardDTO.nameStateAward" onChange={handleInputChange}
                                            placeholder="Davlat mukofoti nomi"/>
+                                </Form.Item>
+
+                                <Form.Item label={<p className='labelForm'>Olgan sanasi</p>}
+                                           name='profileStateAwardDTO.date'>
                                     <DatePicker
-                                        value={data.profileStateAwardDTO.date ? moment(data.profileStateAwardDTO.date) : null}
                                         name='profileStateAwardDTO.date'
                                         onChange={(date) => handleDateChange(date, 'profileStateAwardDTO.date')}
-                                        className='my-2'
                                         placeholder="Olgan sanasi"
                                     />
-
                                 </Form.Item>
-                                <Form.Item name='file'>
-                                    <Upload {...propsss('profileStateAwardDTO')}>
+                                <Form.Item name='profileStateAwardDTO'>
+                                    <Upload {...propsss('profileStateAwardDTO')}
+                                            {...propsFileList(data.profileStateAwardDTO)}
+                                    >
                                         <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
                                     </Upload>
                                 </Form.Item>
                             </div>
                             <div style={{width: '33%'}}>
-                                <Form.Item name="Ilmiy_daraja" style={{marginTop: "27px"}} label="Ilmiy daraja bormi?">
+                                <Form.Item name="Ilmiy_daraja" style={{marginTop: "27px"}}
+                                           label={<p className='labelForm'>Ilmiy daraja bormi?</p>}>
                                     <Radio.Group name="Ilmiy_daraja" onChange={handleRadioChange}>
-                                        <Radio value='ha' >Ha</Radio>
-                                        <Radio value='yoq' >Yo'q</Radio>
+                                        <Radio value='ha'>Ha</Radio>
+                                        <Radio value='yoq'>Yo'q</Radio>
                                     </Radio.Group>
                                 </Form.Item>
                                 <hr/>
                                 {radio && (
                                     <>
-                                        <Form.Item label="Ilmiy daraja">
+                                        <Form.Item label={<p className='labelForm'>Ilmiy daraja nomi</p>}
+                                                   name='scientificDegree.name'>
                                             <Select
                                                 name='scientificDegree.name'
                                                 placeholder="Ilmiy daraja nomi"
-                                                value={data.scientificDegree.name || undefined}
                                                 onChange={(value, option) => handleSelectChange(value, {name: "scientificDegree.name"})}
                                                 options={[
                                                     {value: 'Falsafa doktori (PhD)', label: 'Falsafa doktori (PhD)'},
                                                     {value: 'Fan doktori, (DSc)', label: 'Fan doktori, (DSc)'}
                                                 ]}
                                             />
-                                            <DatePicker
-                                                value={data.scientificDegree.date ? moment(data.scientificDegree.date) : null}
-                                                name='scientificDegree.date'
-                                                onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
-                                                className='my-2'
-                                                placeholder="Diplom sanasi"
-                                            />
-                                            <InputNumber value={data.scientificDegree.number}
-                                                         name='scientificDegree.number'
-                                                         onChange={(value) => handleInputChange({
-                                                             target: {
-                                                                 name: 'scientificDegree.number',
-                                                                 value
-                                                             }
-                                                         })} placeholder="Diplom raqami" style={{width: '100%'}}/>
                                         </Form.Item>
-                                        <Form.Item name="Ilmiy_darajaTop" style={{marginTop: "27px"}}
-                                                   label="Dunyoning nufuzli TOP-1000 taligiga kiruvchi OTMlarida (PhD) yoki (DSc) darajasini olganligi">
-                                            <Radio.Group name="Ilmiy_darajaTop" onChange={handleRadioChange2} value={radio2 ? 'ha1' : 'yoq1'}>
+                                        <div className="d-flex align-items-center">
+                                            <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
+                                                       name='scientificDegree.date'>
+                                                <DatePicker placeholder="Diplom sanasi"
+                                                            name='scientificDegree.date'
+                                                            onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
+
+                                                />
+                                            </Form.Item>
+                                            <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
+                                                       name='scientificDegree.number'>
+                                                <InputNumber placeholder="Diplom raqami" style={{width: '100%'}}
+                                                             name='scientificDegree.number'
+                                                             onChange={(value) => handleInputChange({
+                                                                 target: {
+                                                                     name: 'scientificDegree.number',
+                                                                     value
+                                                                 }
+                                                             })}/>
+                                            </Form.Item>
+                                        </div>
+
+                                        <Form.Item name="Ilmiy_darajaTop" style={{marginTop: "20px"}}
+                                                   label={<p className='labelForm'>
+                                                       Dunyoning nufuzli TOP-1000 taligiga kiruvchi OTMlarida (PhD) yoki
+                                                       (DSc) darajasini olganligi</p>}>
+                                            <Radio.Group name="Ilmiy_darajaTop" onChange={handleRadioChange2}>
                                                 <Radio value='ha1'>Ha</Radio>
                                                 <Radio value='yoq1'>Yo'q</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                         {radio2 && (
-                                            <Form.Item>
-                                                <Input value={data.profileTop1000.country} name="profileTop1000.country"
-                                                       onChange={handleInputChange} placeholder="Shaxri, davlati"/>
-                                                <Input className='my-2' value={data.profileTop1000.university}
-                                                       name="profileTop1000.university" onChange={handleInputChange}
-                                                       placeholder="Universituti"/>
-                                                <Upload {...propsss('scientificDegree')}>
-                                                    <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
-                                                </Upload>
-                                            </Form.Item>
+                                            <div>
+                                                <Form.Item label={<p className='labelForm'>Shaxri, davlati</p>}
+                                                           name='profileTop1000.country'>
+                                                    <Input name="profileTop1000.country"
+                                                           onChange={handleInputChange} placeholder="Shaxri, davlati"/>
+                                                </Form.Item>
+                                                <Form.Item label={<p className='labelForm'>Universiteti</p>}
+                                                           name="profileTop1000.university">
+                                                    <Input className='my-2'
+                                                           name="profileTop1000.university" onChange={handleInputChange}
+                                                           placeholder="Universiteti"/>
+                                                </Form.Item>
+                                                <Form.Item name='profileTop1000'>
+                                                    <Upload {...propsss('profileTop1000')}
+
+                                                            {...propsFileList(data.profileTop1000)}
+                                                    >
+                                                        <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
+                                                    </Upload>
+                                                </Form.Item>
+
+
+                                            </div>
                                         )}
                                     </>
                                 )}
                             </div>
                         </div>
-
                         <Form.Item label=" " className='h-50' name='123'>
                             <Button className='h-50' type="primary" htmlType="submit">
                                 Ma'lumotlarni saqlash
                             </Button>
                         </Form.Item>
-
                     </Form>
                 </div>
                 :
                 <div className='TeacherRating mb-5'
-                    >
+                >
                     <div className='TeacherRating_header'>
                         <div className='TeacherRating_img'>
                             {<img src={fulInfo?.imageUrl} alt=''/>}
@@ -569,8 +810,14 @@ const TeacherRating = () => {
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
-                                        <a href={getFullInfo?.specialist?.attachResDTO?.url}
-                                           target={"_blank"}>file</a>
+                                        {
+                                            getFullInfo?.specialist?.attach != null ?
+                                                <a href={getFullInfo?.specialist?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.specialist?.attach?.fileName}</a>
+                                                :
+                                                ''
+                                        }
+
                                     </div>
                                 </div>
                                 <div className='col-4 card p-4'>
@@ -588,8 +835,15 @@ const TeacherRating = () => {
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
-                                        <a href={getFullInfo?.scientificTitle?.attachResDTO?.url}
-                                           target={"_blank"}>file</a>
+                                        {
+                                            getFullInfo?.scientificTitle?.attach != null ?
+                                                <a href={getFullInfo?.scientificTitle?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.scientificTitle?.attach?.fileName}</a>
+                                                :
+                                                ''
+                                        }
+
+
                                     </div>
                                 </div>
                                 <div className='col-4 card p-4'>
@@ -615,8 +869,14 @@ const TeacherRating = () => {
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
-                                        <a href={getFullInfo?.profileTop1000?.attachResDTO?.url}
-                                           target={"_blank"}>file</a>
+                                        {
+                                            getFullInfo?.profileTop1000?.attach != null ?
+                                                <a href={getFullInfo?.profileTop1000?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.profileTop1000?.attach?.fileName}</a>
+                                                :
+                                                ''
+                                        }
+
                                     </div>
                                 </div>
                                 <div className='col-4 card p-4'>
@@ -630,8 +890,13 @@ const TeacherRating = () => {
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
-                                        <a href={getFullInfo?.profileStateAwardDTO?.attachResDTO?.url}
-                                           target={"_blank"}>file</a>
+                                        {
+                                            getFullInfo?.profileStateAwardDTO?.attach != null ?
+                                                <a href={getFullInfo?.profileStateAwardDTO?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.profileStateAwardDTO?.attach?.fileName}</a>
+                                                :
+                                                ''
+                                        }
                                     </div>
                                 </div>
                             </div>

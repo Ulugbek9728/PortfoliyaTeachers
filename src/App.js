@@ -18,6 +18,7 @@ import Admin from "./pages/admin/admin";
 
 
 const router = createBrowserRouter([
+
     {
         path: "/",
         element: (<Home/>),
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
         path:'/pertfolia_admin/*',
         element:<Admin/>,
     },
+
 ]);
 
 function App() {

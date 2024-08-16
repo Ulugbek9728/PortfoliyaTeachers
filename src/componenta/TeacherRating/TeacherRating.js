@@ -5,6 +5,7 @@ import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNu
 import {ApiName} from "../../api/APIname";
 import axios from 'axios';
 import moment from 'moment';
+import {useNavigate} from "react-router-dom";
 
 const defaultDatabaseProfiles = [
     {
@@ -44,6 +45,7 @@ const defaultDatabaseProfiles = [
 ];
 
 const TeacherRating = () => {
+    const navigate = useNavigate();
 
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [getFullInfo, setGetFullInfo] = useState(null);
@@ -80,7 +82,6 @@ const TeacherRating = () => {
         }
 
     });
-
     const [edite, setEdite] = useState(false);
     const [radio, setRadio] = useState(false);
     const [radio2, setRadio2] = useState(data.isTop1000);
@@ -101,10 +102,12 @@ const TeacherRating = () => {
             setRadio2(getFullInfo?.isTop1000 || false);
         }
     }, [edite, getFullInfo]);
-    console.log(data)
     useEffect(() => {
-        fetchCurrentUser();
-        getprofilLink()
+        return()=>{
+            fetchCurrentUser();
+            getprofilLink()
+        }
+
     }, []);
 
     const fetchCurrentUser = async () => {
@@ -156,10 +159,14 @@ const TeacherRating = () => {
 
             }
         } catch (error) {
+            if (error.response.data.message==="Token yaroqsiz!"){
+                localStorage.removeItem("myInfo");
+
+                navigate('/')
+            }
             console.log('Xatolik yuz berdi:', error);
         }
     };
-    console.log(getFullInfo)
 
     function getprofilLink() {
         axios.get(`${ApiName}/api/author-profile/current`, {
@@ -180,13 +187,14 @@ const TeacherRating = () => {
                         counts: {
                             hindex: resData[0]?.databaseProfile?.hindex,
                             citationCount: resData[0]?.databaseProfile?.citationCount,
-                            citedByCount: resData[0]?.databaseProfile?.citedByCount
+                            citedByCount: resData[0]?.databaseProfile?.citedByCount,
+
                         },
+                        website: resData[0]?.databaseProfile?.website,
                         urlOrOrcid: resData[0].urlOrOrcid
                     }
                 })
             })
-            // data.databaseProfiles = res.data.data
         }).catch(error => {
             console.log(error)
         })
@@ -442,7 +450,7 @@ const TeacherRating = () => {
         }
     }
 
-
+    console.log(data.databaseProfiles)
     return (
         <>
 
@@ -906,24 +914,51 @@ const TeacherRating = () => {
                         </button>
                     </div>
                     <div className='teacher_rating_bottom mt-4'>
-                        <div className=' text-center br_right w-100'>
-                            <a href={getFullInfo?.profileRating?.scopusURL} target={"_blank"}>
+                        <div className='align-items-center justify-content-center br_right w-100 d-flex gap-3'>
+                            <a href={data?.databaseProfiles[0]?.website} target={"_blank"}>
                                 <img src='../img/Scopus.png' width={90} alt=""/>
                             </a>
+                            <div className="">
+                                <b className='m-0 text-lg'>h-index</b>
+                                <p className=' m-0'>{data?.databaseProfiles[0]?.counts?.hindex}</p>
+                                <hr/>
+                                <b className='m-0 text-lg'>Ilmiy ishlar</b>
+                                <p className=' m-0'>{data?.databaseProfiles[0]?.counts?.citationCount}</p>
+                                <hr/>
+                                <b className='m-0 text-lg'>Iqtiboslar soni</b>
+                                <p className=' m-0'>{data?.databaseProfiles[0]?.counts?.citedByCount}</p>
+                            </div>
 
-                            <p className='text-lg text-center'>Citations</p>
                         </div>
-                        <div className=' text-center br_right w-100'>
-                            <a href={getFullInfo?.profileRating?.wosURL} target={"_blank"}>
+                        <div className='align-items-center justify-content-center br_right w-100 d-flex gap-3'>
+                            <a href={data?.databaseProfiles[2]?.website} target={"_blank"}>
                                 <img src='../img/wos.png' width={90} alt=""/>
                             </a>
-                            <p className='text-lg text-center'>Citations</p>
+                            <div className="">
+                                <b className='m-0 text-lg'>h-index</b>
+                                <p className=' m-0'>{data?.databaseProfiles[2]?.counts?.hindex}</p>
+                                <hr/>
+                                <b className='m-0 text-lg'>Ilmiy ishlar</b>
+                                <p className=' m-0'>{data?.databaseProfiles[2]?.counts?.citationCount}</p>
+                                <hr/>
+                                <b className='m-0 text-lg'>Iqtiboslar soni</b>
+                                <p className=' m-0'>{data?.databaseProfiles[2]?.counts?.citedByCount}</p>
+                            </div>
                         </div>
-                        <div className='text-center w-100'>
-                            <a href={getFullInfo?.profileRating?.wosURL} target={"_blank"}>
+                        <div className='align-items-center justify-content-center w-100 d-flex gap-3'>
+                            <a href={data?.databaseProfiles[1]?.website} target={"_blank"}>
                                 <img src='../img/googleScholar.png' width={90} alt=""/>
                             </a>
-                            <p className='text-lg text-center'>Citations</p>
+                            <div className="">
+                                <b className='m-0 text-lg'>h-index</b>
+                                <p className=' m-0'>{data?.databaseProfiles[1]?.counts?.hindex}</p>
+                                <hr/>
+                                <b className='m-0 text-lg'>Ilmiy ishlar</b>
+                                <p className=' m-0'>{data?.databaseProfiles[1]?.counts?.citationCount}</p>
+                                <hr/>
+                                <b className='m-0 text-lg'>Iqtiboslar soni</b>
+                                <p className=' m-0'>{data?.databaseProfiles[1]?.counts?.citedByCount}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

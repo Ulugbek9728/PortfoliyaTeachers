@@ -5,8 +5,11 @@ import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
+import {useNavigate} from "react-router-dom";
 
 function IlmiyNashrlar(props) {
+    const navigate = useNavigate();
+
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -196,8 +199,11 @@ function IlmiyNashrlar(props) {
     ];
 
     useEffect(() => {
-        getIlmiyNashir();
-        ClassifairGet()
+        return()=>{
+            getIlmiyNashir();
+            ClassifairGet()
+        }
+
     }, []);
 
     const handleDelete = (id) => {
@@ -248,7 +254,10 @@ function IlmiyNashrlar(props) {
             setDataList(fetchedData);
         }).catch((error) => {
             console.log('API error:', error);
-            message.error('Failed to fetch data');
+            if (error.response.data.message==="Token yaroqsiz!"){
+                localStorage.removeItem("myInfo");
+                navigate('/')
+            }
         });
     }
 

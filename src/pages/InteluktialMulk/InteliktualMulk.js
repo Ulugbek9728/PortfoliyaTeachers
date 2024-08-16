@@ -5,9 +5,12 @@ import IntMulkModal from '../../componenta/Int.Mulk.Modal/IntMulkModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
 import {SearchOutlined} from "@ant-design/icons";
+import {useNavigate} from "react-router-dom";
 
 
 const InteliktualMulk = () => {
+    const navigate = useNavigate();
+
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -27,8 +30,10 @@ const InteliktualMulk = () => {
     };
 
     useEffect(() => {
-        ClassifairGet()
-        getIntelektualMulk()
+        return()=>{
+            ClassifairGet()
+            getIntelektualMulk()
+        }
     }, []);
     function ClassifairGet() {
         axios.get(`${ApiName}/api/classifier`, {
@@ -251,6 +256,11 @@ const InteliktualMulk = () => {
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
+            if (error.response.data.message==="Token yaroqsiz!"){
+                localStorage.removeItem("myInfo");
+
+                navigate('/')
+            }
             console.log('API error:', error);
             message.error('Failed to fetch data');
         });

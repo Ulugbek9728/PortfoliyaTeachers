@@ -304,11 +304,8 @@ const FormModal = (props) => {
     };
     return (
         <div>
-            <Form
-                form={form} ref={formRef}
-                initialValues={data}
-                className='row'
-                onFinish={handleSubmit}
+            <Form form={form} ref={formRef} initialValues={data}
+                className='row' onFinish={handleSubmit}
                 fields={[
                     {
                         name: "scientificPublicationType",

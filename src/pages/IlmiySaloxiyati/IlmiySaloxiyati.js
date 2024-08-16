@@ -5,8 +5,11 @@ import { SearchOutlined} from '@ant-design/icons';
 import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySaloxiyatModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
+import {useNavigate} from "react-router-dom";
 
 const IlmiySaloxiyati = () => {
+    const navigate = useNavigate();
+
     const formRef = useRef(null);
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [form] = Form.useForm();
@@ -130,11 +133,12 @@ const IlmiySaloxiyati = () => {
     ];
 
     useEffect(() => {
-        getIlmiySaloxiyat();
+        return()=>{
+            getIlmiySaloxiyat();
+        }
     }, []);
 
     function getIlmiySaloxiyat() {
-        console.log();
         axios.get(`${ApiName}/api/employee-student`, {
             headers: {
                 Authorization: `Bearer ${fulInfo?.accessToken}`
@@ -160,8 +164,12 @@ const IlmiySaloxiyati = () => {
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
+            if (error.response.data.message==="Token yaroqsiz!"){
+                localStorage.removeItem("myInfo");
+
+                navigate('/')
+            }
             console.log('API error:', error);
-            message.error('Failed to fetch data');
         });
     }
 

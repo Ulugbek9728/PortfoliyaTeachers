@@ -1,11 +1,7 @@
 import {ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"
 import {QueryClient, QueryClientProvider} from "react-query";
-import {
-    createBrowserRouter,
-    RouterProvider,
-} from "react-router-dom";
-
+import {createBrowserRouter, RouterProvider,} from "react-router-dom";
 import Home from "./pages/Home";
 import FacultyStatic from "./pages/facultyStatic";
 import KafedraStatic from "./pages/kafedraStatic";

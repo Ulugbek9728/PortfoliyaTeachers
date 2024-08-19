@@ -44,13 +44,10 @@ function Navbar(props) {
             key: '3',
         },
     ];
-
-    console.log(fulInfo)
     function LogOut() {
         openNewWindow(); // Yangi oynani ochish
         setTimeout(closeWindow, 100); // 0.1 sekunddan so'ng oynani yopish
         localStorage.removeItem("myInfo");
-
     }
     let newWindow;
     function openNewWindow() {

@@ -230,7 +230,6 @@ const UslubiyNashrlar = () => {
         });
     }    
 
-    
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";        
         const requestData = { id: record.id, publicationStatus: newStatus };

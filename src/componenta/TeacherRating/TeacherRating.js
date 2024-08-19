@@ -106,9 +106,32 @@ const TeacherRating = () => {
         return()=>{
             fetchCurrentUser();
             getprofilLink()
+            ClassifairGet('h_academic_degree');
         }
 
     }, []);
+    function ClassifairGet(e) {
+        axios.get(`${ApiName}/api/classifier`, {
+            params: {
+                key: e
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`
+            }
+        })
+            .then(response => {
+                if (e==='h_academic_degree'){
+                    console.log(response.data)
+                    // setScientificpublication(response.data[0]?.options);
+                }
+
+
+            })
+            .catch(error => {
+                console.log(error, 'error');
+            });
+    }
 
     const fetchCurrentUser = async () => {
         try {
@@ -450,7 +473,6 @@ const TeacherRating = () => {
         }
     }
 
-    console.log(data.databaseProfiles)
     return (
         <>
 
@@ -628,11 +650,11 @@ const TeacherRating = () => {
                                 <hr/>
                             </div>
                             <div style={{width: '33%'}}>
-                                <Form.Item label={<p className='labelForm'>Scopus (ORCID ID)</p>} name='ScopusOrcidId'>
+                                <Form.Item label={<p className='labelForm'>Scopus (Profil link)</p>} name='ScopusOrcidId'>
                                     <Input placeholder="ORCID ID" name='ScopusOrcidId'
                                            onChange={(e) => profilLinke("Scopus", e.target.value, '11')}/>
                                 </Form.Item>
-                                <Form.Item label={<p className='labelForm'>Google scholar (ORCID ID)</p>}
+                                <Form.Item label={<p className='labelForm'>Google scholar (Profil link)</p>}
                                            name='GoogleOrcidId'>
                                     <Input placeholder="ORCID ID" name='GoogleOrcidId'
                                            onChange={(e) => profilLinke("Google scholar", e.target.value, '13')}/>
@@ -689,6 +711,7 @@ const TeacherRating = () => {
                                     </Upload>
                                 </Form.Item>
                             </div>
+
                             <div style={{width: '33%'}}>
                                 <Form.Item name="Ilmiy_daraja" style={{marginTop: "27px"}}
                                            label={<p className='labelForm'>Ilmiy daraja bormi?</p>}>

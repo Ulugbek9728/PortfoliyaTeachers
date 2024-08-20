@@ -553,13 +553,12 @@ const FormModal = (props) => {
 
                 {url ? (
                     <Form.Item
-                        layout="vertical"
-                        label="URL manzil"
-                        name="doiOrUrl"
-                        labelCol={{span: 24}}
-                        wrapperCol={{span: 24}}
-                        rules={[{required: true, message: 'Iltimos URL manzil kiriting'}]}
+                        layout="vertical" label="URL manzil" name="doiOrUrl" labelCol={{span: 24}} wrapperCol={{span: 24}}
                         className='col-6'
+                        rules={[{
+                            message: '"url" kiriting',
+                            type: "url",
+                        }]}
                     >
                         <Input
                             name="doiOrUrl"

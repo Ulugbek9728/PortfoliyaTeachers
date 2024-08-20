@@ -72,11 +72,23 @@ const router = createBrowserRouter([
         path:'/pertfolia_admin/*',
         element:<Admin/>,
     },
-
 ]);
 
+const client = new QueryClient(
+    {
+        defaultOptions:{
+            queries: {
+                refetchOnWindowFocus: false,
+                refetchOnmount: false,
+                refetchOnReconnect: false,
+                retry: false,
+                staleTime: 1000 * 60 * 60 * 24,
+            }
+        }
+    }
+);
+
 function App() {
-    const client = new QueryClient();
 
     return (
         <QueryClientProvider client={client}>

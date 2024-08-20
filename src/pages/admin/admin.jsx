@@ -2,42 +2,38 @@ import React, {useState} from 'react';
 import {FileTextOutlined, UserOutlined,} from '@ant-design/icons';
 import { Layout,} from 'antd';
 import Navbar from "../../componenta/Navbar";
-import {NavLink} from "react-router-dom";
+import {NavLink, Route, Routes} from "react-router-dom";
+import AddFakulty from "./addFakulty";
+import AdminIlmiyNashirlar from "./admin_ilmiyNashirlar";
 
 const { Sider, Content} = Layout;
 
 const items = [
     {
-        label: "Bo'lim qo'shish",
+        label: "Fakultet dekanini qo'shish",
         key: '1',
         icon: <UserOutlined/>,
     },
     {
-        label: "menu 1",
+        label: "Ilmiy nashirlar",
         key: "2",
         icon: <FileTextOutlined />,
     },
     {
-        label: "menu 2",
+        label: "Uslubiy nashirlar",
         key: "3",
         icon: <FileTextOutlined/>,
     },
     {
-        label: "menu 3",
+        label: "Intelektual mulk agentligi tomonidan berilgan ishlar",
         key: "4",
         icon: <FileTextOutlined/>,
     },
     {
-        label: "menu 4",
+        label: "Ilmiy saloxiyatni oshirishdagi hissasi",
         key: "5",
         icon: <FileTextOutlined/>,
     },
-    {
-        label: "menu 5",
-        key: "6",
-        icon: <FileTextOutlined/>,
-    },
-
 ];
 function Admin(props) {
 
@@ -57,14 +53,19 @@ function Admin(props) {
                     </div>
                 </Sider>
                 <Layout>
-                    <Content
-                        style={{
+                    <Content style={{
                             margin: '24px 16px',
                             padding: 24,
                             minHeight: "89vh",
                         }}
                     >
-                        Content
+                        <Routes>
+                            <Route path={"/1"} element={ <AddFakulty/>}/>
+                            <Route path={"/2"} element={ <AdminIlmiyNashirlar/>}/>
+                            {/*<Route path={"/3"} element={ <UslubiyNashrlar/>}/>*/}
+                            {/*<Route path={"/4"} element={ <InteliktualMulk/>}/>*/}
+                            {/*<Route path={"/5"} element={ <IlmiySaloxiyati/>}/>*/}
+                        </Routes>
                     </Content>
                 </Layout>
             </Layout>

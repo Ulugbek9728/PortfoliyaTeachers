@@ -539,7 +539,10 @@ const UslubiyNashrlarModal = (props) => {
                         labelCol={{span: 24}}
                         wrapperCol={{span: 24}}
                         className="col-6"
-                        rules={[{required: true, message: "Iltimos URL manzil kiriting"}]}
+                        rules={[{
+                            message: '"url" kiriting',
+                            type: "url",
+                        }]}
                     >
                         <Input
                             name="doiOrUrl"

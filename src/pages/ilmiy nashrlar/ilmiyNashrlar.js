@@ -26,9 +26,9 @@ function IlmiyNashrlar(props) {
     });
     const [Scientificpublication, setScientificpublication] = useState([]);
     const [srcItem, setSrcItem] = useState({});
-    const onChangeDate = (value, dateString) => {
-        setDateListe(dateString);
-    };
+        const onChangeDate = (value, dateString) => {
+            setDateListe(dateString);
+        };
 
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
@@ -199,11 +199,8 @@ function IlmiyNashrlar(props) {
     ];
 
     useEffect(() => {
-        return()=>{
             getIlmiyNashir();
             ClassifairGet()
-        }
-
     }, []);
 
     const handleDelete = (id) => {

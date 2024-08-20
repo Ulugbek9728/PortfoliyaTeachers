@@ -149,6 +149,7 @@ function Navbar(props) {
                                 </a>
                             </Dropdown>
                             {/*/!*${ApiName}*!/  http://localhost:3000/*/}
+                            {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
 
                             {fulInfo===null ? <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
                                                  className="nav-item nav-link">

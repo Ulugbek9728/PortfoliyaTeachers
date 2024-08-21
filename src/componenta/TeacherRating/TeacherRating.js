@@ -1,11 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import './teacherRating.css';
 import {EditOutlined, UploadOutlined, CloseSquareOutlined} from '@ant-design/icons';
 import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal} from 'antd';
 import {ApiName} from "../../api/APIname";
 import axios from 'axios';
-import moment from 'moment';
 import {useNavigate} from "react-router-dom";
+import dayjs from "dayjs";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
 
 const defaultDatabaseProfiles = [
     {
@@ -46,7 +48,8 @@ const defaultDatabaseProfiles = [
 
 const TeacherRating = () => {
     const navigate = useNavigate();
-
+    const formRef = useRef(null);
+    const [form] = Form.useForm();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [getFullInfo, setGetFullInfo] = useState(null);
     const [data, setData] = useState({
@@ -90,12 +93,27 @@ const TeacherRating = () => {
         if (edite) {
             setData({
                 profileId: fulInfo?.id,
-                specialist: getFullInfo?.specialist,
-                scientificTitle: getFullInfo?.scientificTitle,
-                scientificDegree: getFullInfo?.scientificDegree,
+                specialist:{
+                   name: getFullInfo?.specialist.name,
+                   number: getFullInfo?.specialist.number,
+                   date: dayjs(getFullInfo?.specialist?.date)
+                },
+                scientificTitle:{
+                    name: getFullInfo?.scientificTitle.name,
+                    date: dayjs(getFullInfo?.scientificTitle.date),
+                    number: getFullInfo?.scientificTitle.number
+                },
+                scientificDegree: {
+                    name: getFullInfo?.scientificDegree.name,
+                    date: dayjs(getFullInfo?.scientificDegree.date)  ,
+                    number: getFullInfo?.scientificDegree?.number
+                },
                 isTop1000: getFullInfo?.isTop1000,
                 profileTop1000: getFullInfo?.profileTop1000,
-                profileStateAwardDTO: getFullInfo?.profileStateAwardDTO,
+                profileStateAwardDTO: {
+                    nameStateAward: getFullInfo?.profileStateAwardDTO?.nameStateAward,
+                    date:dayjs(getFullInfo?.profileStateAwardDTO?.date) ,
+                },
                 databaseProfiles: data.databaseProfiles
             });
             setRadio(!!getFullInfo?.scientificDegree?.name);
@@ -145,44 +163,44 @@ const TeacherRating = () => {
             if (response.data.isSuccess === true) {
                 setGetFullInfo({
                     ...getFullInfo,
-                    firstName: response.data.data.firstName,
-                    fullName: response.data.data.fullName,
-                    secondName: response.data.data.secondName,
-                    shortName: response.data.data.shortName,
-                    thirdName: response.data.data.thirdName,
-                    imageUrl: response.data.data.imageUrl,
-                    isTop1000: response.data.data.isTop1000,
-                    profileId: response.data.data.profileId,
+                    firstName: response.data?.data.firstName,
+                    fullName: response.data?.data.fullName,
+                    secondName: response.data?.data.secondName,
+                    shortName: response.data?.data.shortName,
+                    thirdName: response.data?.data.thirdName,
+                    imageUrl: response.data?.data.imageUrl,
+                    isTop1000: response.data?.data.isTop1000,
+                    profileId: response.data?.data.profileId,
                     profileStateAwardDTO: {
                         attach: JSON.parse(response.data.data.profileStateAwardDTO.attach),
-                        data: response.data.data.profileStateAwardDTO.data,
-                        nameStateAward: response.data.data.profileStateAwardDTO.nameStateAward
+                        data: response.data?.data.profileStateAwardDTO.data,
+                        nameStateAward: response.data?.data.profileStateAwardDTO.nameStateAward
                     },
                     profileTop1000: {
-                        attach: JSON.parse(response.data.data.profileTop1000.attach),
-                        country: response.data.data.profileTop1000.country,
-                        university: response.data.data.profileTop1000.university,
+                        attach: JSON.parse(response.data?.data.profileTop1000.attach),
+                        country: response.data?.data.profileTop1000.country,
+                        university: response.data?.data.profileTop1000.university,
                     },
-                    roles: response.data.data.roles,
-                    scientificDegree: response.data.data.scientificDegree,
+                    roles: response.data?.data.roles,
+                    scientificDegree: response.data?.data.scientificDegree,
                     scientificTitle: {
-                        attach: JSON.parse(response.data.data.scientificTitle.attach),
-                        date: response.data.data.scientificTitle.date,
-                        name: response.data.data.scientificTitle.name,
-                        number: response.data.data.scientificTitle.number,
+                        attach: JSON.parse(response.data?.data.scientificTitle.attach),
+                        date: response.data?.data.scientificTitle.date,
+                        name: response.data?.data.scientificTitle.name,
+                        number: response.data?.data.scientificTitle.number,
                     },
                     specialist: {
-                        attach: JSON.parse(response.data.data.specialist.attach),
-                        date: response.data.data.specialist.date,
-                        name: response.data.data.specialist.name,
-                        number: response.data.data.specialist.number,
+                        attach: JSON.parse(response.data?.data.specialist.attach),
+                        date: response.data?.data.specialist.date,
+                        name: response.data?.data.specialist.name,
+                        number: response.data?.data.specialist.number,
                     }
 
                 });
 
             }
         } catch (error) {
-            if (error.response.data.message==="Token yaroqsiz!"){
+            if (error.response?.data?.message==="Token yaroqsiz!"){
                 localStorage.removeItem("myInfo");
 
                 navigate('/')
@@ -223,26 +241,26 @@ const TeacherRating = () => {
         })
     }
 
-    const handleDateChange = (date, name) => {
-        const formattedDate = date ? date.format('YYYY-MM-DD') : null;
-        setData((prevData) => {
-            const keys = name.split('.');
-            if (keys.length === 1) {
-                return {
-                    ...prevData,
-                    [name]: formattedDate,
-                };
-            } else {
-                let newState = {...prevData};
-                let current = newState;
-                for (let i = 0; i < keys.length - 1; i++) {
-                    current = current[keys[i]];
-                }
-                current[keys[keys.length - 1]] = formattedDate;
-                return newState;
-            }
-        });
-    };
+    // const handleDateChange = (date, name) => {
+    //     const formattedDate = date ? date.format('YYYY-MM-DD') : null;
+    //     setData((prevData) => {
+    //         const keys = name.split('.');
+    //         if (keys.length === 1) {
+    //             return {
+    //                 ...prevData,
+    //                 [name]: formattedDate,
+    //             };
+    //         } else {
+    //             let newState = {...prevData};
+    //             let current = newState;
+    //             for (let i = 0; i < keys.length - 1; i++) {
+    //                 current = current[keys[i]];
+    //             }
+    //             current[keys[keys.length - 1]] = formattedDate;
+    //             return newState;
+    //         }
+    //     });
+    // };
 
     const handleFileChange = (info, section) => {
         if (info.file.status === 'done') {
@@ -484,7 +502,11 @@ const TeacherRating = () => {
                             setEdite(false)
                         }}><CloseSquareOutlined/></button>
                     </div>
-                    <Form onFinish={handleSubmit} labelAlign="left" layout="vertical" colon={false}
+                    <Form onFinish={handleSubmit} 
+                          labelAlign="left" 
+                          layout="vertical" 
+                          colon={false}
+                          initialValues={data}
                           fields={[
                               {
                                   name: "specialist.name",
@@ -492,7 +514,7 @@ const TeacherRating = () => {
                               },
                               {
                                   name: "specialist.date",
-                                  value: data.specialist?.date ? moment(data.specialist.date) : null
+                                  value: data.specialist?.date ? dayjs(data.specialist.date) : null
                               },
                               {
                                   name: "specialist.number",
@@ -504,7 +526,7 @@ const TeacherRating = () => {
                               },
                               {
                                   name: "scientificTitle.date",
-                                  value: data.scientificTitle?.date ? moment(data.scientificTitle.date) : null
+                                  value: data.scientificTitle?.date ? dayjs(data.scientificTitle.date) : null
                               },
                               {
                                   name: "scientificTitle.number",
@@ -540,7 +562,7 @@ const TeacherRating = () => {
                               },
                               {
                                   name: "profileStateAwardDTO.date",
-                                  value: data?.profileStateAwardDTO?.date ? moment(data.profileStateAwardDTO.date) : null
+                                  value: data?.profileStateAwardDTO?.date ? dayjs(data.profileStateAwardDTO.date) : null
                               },
                               {
                                   name: "Ilmiy_daraja",
@@ -552,7 +574,7 @@ const TeacherRating = () => {
                               },
                               {
                                   name: "scientificDegree.date",
-                                  value: data.scientificDegree?.date ? moment(data.scientificDegree.date) : null
+                                  value: data.scientificDegree?.date ? dayjs(data.scientificDegree.date) : null
                               },
                               {
                                   name: "scientificDegree.number",
@@ -583,8 +605,11 @@ const TeacherRating = () => {
                                     <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
                                                name='specialist.date'>
                                         <DatePicker
+                                            format="YYYY-MM-DD"
                                             name='specialist.date'
-                                            onChange={(date) => handleDateChange(date, 'specialist.date')}
+                                            onChange={(date) => {
+                                               setData({...data, specialist: {...data.specialist,date: date} })
+                                            }}
                                             placeholder="Diplom sanasi"
                                         />
                                     </Form.Item>
@@ -623,8 +648,11 @@ const TeacherRating = () => {
                                     <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
                                                name='scientificTitle.date'>
                                         <DatePicker
+                                            format="YYYY-MM-DD"
                                             name='scientificTitle.date'
-                                            onChange={(date) => handleDateChange(date, 'scientificTitle.date')}
+                                            onChange={(date) => {
+                                                setData({...data, scientificTitle: {...data.scientificTitle,date: date} })
+                                             }}
                                             placeholder="Diplom sanasi"
                                         />
                                     </Form.Item>
@@ -664,7 +692,21 @@ const TeacherRating = () => {
                                 <div className="d-flex">
                                     <Form.Item label={<p className='labelForm'> (Profil linki)</p>}
                                                name='WEB.OF.SCIENCE.Link'
-                                               className='col-6'>
+                                               className='col-6'
+                                               rules={[
+                                                {
+                                                  required: true,
+                                                },
+                                                {
+                                                  type: 'url',
+                                                  warningOnly: true,
+                                                },
+                                                {
+                                                  type: 'string',
+                                                  min: 6,
+                                                },
+                                              ]}
+                                               >
                                         <Input placeholder="Profil linki" name='WEB.OF.SCIENCE.Link'
                                                onChange={(e) => webOfCounts('url', e.target.value)}/>
                                     </Form.Item>
@@ -698,8 +740,11 @@ const TeacherRating = () => {
                                 <Form.Item label={<p className='labelForm'>Olgan sanasi</p>}
                                            name='profileStateAwardDTO.date'>
                                     <DatePicker
+                                        format="YYYY-MM-DD"
                                         name='profileStateAwardDTO.date'
-                                        onChange={(date) => handleDateChange(date, 'profileStateAwardDTO.date')}
+                                        onChange={(date) => {
+                                            setData({...data, profileStateAwardDTO: {...data.profileStateAwardDTO, date: date} })
+                                         }}
                                         placeholder="Olgan sanasi"
                                     />
                                 </Form.Item>
@@ -739,8 +784,11 @@ const TeacherRating = () => {
                                             <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
                                                        name='scientificDegree.date'>
                                                 <DatePicker placeholder="Diplom sanasi"
+                                                            format="YYYY-MM-DD"
                                                             name='scientificDegree.date'
-                                                            onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
+                                                            onChange={(date) => {
+                                                                setData({...data, scientificDegree: {...data.scientificDegree,date: date} })
+                                                             }}
 
                                                 />
                                             </Form.Item>

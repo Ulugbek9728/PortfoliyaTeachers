@@ -3,14 +3,13 @@ import {FileTextOutlined, UserOutlined,} from '@ant-design/icons';
 import { Layout,} from 'antd';
 import Navbar from "../../componenta/Navbar";
 import {NavLink, Route, Routes} from "react-router-dom";
-import AddFakulty from "./addFakulty";
-import AdminIlmiyNashirlar from "./admin_ilmiyNashirlar";
+import AddKafedra from "./addKafedra";
 
 const { Sider, Content} = Layout;
 
 const items = [
     {
-        label: "Fakultet dekanini qo'shish",
+        label: "Kafedra mudirini qo'shish",
         key: '1',
         icon: <UserOutlined/>,
     },
@@ -35,8 +34,7 @@ const items = [
         icon: <FileTextOutlined/>,
     },
 ];
-function Admin(props) {
-
+function Fakulty(props) {
     return (
         <>
             <Navbar/>
@@ -54,17 +52,14 @@ function Admin(props) {
                 </Sider>
                 <Layout>
                     <Content style={{
-                            margin: '24px 16px',
-                            padding: 24,
-                            minHeight: "89vh",
-                        }}
+                        margin: '24px 16px',
+                        padding: 24,
+                        minHeight: "89vh",
+                    }}
                     >
                         <Routes>
-                            <Route path={"/1"} element={ <AddFakulty/>}/>
-                            <Route path={"/2"} element={ <AdminIlmiyNashirlar/>}/>
-                            {/*<Route path={"/3"} element={ <UslubiyNashrlar/>}/>*/}
-                            {/*<Route path={"/4"} element={ <InteliktualMulk/>}/>*/}
-                            {/*<Route path={"/5"} element={ <IlmiySaloxiyati/>}/>*/}
+                            <Route path={"/1"} element={ <AddKafedra/>}/>
+
                         </Routes>
                     </Content>
                 </Layout>
@@ -73,4 +68,4 @@ function Admin(props) {
     );
 }
 
-export default Admin;
+export default Fakulty;

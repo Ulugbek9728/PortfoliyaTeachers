@@ -30,10 +30,8 @@ const InteliktualMulk = () => {
     };
 
     useEffect(() => {
-        return()=>{
             ClassifairGet()
             getIntelektualMulk()
-        }
     }, []);
     function ClassifairGet() {
         axios.get(`${ApiName}/api/classifier`, {

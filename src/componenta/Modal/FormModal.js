@@ -376,7 +376,6 @@ const FormModal = (props) => {
                     </Form.Item>
                 )}
 
-
                 <Form.Item layout="vertical"
                     label="Nashrning bibliografik matni"
                     name="scientificName" labelCol={{span: 24}} wrapperCol={{span: 24}}
@@ -552,13 +551,12 @@ const FormModal = (props) => {
 
                 {url ? (
                     <Form.Item
-                        layout="vertical"
-                        label="URL manzil"
-                        name="doiOrUrl"
-                        labelCol={{span: 24}}
-                        wrapperCol={{span: 24}}
-                        rules={[{required: true, message: 'Iltimos URL manzil kiriting'}]}
+                        layout="vertical" label="URL manzil" name="doiOrUrl" labelCol={{span: 24}} wrapperCol={{span: 24}}
                         className='col-6'
+                        rules={[{
+                            message: '"url" kiriting',
+                            type: "url",
+                        }]}
                     >
                         <Input
                             name="doiOrUrl"
@@ -584,7 +582,7 @@ const FormModal = (props) => {
 
                 <Form.Item
                     layout="vertical"
-                    label="Nashr yili	"
+                    label="Nashr yili"
                     name="issueYear"
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}

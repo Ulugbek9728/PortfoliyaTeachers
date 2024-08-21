@@ -133,9 +133,7 @@ const IlmiySaloxiyati = () => {
     ];
 
     useEffect(() => {
-        return()=>{
             getIlmiySaloxiyat();
-        }
     }, []);
 
     function getIlmiySaloxiyat() {
@@ -146,11 +144,7 @@ const IlmiySaloxiyati = () => {
             params: {
                 size: tableParams.pagination.pageSize,
                 page: tableParams.pagination.current > 0 ? tableParams.pagination.current - 1 : 0,
-                // type: 'SCIENTIFIC_PUBLICATIONS',
                 scientificLeadershipType: srcItem?.srcType,
-                // scientificPublicationType: srcItem?.srcType,
-                // fromlocalDate: DateListe[0],
-                // tolocalDate: DateListe[1]
             }
         }).then((response) => {
             setTableParams({

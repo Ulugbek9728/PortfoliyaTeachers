@@ -11,6 +11,7 @@ import UniversitetStatic from "./pages/universitetStatic";
 import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
+import Fakulty from "./pages/fakulty/fakulty";
 
 
 const router = createBrowserRouter([
@@ -72,11 +73,27 @@ const router = createBrowserRouter([
         path:'/pertfolia_admin/*',
         element:<Admin/>,
     },
-
+    {
+        path:'/pertfolia_fakultyadm/*',
+        element:<Fakulty/>,
+    },
 ]);
 
+const client = new QueryClient(
+    {
+        defaultOptions:{
+            queries: {
+                refetchOnWindowFocus: false,
+                refetchOnmount: false,
+                refetchOnReconnect: false,
+                retry: false,
+                staleTime: 1000 * 60 * 60 * 24,
+            }
+        }
+    }
+);
+
 function App() {
-    const client = new QueryClient();
 
     return (
         <QueryClientProvider client={client}>

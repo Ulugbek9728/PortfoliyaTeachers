@@ -1,69 +1,54 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate, useSearchParams} from "react-router-dom";
-import axios from "axios";
-import {ApiName} from "../api/APIname";
+
 import {toast} from "react-toastify";
 import Loading from "../componenta/loading";
 import Navbar from "../componenta/Navbar";
+import {useQuery} from "react-query"
+import {getLogin} from "../api/general";
 
 function Auth(props) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [message, setMessage] = useState('');
-    const [sucsessText, setSucsessText] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [login, setLogin] = useState(false);
+
+    const {isLoading} = useQuery({
+            queryKey: ["login"],
+            queryFn: () => {
+                getLogin(searchParams.get('code'), searchParams.get('state'))
+                    .then((response) => {
+                        if (response?.data?.isSuccess === true) {
+                            localStorage.setItem("myInfo", JSON.stringify(response.data.data));
+
+                            if (response?.data?.data?.currentRole === "ROLE_ADMIN") {
+                                navigate('/pertfolia_admin/1')
+                            }
+                            if (response?.data?.data?.currentRole === "ROLE_TEACHER") {
+                                navigate('/profile/1')
+                            }
+
+                            if (response?.data?.data?.currentRole === "ROLE_FACULTY") {
+                                navigate('/pertfolia_fakultyadm/1')
+                            } else {
+                                // navigate('/profile/1')
+                            }
 
 
-    window.onload = function() {
-            setLoading(true)
-            axios.get(`${ApiName}/api/auth/login`, {
-                params: {
-                    code: searchParams.get('code'),
-                    state: searchParams.get('state')
-                }
-            }).then((response) => {
-                console.log(response.data)
+                        } else {
+                            setMessage(response?.data?.message)
+                        }
+                    })
+            },
+        }
+    );
 
-                if (response.data.isSuccess === true) {
-                    setLoading(false)
-                    setLogin(true)
-                    localStorage.setItem("myInfo", JSON.stringify(response.data.data));
-                    navigate('/profile/1')
-                    if (response?.data?.data?.roles[0]==="ROLE_ADMIN"){
-                        // navigate('/pertfolia_admin')
-                        // navigate('/profile/1')
-                    }
-                    else {
-                        // navigate('/profile/1')
-                    }
-                }
-                else {
-                    setLoading(false)
-                    setMessage(response.data.message)
-                }
-            }).catch((error) => {
-                console.log(error);
-                setLoading(false)
-                // navigate("/")
-                setMessage("Loginda xato")
-    
-            })
-        
-        };
-
-    
 
     useEffect(() => {
         setMessage('')
-        setSucsessText('')
         notify();
-    }, [message, sucsessText,]);
+    }, [message,]);
 
     function notify() {
-        if (sucsessText !== '') {
-            toast.success(sucsessText)
-        }
         if (message !== '') {
             toast.error(message)
         }
@@ -71,13 +56,12 @@ function Auth(props) {
 
     return (
         <>
-            {loading===true ? <Loading/> :  <div>
+            {isLoading === true ? <Loading/> : <div>
                 <div className="container-fluid">
-                    <div className="row mt-5 d-flex align-items-center justify-content-center">
+                    <div className="row d-flex align-items-center justify-content-center">
                         <Navbar/>
-                        <img style={{width:'40%', marginTop:'3%'}} src="./404error1.svg" alt=""/>
+                        {/*<img style={{width: '40%', marginTop: '3%'}} src="./404error1.svg" alt=""/>*/}
                     </div>
-
                 </div>
             </div>}
         </>

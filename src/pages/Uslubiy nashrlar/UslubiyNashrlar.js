@@ -188,11 +188,8 @@ const UslubiyNashrlar = () => {
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
     useEffect(() => {
-        return()=>{
             getIlmiyNashir();
             ClassifairGet()
-        }
-
     }, []);
     function getIlmiyNashir() {
         axios.get(`${ApiName}/api/publication/current-user`, {

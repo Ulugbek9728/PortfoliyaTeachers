@@ -1,16 +1,19 @@
 import React, {useState, useRef} from 'react';
 
 import {
-    Space, Table, Select, Modal, Upload, Button, Steps, Skeleton,
-    message, Empty, Drawer, Form, DatePicker, Popconfirm, Input,Switch
+    Space, Table, Select, Modal,
+    message, Form, DatePicker, Popconfirm, Input,Switch
 } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import {SearchOutlined } from '@ant-design/icons';
 import './UslubiyNashrlar.scss'
 import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
 import axios from 'axios';
 import { ApiName } from "../../api/APIname";
 import { useEffect } from 'react';
+import {useNavigate} from "react-router-dom";
 const UslubiyNashrlar = () => {
+    const navigate = useNavigate();
+
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -184,6 +187,13 @@ const UslubiyNashrlar = () => {
         setEditingData(record);
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
+    useEffect(() => {
+        return()=>{
+            getIlmiyNashir();
+            ClassifairGet()
+        }
+
+    }, []);
     function getIlmiyNashir() {
         axios.get(`${ApiName}/api/publication/current-user`, {
             headers: {
@@ -211,15 +221,15 @@ const UslubiyNashrlar = () => {
             const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
             setDataList(fetchedData);
         }).catch((error) => {
+            if (error.response.data.message==="Token yaroqsiz!"){
+                localStorage.removeItem("myInfo");
+
+                navigate('/')
+            }
             console.log('API error:', error);
-            message.error('Failed to fetch data');
         });
     }    
-    useEffect(() => {
-        getIlmiyNashir();
-        ClassifairGet()
-    }, []);
-    
+
     const toggleActiveStatus = (record) => {
         const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";        
         const requestData = { id: record.id, publicationStatus: newStatus };
@@ -273,7 +283,7 @@ const UslubiyNashrlar = () => {
         centered
         open={open}
         onCancel={handleCancel}
-        width={1600}
+        width={1300}
         style={{right:"-80px"}}
         footer={null} 
       >
@@ -310,7 +320,7 @@ const UslubiyNashrlar = () => {
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success mt-4" type="submit">
-                            <span className="button__text">Ma'lumotni izlash</span>
+                            <span className="button__text"><SearchOutlined /></span>
                         </button>
                     </Form.Item>
 

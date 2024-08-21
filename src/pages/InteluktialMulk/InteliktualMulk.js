@@ -4,8 +4,13 @@ import "./InteliktualMulk.scss"
 import IntMulkModal from '../../componenta/Int.Mulk.Modal/IntMulkModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
-import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {SearchOutlined} from "@ant-design/icons";
+import {useNavigate} from "react-router-dom";
+
+
 const InteliktualMulk = () => {
+    const navigate = useNavigate();
+
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -25,8 +30,10 @@ const InteliktualMulk = () => {
     };
 
     useEffect(() => {
-        ClassifairGet()
-        getIntelektualMulk()
+        return()=>{
+            ClassifairGet()
+            getIntelektualMulk()
+        }
     }, []);
     function ClassifairGet() {
         axios.get(`${ApiName}/api/classifier`, {
@@ -249,6 +256,11 @@ const InteliktualMulk = () => {
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
+            if (error.response.data.message==="Token yaroqsiz!"){
+                localStorage.removeItem("myInfo");
+
+                navigate('/')
+            }
             console.log('API error:', error);
             message.error('Failed to fetch data');
         });
@@ -261,7 +273,7 @@ const InteliktualMulk = () => {
         centered
         open={open}
         onCancel={handleCancel}
-        width={1600}
+        width={1000}
         style={{right:"-80px"}}
       >
         <IntMulkModal publicationType="INTELLECTUAL_PROPERTY" editingData={editingData}
@@ -288,7 +300,7 @@ const InteliktualMulk = () => {
                     </Form.Item>
                     <Form.Item label=" ">
                         <button className="btn btn-success" type="submit">
-                            <span className="button__text">Ma'lumotni izlash</span>
+                            <span className="button__text"><SearchOutlined /></span>
                         </button>
                     </Form.Item>
                 </Form>

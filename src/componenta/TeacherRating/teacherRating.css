@@ -38,5 +38,8 @@
 
 .br_right {
     border-right: 1px solid rgb(136, 134, 134);
-    padding-right: 140px;
+}
+.labelForm {
+    font-size: 15px;
+    margin: 0;
 }

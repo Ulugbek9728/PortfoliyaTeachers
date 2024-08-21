@@ -1,13 +1,12 @@
-import React, {useState} from 'react';
+import React, {useEffect} from 'react';
 import {Link, useNavigate} from "react-router-dom";
-import {ApiName} from "../api/APIname";
 import LanguageSwitcher from "./LanguageSwitcher";
 import {useTranslation} from "react-i18next";
 import {CaretDownOutlined, UserOutlined, LogoutOutlined} from '@ant-design/icons';
-import {Avatar, Dropdown, Space} from 'antd';
+import {Avatar, Dropdown, Menu, notification, Space} from 'antd';
 import * as PropTypes from "prop-types";
-import axios from "axios";
-
+import {useMutation} from "react-query"
+import {ChangeRole} from "../api/general";
 
 
 LogoutOutlined.propTypes = {className: PropTypes.string};
@@ -44,51 +43,87 @@ function Navbar(props) {
             key: '3',
         },
     ];
+
     function LogOut() {
         openNewWindow(); // Yangi oynani ochish
         setTimeout(closeWindow, 100); // 0.1 sekunddan so'ng oynani yopish
         localStorage.removeItem("myInfo");
     }
+
     let newWindow;
+
     function openNewWindow() {
         newWindow = window.open('https://hemis.tdtu.uz/dashboard/logout', '_blank');
 
     }
+
     function closeWindow() {
         newWindow.close(); // Yangi oynani yopish
         navigate("/")
     }
-    function changeRole(e) {
-        let value
-        axios.post(`${ApiName}/api/change-role/${e}`,'',
-            {headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}}
-        ).then((res)=>{
-            console.log(res)
-            value={...fulInfo,
-                currentRole:e,
-                accessToken:res?.data?.data?.accessToken
-            }
-            localStorage.setItem("myCat", JSON.stringify(value));
-            if (e === 'ROLE_OPERATOR') {
-                navigate('/operator/addFile')
 
-            } else if (e === 'ROLE_RECTOR') {
-                navigate('/adminRector/getappeals')
+    const changeRoles = useMutation({
+        mutationFn: (e) => ChangeRole(e).then((res) => {
+            notification.success({
+                message: "role o'zgardi"
+            })
+            let value
+            value = {
+                ...fulInfo,
+                currentRole: e,
+                accessToken: res?.data?.data?.accessToken
+            }
+            localStorage.setItem("myInfo", JSON.stringify(value));
+            if (e === 'ROLE_TEACHER') {
+                navigate('/profile/1')
+            } else if (e === 'ROLE_FACULTY') {
+                navigate('/pertfolia_fakultyadm/1')
             } else if (e === 'ROLE_ADMIN') {
-                navigate('/adminAll/userAdd')
-
-            } else if (e === 'ROLE_DEPARTMENT') {
-                navigate('/department/addFileDepartment')
-
+                navigate('/pertfolia_admin/1')
             }
-            window.location.reload()
+        }),
+        onError: () => {
+            notification.error({
+                message: "fakultet eror",
+                duration: 1,
+                placement: 'top'
+            })
+        }
+    })
 
-
-        }).catch((error)=>{
-            console.log(error)
-        })
+    const getProfileDropdownItems = () => {
+        let res = [{
+            label: fulInfo?.fullName,
+            key: fulInfo?.fullName
+        }]
+        fulInfo
+            ?.roles
+            ?.map(role => (
+                {
+                    label: role,
+                    key: role
+                }
+            ))?.forEach(role => res.push(role))
+        res
+            .push(
+                {
+                    label: (
+                        <a
+                            style={{height: 40, alignItems: "center", display: "flex"}}
+                            className='dropdown-item'
+                            onClick={LogOut}
+                            href="#">
+                            PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/>
+                        </a>
+                    ),
+                    key: 'exit'
+                }
+            )
+        return (
+            <Menu selectedKeys={fulInfo?.roles?.filter(role => fulInfo?.currentRole === role)} items={res}>
+            </Menu>
+        )
     }
-
 
     return (
         <div className="p-0" style={{width: "100%"}}>
@@ -151,47 +186,50 @@ function Navbar(props) {
                             {/*/!*${ApiName}*!/  http://localhost:3000/*/}
                             {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
 
-                            {fulInfo===null ? <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
-                                                 className="nav-item nav-link">
-                                Hemis orqali kirish
-                                <i className="fa-solid fa-right-to-bracket mx-2"></i>
-                            </a>:
-
-                            <div className="dropleft">
-                                <Avatar size={40} icon={<UserOutlined/>}
-                                        className="btn btn-primary dropdown-toggle p-0"
-                                        type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                                        aria-haspopup="true" aria-expanded="false"/>
-
-
-                                <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <span style={{height: 40, alignItems: "center", display: "flex"}}
-                                          className='dropdown-item'>{fulInfo?.fullName}
-                                    </span>
-                                    {
-                                        fulInfo?.roles.map((item, index) => (
-                                            <span key={index} style={{
-                                                height: 40,
-                                                alignItems: "center",
-                                                display: "flex",
-                                                cursor: "pointer"
-                                            }} className='dropdown-item'
-                                                  onClick={() => {
-                                                      changeRole(item)
-                                                  }}>
-
-                                        {item === "ROLE_TEACHER" ? "O'qituvchi" : item === 'ROLE_ADMIN' ? 'ADMIN':''}
-                                    </span>
-                                        ))
-                                    }
-
-                                    <a style={{height: 40, alignItems: "center", display: "flex"}}
-                                       className='dropdown-item' onClick={LogOut}
-                                       href="#">PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/></a>
-
-                                </div>
-
-                            </div>
+                            {fulInfo === null ?
+                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
+                                   className="nav-item nav-link">
+                                    Hemis orqali kirish
+                                    <i className="fa-solid fa-right-to-bracket mx-2"></i>
+                                </a> :
+                                <Dropdown overlay={getProfileDropdownItems}  placement="bottomRight">
+                                    <Avatar size={40} icon={<UserOutlined/>}
+                                            className="btn btn-primary dropdown-toggle p-0"
+                                            type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false"/>
+                                </Dropdown>
+                                // <div className="dropleft">
+                                //     <Avatar size={40} icon={<UserOutlined/>}
+                                //             className="btn btn-primary dropdown-toggle p-0"
+                                //             type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                //             aria-haspopup="true" aria-expanded="false"/>
+                                //
+                                //
+                                //     <div className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                //     <span style={{height: 40, alignItems: "center", display: "flex"}}
+                                //           className='dropdown-item'>{fulInfo?.fullName}
+                                //     </span>
+                                //         {
+                                //             fulInfo?.roles.map((item, index) => (
+                                //                 <span key={index} style={{height: 40, alignItems: "center", display: "flex", cursor: "pointer"}}
+                                //                       onClick={() => {
+                                //                           changeRoles.mutate(item)
+                                //                           console.log(item)
+                                //                       }}
+                                //                       className={`dropdown-item ${item===fulInfo.currentRole ? 'bg-primary disabled text-white': ''}`}>
+                                //
+                                //         {item === "ROLE_TEACHER" ? "O'qituvchi" : item === 'ROLE_ADMIN' ? 'ADMIN' : item === 'ROLE_FACULTY' ? "Fakultet" : ""}
+                                //     </span>
+                                //             ))
+                                //         }
+                                //
+                                //         <a style={{height: 40, alignItems: "center", display: "flex"}}
+                                //            className='dropdown-item' onClick={LogOut}
+                                //            href="#">PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/></a>
+                                //
+                                //     </div>
+                                //
+                                // </div>
                             }
 
 

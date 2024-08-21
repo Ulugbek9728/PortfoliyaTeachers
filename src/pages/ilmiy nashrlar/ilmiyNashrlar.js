@@ -6,6 +6,8 @@ import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
 import {useNavigate} from "react-router-dom";
+import {useQuery} from "react-query";
+import {ClassifairGet} from "../../api/general";
 
 function IlmiyNashrlar(props) {
     const navigate = useNavigate();
@@ -24,7 +26,6 @@ function IlmiyNashrlar(props) {
             total: 10
         },
     });
-    const [Scientificpublication, setScientificpublication] = useState([]);
     const [srcItem, setSrcItem] = useState({});
         const onChangeDate = (value, dateString) => {
             setDateListe(dateString);
@@ -198,9 +199,13 @@ function IlmiyNashrlar(props) {
         },
     ];
 
+    const Scientificpublication  = useQuery({
+        queryKey:['Ilmiy_nashr_turi'],
+        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
+    })
+
     useEffect(() => {
             getIlmiyNashir();
-            ClassifairGet()
     }, []);
 
     const handleDelete = (id) => {
@@ -268,24 +273,6 @@ function IlmiyNashrlar(props) {
         setEditingData(null);
     };
 
-    function ClassifairGet() {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {
-                key: 'h_scientific_publication_type'
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                setScientificpublication(response.data);
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
-    }
-
     return (
         <div className='p-4'>
             <Modal
@@ -318,7 +305,7 @@ function IlmiyNashrlar(props) {
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr turi" name="srcType">
                         <Select name="srcType" labelInValue style={{width: 300,}} placeholder='Ilmiy nashr turi'
-                                options={Scientificpublication[0]?.options?.map(item => ({
+                                options={Scientificpublication?.data?.options.map(item => ({
                                     label: item.name,
                                     value: item.code
                                 }))}

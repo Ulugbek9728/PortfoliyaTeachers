@@ -11,6 +11,7 @@ import UniversitetStatic from "./pages/universitetStatic";
 import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
+import Fakulty from "./pages/fakulty/fakulty";
 
 
 const router = createBrowserRouter([
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
     {
         path:'/pertfolia_admin/*',
         element:<Admin/>,
+    },
+    {
+        path:'/pertfolia_fakultyadm/*',
+        element:<Fakulty/>,
     },
 ]);
 

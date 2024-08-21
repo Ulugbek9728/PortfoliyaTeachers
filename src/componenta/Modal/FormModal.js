@@ -377,7 +377,6 @@ const FormModal = (props) => {
                     </Form.Item>
                 )}
 
-
                 <Form.Item layout="vertical"
                     label="Nashrning bibliografik matni"
                     name="scientificName" labelCol={{span: 24}} wrapperCol={{span: 24}}
@@ -584,7 +583,7 @@ const FormModal = (props) => {
 
                 <Form.Item
                     layout="vertical"
-                    label="Nashr yili	"
+                    label="Nashr yili"
                     name="issueYear"
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}

@@ -111,6 +111,7 @@ const TeacherRating = () => {
 
 
     }, []);
+
     function ClassifairGet(e) {
         axios.get(`${ApiName}/api/classifier`, {
             params: {
@@ -412,7 +413,6 @@ const TeacherRating = () => {
             isTop1000
         }));
     };
-
 
     function profilLinke(key, value, id) {
         const date123 = {

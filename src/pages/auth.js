@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate, useSearchParams} from "react-router-dom";
-import axios from "axios";
-import {ApiName} from "../api/APIname";
+
 import {toast} from "react-toastify";
 import Loading from "../componenta/loading";
 import Navbar from "../componenta/Navbar";
@@ -13,21 +12,28 @@ function Auth(props) {
     const [searchParams] = useSearchParams();
     const [message, setMessage] = useState('');
 
-    const { isLoading} = useQuery({
+    const {isLoading} = useQuery({
             queryKey: ["login"],
             queryFn: () => {
                 getLogin(searchParams.get('code'), searchParams.get('state'))
                     .then((response) => {
                         if (response?.data?.isSuccess === true) {
                             localStorage.setItem("myInfo", JSON.stringify(response.data.data));
-                            if (response?.data?.data?.roles[0] === "ROLE_ADMIN") {
-                                navigate('/pertfolia_admin')
+
+                            if (response?.data?.data?.currentRole === "ROLE_ADMIN") {
+                                navigate('/pertfolia_admin/1')
                             }
-                            if (response?.data?.data?.roles[0] === "ROLE_TEACHER") {
+                            if (response?.data?.data?.currentRole === "ROLE_TEACHER") {
                                 navigate('/profile/1')
+                            }
+
+                            if (response?.data?.data?.currentRole === "ROLE_FACULTY") {
+                                navigate('/pertfolia_fakultyadm/1')
                             } else {
                                 // navigate('/profile/1')
                             }
+
+
                         } else {
                             setMessage(response?.data?.message)
                         }
@@ -35,7 +41,6 @@ function Auth(props) {
             },
         }
     );
-
 
 
     useEffect(() => {

@@ -6,30 +6,18 @@ const axiosDefaults = () => {
     axios.defaults.baseURL = `${ApiName}`;
 };
 
-
-const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-
-
 const getInstance = () => {
     axiosDefaults();
     const instance = axios.create({
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${fulInfo?.accessToken}`
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem("myInfo"))?.accessToken}`
         },
     });
-    instance.interceptors.response.use((response) => response, (error) => {
-        localStorage.removeItem("myInfo");
-        notification.error(
-            {
-                message:'Login error',
-                duration: 1,
-                placement: 'top'
-            }
-        )
-    });
+    instance.interceptors.response.use((response) => response);
     return instance;
 };
+
 
 const axiosFaculty = () => {
     axios.defaults.baseURL = `https://api-id.tdtu.uz`;

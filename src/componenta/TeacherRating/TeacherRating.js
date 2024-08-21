@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import './teacherRating.css';
 import {EditOutlined, UploadOutlined, CloseSquareOutlined} from '@ant-design/icons';
-import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Skeleton } from 'antd';
+import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal} from 'antd';
 import {ApiName} from "../../api/APIname";
 import axios from 'axios';
 import {useNavigate} from "react-router-dom";
@@ -48,8 +48,8 @@ const defaultDatabaseProfiles = [
 
 const TeacherRating = () => {
     const navigate = useNavigate();
-    const formRef = useRef(null);
-    const [form] = Form.useForm();
+    const [IlmiyUnvon, setIlmiyUnvon] = useState([])
+    const [IlmiyDaraja, setIlmiyDaraja] = useState([])
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [getFullInfo, setGetFullInfo] = useState(null);
     const [data, setData] = useState({
@@ -87,10 +87,10 @@ const TeacherRating = () => {
     });
     const [edite, setEdite] = useState(false);
     const [radio, setRadio] = useState(false);
-    const [loading, setloading] = useState(false);
     const [radio2, setRadio2] = useState(data.isTop1000);
 
     useEffect(() => {
+
         if (edite) {
             setData({
                 profileId: fulInfo?.id,
@@ -122,14 +122,13 @@ const TeacherRating = () => {
         }
     }, [edite, getFullInfo]);
     useEffect(() => {
-
+        return()=>{
             fetchCurrentUser();
             getprofilLink()
             ClassifairGet('h_academic_degree');
-
+        }
 
     }, []);
-
     function ClassifairGet(e) {
         axios.get(`${ApiName}/api/classifier`, {
             params: {
@@ -142,10 +141,13 @@ const TeacherRating = () => {
         })
             .then(response => {
                 if (e==='h_academic_degree'){
-                    // setScientificpublication(response.data[0]?.options);
+                    console.log(response.data)
+                    setIlmiyDaraja(response.data[0]?.options);
                 }
-
-
+                if (e === 'scientifictitle'){
+                  console.log(response)
+                  setIlmiyUnvon(response.data[0]?.options);
+                }
             })
             .catch(error => {
                 console.log(error, 'error');
@@ -153,12 +155,14 @@ const TeacherRating = () => {
     }
 
     const fetchCurrentUser = async () => {
-      axios.get(`${ApiName}/api/profile/current`, {
+        try {
+            const response = await axios.get(`${ApiName}/api/profile/current`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${fulInfo?.accessToken}`,
                 },
-            }).then(response=>{
+            });
+
             if (response.data.isSuccess === true) {
                 setGetFullInfo({
                     ...getFullInfo,
@@ -171,9 +175,8 @@ const TeacherRating = () => {
                     isTop1000: response.data?.data.isTop1000,
                     profileId: response.data?.data.profileId,
                     profileStateAwardDTO: {
-<<<<<<< HEAD
                         attach: JSON.parse(response.data.data.profileStateAwardDTO.attach),
-                        data: response.data?.data.profileStateAwardDTO.data,
+                        date: response.data?.data.profileStateAwardDTO.date,
                         nameStateAward: response.data?.data.profileStateAwardDTO.nameStateAward
                     },
                     profileTop1000: {
@@ -194,35 +197,11 @@ const TeacherRating = () => {
                         date: response.data?.data.specialist.date,
                         name: response.data?.data.specialist.name,
                         number: response.data?.data.specialist.number,
-=======
-                        attach: JSON.parse(response.data.data.profileStateAwardDTO?.attach),
-                        data: response.data.data.profileStateAwardDTO?.data,
-                        nameStateAward: response.data.data.profileStateAwardDTO?.nameStateAward
-                    },
-                    profileTop1000: {
-                        attach: JSON.parse(response.data.data.profileTop1000?.attach),
-                        country: response.data.data.profileTop1000?.country,
-                        university: response.data.data.profileTop1000?.university,
-                    },
-                    roles: response.data.data.roles,
-                    scientificDegree: response.data.data?.scientificDegree,
-                    scientificTitle: {
-                        attach: JSON.parse(response.data.data?.scientificTitle.attach),
-                        date: response.data.data.scientificTitle?.date,
-                        name: response.data.data.scientificTitle?.name,
-                        number: response.data.data.scientificTitle?.number,
-                    },
-                    specialist: {
-                        attach: JSON.parse(response.data.data.specialist?.attach),
-                        date: response.data.data.specialist?.date,
-                        name: response.data.data.specialist?.name,
-                        number: response.data.data.specialist?.number,
->>>>>>> e5d4a10b5f9c07c978d5ed0deadf560cca2dcf1f
                     }
 
                 });
+
             }
-<<<<<<< HEAD
         } catch (error) {
             if (error.response?.data?.message==="Token yaroqsiz!"){
                 localStorage.removeItem("myInfo");
@@ -231,15 +210,6 @@ const TeacherRating = () => {
             }
             console.log('Xatolik yuz berdi:', error);
         }
-=======
-        }).catch (error=> {
-          console.log(error)
-          if (error?.response?.data?.message === "Token yaroqsiz!") {
-              localStorage.removeItem("myInfo");
-              navigate('/')
-          }
-      })
->>>>>>> e5d4a10b5f9c07c978d5ed0deadf560cca2dcf1f
     };
 
     function getprofilLink() {
@@ -407,7 +377,6 @@ const TeacherRating = () => {
     };
 
     const handleSubmit = () => {
-        setloading(true)
         axios.put(`${ApiName}/api/profile/update`,
             {
                 ...data,
@@ -439,14 +408,11 @@ const TeacherRating = () => {
                 },
             })
             .then(response => {
-                setloading(false)
                 message.success('Form submitted successfully');
                 setEdite(false);
                 fetchCurrentUser();
             })
             .catch(error => {
-                setloading(false)
-
                 console.error('Error:', error);
                 message.error('Error submitting form');
             });
@@ -467,6 +433,7 @@ const TeacherRating = () => {
             isTop1000
         }));
     };
+
 
     function profilLinke(key, value, id) {
         const date123 = {
@@ -533,7 +500,6 @@ const TeacherRating = () => {
             {edite ?
                 <div className="TeacherRating"
                 >
-<<<<<<< HEAD
                     <div className="d-flex justify-content-end">
                         <button className='btn btn-danger' style={{height: 50}} onClick={() => {
                             setEdite(false)
@@ -657,130 +623,8 @@ const TeacherRating = () => {
                                                          target: {name: 'specialist.number', value}
                                                      })} placeholder="Diplom raqami" style={{width: '100%'}}/>
                                     </Form.Item>
-=======
-                    {
-                        loading ? <Skeleton active avatar/>:
-                            <>
-                                <div className="d-flex justify-content-end">
-                                    <button className='btn btn-danger' style={{height: 50}} onClick={() => {
-                                        setEdite(false)
-                                    }}><CloseSquareOutlined/></button>
->>>>>>> e5d4a10b5f9c07c978d5ed0deadf560cca2dcf1f
                                 </div>
-                                <Form onFinish={handleSubmit} labelAlign="left" layout="vertical" colon={false}
-                                      fields={[
-                                          {
-                                              name: "specialist.name",
-                                              value: data.specialist?.name
-                                          },
-                                          {
-                                              name: "specialist.date",
-                                              value: data.specialist?.date ? moment(data.specialist.date) : null
-                                          },
-                                          {
-                                              name: "specialist.number",
-                                              value: data.specialist?.number
-                                          },
-                                          {
-                                              name: "scientificTitle.name",
-                                              value: data.scientificTitle?.name || undefined
-                                          },
-                                          {
-                                              name: "scientificTitle.date",
-                                              value: data.scientificTitle?.date ? moment(data.scientificTitle.date) : null
-                                          },
-                                          {
-                                              name: "scientificTitle.number",
-                                              value: data.scientificTitle?.number
-                                          },
-                                          {
-                                              name: "ScopusOrcidId",
-                                              value: data?.databaseProfiles[0]?.urlOrOrcid
-                                          },
-                                          {
-                                              name: "GoogleOrcidId",
-                                              value: data?.databaseProfiles[1]?.urlOrOrcid
-                                          },
-                                          {
-                                              name: "WEB.OF.SCIENCE.Link",
-                                              value: data?.databaseProfiles[2]?.urlOrOrcid
-                                          },
-                                          {
-                                              name: "WEB.OF.SCIENCE.index",
-                                              value: data?.databaseProfiles[2]?.counts?.hindex
-                                          },
-                                          {
-                                              name: "WEB.OF.SCIENCE.ilmiy.ishlar",
-                                              value: data?.databaseProfiles[2]?.counts?.citationCount
-                                          },
-                                          {
-                                              name: "WEB.OF.SCIENCE.iqtiboslar",
-                                              value: data?.databaseProfiles[2]?.counts?.citedByCount
-                                          },
-                                          {
-                                              name: "profileStateAwardDTO.nameStateAward",
-                                              value: data?.profileStateAwardDTO?.nameStateAward
-                                          },
-                                          {
-                                              name: "profileStateAwardDTO.date",
-                                              value: data?.profileStateAwardDTO?.date ? moment(data.profileStateAwardDTO.date) : null
-                                          },
-                                          {
-                                              name: "Ilmiy_daraja",
-                                              value: radio ? 'ha' : "yoq"
-                                          },
-                                          {
-                                              name: "scientificDegree.name",
-                                              value: data.scientificDegree?.name || undefined
-                                          },
-                                          {
-                                              name: "scientificDegree.date",
-                                              value: data.scientificDegree?.date ? moment(data.scientificDegree.date) : null
-                                          },
-                                          {
-                                              name: "scientificDegree.number",
-                                              value: data.scientificDegree?.number
-                                          },
-                                          {
-                                              name: "Ilmiy_darajaTop",
-                                              value: radio2 ? 'ha1' : 'yoq1'
-                                          },
-                                          {
-                                              name: "profileTop1000.country",
-                                              value: data.profileTop1000?.country
-                                          },
-                                          {
-                                              name: "profileTop1000.university",
-                                              value: data.profileTop1000?.university
-                                          },
-                                      ]}
-                                      style={{maxWidth: '100%'}}>
-                                    <div className="d-flex gap-5 labelForm">
-                                        <div style={{width: '33%'}}>
-                                            <Form.Item label={<p className='labelForm'>Mutaxassislik nomi</p>}
-                                                       name="specialist.name">
-                                                <Input name="specialist.name"
-                                                       onChange={handleInputChange} placeholder="Mutaxasislik nomi"/>
-                                            </Form.Item>
-                                            <div className="d-flex gap-2">
-                                                <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
-                                                           name='specialist.date'>
-                                                    <DatePicker
-                                                        name='specialist.date'
-                                                        onChange={(date) => handleDateChange(date, 'specialist.date')}
-                                                        placeholder="Diplom sanasi"
-                                                    />
-                                                </Form.Item>
-                                                <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
-                                                           name='specialist.number'>
-                                                    <InputNumber name='specialist.number'
-                                                                 onChange={(value) => handleInputChange({
-                                                                     target: {name: 'specialist.number', value}
-                                                                 })} placeholder="Diplom raqami" style={{width: '100%'}}/>
-                                                </Form.Item>
-                                            </div>
 
-<<<<<<< HEAD
                                 <Form.Item name='specialist'>
                                     <Upload {...propsss('specialist')}
                                             {...propsFileList(data.specialist)}
@@ -795,12 +639,7 @@ const TeacherRating = () => {
                                         name='scientificTitle.name'
                                         placeholder="Ilmiy unvon nomi"
                                         onChange={(value, option) => handleSelectChange(value, {name: "scientificTitle.name"})}
-                                        options={[
-                                            {value: 'katta ilmiy xodim', label: 'Katta ilmiy xodim'},
-                                            {value: 'kichik ilmiy xodim', label: 'Kichik ilmiy xodim'},
-                                            {value: 'tayanch doktorant (PhD)', label: 'Tayanch doktorant (PhD)'},
-                                            {value: 'tayanch dotsent', label: 'Tayanch dotsent'}
-                                        ]}
+                                        options={IlmiyUnvon.map(item => ({label:item.name, value:item.code}))}
                                     />
                                 </Form.Item>
                                 <div className="d-flex gap-2">
@@ -933,10 +772,7 @@ const TeacherRating = () => {
                                                 name='scientificDegree.name'
                                                 placeholder="Ilmiy daraja nomi"
                                                 onChange={(value, option) => handleSelectChange(value, {name: "scientificDegree.name"})}
-                                                options={[
-                                                    {value: 'Falsafa doktori (PhD)', label: 'Falsafa doktori (PhD)'},
-                                                    {value: 'Fan doktori, (DSc)', label: 'Fan doktori, (DSc)'}
-                                                ]}
+                                                options={IlmiyDaraja.map(item => ({label: item.name, value: item.code}))}
                                             />
                                         </Form.Item>
                                         <div className="d-flex align-items-center">
@@ -949,226 +785,65 @@ const TeacherRating = () => {
                                                                 setData({...data, scientificDegree: {...data.scientificDegree,date: date} })
                                                              }}
 
-=======
-                                            <Form.Item name='specialist'>
-                                                <Upload {...propsss('specialist')}
-                                                        {...propsFileList(data.specialist)}
-                                                >
-                                                    <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
-                                                </Upload>
-                                            </Form.Item>
-                                            <hr/>
-                                            <Form.Item label={<p className='labelForm'>Ilmiy unvon nomi</p>}
-                                                       name='scientificTitle.name'>
-                                                <Select
-                                                    name='scientificTitle.name'
-                                                    placeholder="Ilmiy unvon nomi"
-                                                    onChange={(value, option) => handleSelectChange(value, {name: "scientificTitle.name"})}
-                                                    options={[
-                                                        {value: 'katta ilmiy xodim', label: 'Katta ilmiy xodim'},
-                                                        {value: 'kichik ilmiy xodim', label: 'Kichik ilmiy xodim'},
-                                                        {value: 'tayanch doktorant (PhD)', label: 'Tayanch doktorant (PhD)'},
-                                                        {value: 'tayanch dotsent', label: 'Tayanch dotsent'}
-                                                    ]}
->>>>>>> e5d4a10b5f9c07c978d5ed0deadf560cca2dcf1f
                                                 />
                                             </Form.Item>
-                                            <div className="d-flex gap-2">
-                                                <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
-                                                           name='scientificTitle.date'>
-                                                    <DatePicker
-                                                        name='scientificTitle.date'
-                                                        onChange={(date) => handleDateChange(date, 'scientificTitle.date')}
-                                                        placeholder="Diplom sanasi"
-                                                    />
-                                                </Form.Item>
-                                                <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
-                                                           name='scientificTitle.number'>
-                                                    <InputNumber name='scientificTitle.number'
-                                                                 onChange={(value) => handleInputChange({
-                                                                     target: {
-                                                                         name: 'scientificTitle.number',
-                                                                         value
-                                                                     }
-                                                                 })} placeholder="Diplom raqami" style={{width: '100%'}}/>
-                                                </Form.Item>
-                                            </div>
-
-                                            <Form.Item name='scientificTitle'>
-                                                <Upload {...propsss('scientificTitle',)}
-                                                        {...propsFileList(data.scientificTitle)}
-                                                >
-                                                    <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
-                                                </Upload>
-                                            </Form.Item>
-                                            <hr/>
-                                        </div>
-                                        <div style={{width: '33%'}}>
-                                            <Form.Item label={<p className='labelForm'>Scopus (Profil link)</p>} name='ScopusOrcidId'
-                                                       rules={[{
-                                                           message: '"url" kiriting',
-                                                           type: "url",
-                                                       }]}
-                                            >
-                                                <Input placeholder="ORCID ID" name='ScopusOrcidId'
-                                                       onChange={(e) => profilLinke("Scopus", e.target.value, '11')}/>
-                                            </Form.Item>
-                                            <Form.Item label={<p className='labelForm'>Google scholar (Profil link)</p>} name='GoogleOrcidId'
-                                                       rules={[{
-                                                           message: '"url" kiriting',
-                                                           type: "url",
-                                                       }]}>
-                                                <Input placeholder="ORCID ID" name='GoogleOrcidId'
-                                                       onChange={(e) => profilLinke("Google scholar", e.target.value, '13')}/>
-                                            </Form.Item>
-                                            <hr/>
-                                            <p>WEB OF SCIENCE</p>
-                                            <div className="d-flex">
-                                                <Form.Item label={<p className='labelForm'> (Profil linki)</p>} name='WEB.OF.SCIENCE.Link' className='col-6'
-                                                           rules={[{
-                                                               message: '"url" kiriting',
-                                                               type: "url",
-                                                           }]}>
-                                                    <Input placeholder="Profil linki" name='WEB.OF.SCIENCE.Link'
-                                                           onChange={(e) => webOfCounts('url', e.target.value)}/>
-                                                </Form.Item>
-                                                <Form.Item label={<p className='labelForm'>(h-indeks)</p>}
-                                                           name='WEB.OF.SCIENCE.index'
-                                                           className='col-6'>
-                                                    <Input placeholder="h-indeks" name='WEB.OF.SCIENCE.index'
-                                                           onChange={(e) => webOfCounts('hindex', e.target.value)}/>
-                                                </Form.Item>
-                                            </div>
-                                            <div className="d-flex">
-                                                <Form.Item label={<p className='labelForm'>(Ilmiy ishlar soni)</p>}
-                                                           name='WEB.OF.SCIENCE.ilmiy.ishlar' className='col-6'>
-                                                    <Input placeholder="Ilmiy ishlar soni" name='WEB.OF.SCIENCE.ilmiy.ishlar'
-                                                           onChange={(e) => webOfCounts('citationCount', e.target.value)}/>
-                                                </Form.Item>
-                                                <Form.Item label={<p className='labelForm'>(Iqtiboslar soni)</p>}
-                                                           name='WEB.OF.SCIENCE.iqtiboslar'
-                                                           className='col-6'>
-                                                    <Input placeholder="Iqtiboslar soni" name='WEB.OF.SCIENCE.iqtiboslar'
-                                                           onChange={(e) => webOfCounts('citedByCount', e.target.value)}/>
-                                                </Form.Item>
-                                            </div>
-                                            <hr/>
-                                            <Form.Item label={<p className='labelForm'>Davlat mukofoti nomi</p>}
-                                                       name="profileStateAwardDTO.nameStateAward">
-                                                <Input name="profileStateAwardDTO.nameStateAward" onChange={handleInputChange}
-                                                       placeholder="Davlat mukofoti nomi"/>
-                                            </Form.Item>
-
-                                            <Form.Item label={<p className='labelForm'>Olgan sanasi</p>}
-                                                       name='profileStateAwardDTO.date'>
-                                                <DatePicker
-                                                    name='profileStateAwardDTO.date'
-                                                    onChange={(date) => handleDateChange(date, 'profileStateAwardDTO.date')}
-                                                    placeholder="Olgan sanasi"
-                                                />
-                                            </Form.Item>
-                                            <Form.Item name='profileStateAwardDTO'>
-                                                <Upload {...propsss('profileStateAwardDTO')}
-                                                        {...propsFileList(data.profileStateAwardDTO)}
-                                                >
-                                                    <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
-                                                </Upload>
+                                            <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
+                                                       name='scientificDegree.number'>
+                                                <InputNumber placeholder="Diplom raqami" style={{width: '100%'}}
+                                                             name='scientificDegree.number'
+                                                             onChange={(value) => handleInputChange({
+                                                                 target: {
+                                                                     name: 'scientificDegree.number',
+                                                                     value
+                                                                 }
+                                                             })}/>
                                             </Form.Item>
                                         </div>
 
-                                        <div style={{width: '33%'}}>
-                                            <Form.Item name="Ilmiy_daraja" style={{marginTop: "27px"}}
-                                                       label={<p className='labelForm'>Ilmiy daraja bormi?</p>}>
-                                                <Radio.Group name="Ilmiy_daraja" onChange={handleRadioChange}>
-                                                    <Radio value='ha'>Ha</Radio>
-                                                    <Radio value='yoq'>Yo'q</Radio>
-                                                </Radio.Group>
-                                            </Form.Item>
-                                            <hr/>
-                                            {radio && (
-                                                <>
-                                                    <Form.Item label={<p className='labelForm'>Ilmiy daraja nomi</p>}
-                                                               name='scientificDegree.name'>
-                                                        <Select
-                                                            name='scientificDegree.name'
-                                                            placeholder="Ilmiy daraja nomi"
-                                                            onChange={(value, option) => handleSelectChange(value, {name: "scientificDegree.name"})}
-                                                            options={[
-                                                                {value: 'Falsafa doktori (PhD)', label: 'Falsafa doktori (PhD)'},
-                                                                {value: 'Fan doktori, (DSc)', label: 'Fan doktori, (DSc)'}
-                                                            ]}
-                                                        />
-                                                    </Form.Item>
-                                                    <div className="d-flex align-items-center">
-                                                        <Form.Item label={<p className='labelForm'>Diplom sanasi</p>}
-                                                                   name='scientificDegree.date'>
-                                                            <DatePicker placeholder="Diplom sanasi"
-                                                                        name='scientificDegree.date'
-                                                                        onChange={(date) => handleDateChange(date, 'scientificDegree.date')}
+                                        <Form.Item name="Ilmiy_darajaTop" style={{marginTop: "20px"}}
+                                                   label={<p className='labelForm'>
+                                                       Dunyoning nufuzli TOP-1000 taligiga kiruvchi OTMlarida (PhD) yoki
+                                                       (DSc) darajasini olganligi</p>}>
+                                            <Radio.Group name="Ilmiy_darajaTop" onChange={handleRadioChange2}>
+                                                <Radio value='ha1'>Ha</Radio>
+                                                <Radio value='yoq1'>Yo'q</Radio>
+                                            </Radio.Group>
+                                        </Form.Item>
+                                        {radio2 && (
+                                            <div>
+                                                <Form.Item label={<p className='labelForm'>Shaxri, davlati</p>}
+                                                           name='profileTop1000.country'>
+                                                    <Input name="profileTop1000.country"
+                                                           onChange={handleInputChange} placeholder="Shaxri, davlati"/>
+                                                </Form.Item>
+                                                <Form.Item label={<p className='labelForm'>Universiteti</p>}
+                                                           name="profileTop1000.university">
+                                                    <Input className='my-2'
+                                                           name="profileTop1000.university" onChange={handleInputChange}
+                                                           placeholder="Universiteti"/>
+                                                </Form.Item>
+                                                <Form.Item name='profileTop1000'>
+                                                    <Upload {...propsss('profileTop1000')}
 
-                                                            />
-                                                        </Form.Item>
-                                                        <Form.Item label={<p className='labelForm'>Diplom raqami</p>}
-                                                                   name='scientificDegree.number'>
-                                                            <InputNumber placeholder="Diplom raqami" style={{width: '100%'}}
-                                                                         name='scientificDegree.number'
-                                                                         onChange={(value) => handleInputChange({
-                                                                             target: {
-                                                                                 name: 'scientificDegree.number',
-                                                                                 value
-                                                                             }
-                                                                         })}/>
-                                                        </Form.Item>
-                                                    </div>
-
-                                                    <Form.Item name="Ilmiy_darajaTop" style={{marginTop: "20px"}}
-                                                               label={<p className='labelForm'>
-                                                                   Dunyoning nufuzli TOP-1000 taligiga kiruvchi OTMlarida (PhD) yoki
-                                                                   (DSc) darajasini olganligi</p>}>
-                                                        <Radio.Group name="Ilmiy_darajaTop" onChange={handleRadioChange2}>
-                                                            <Radio value='ha1'>Ha</Radio>
-                                                            <Radio value='yoq1'>Yo'q</Radio>
-                                                        </Radio.Group>
-                                                    </Form.Item>
-                                                    {radio2 && (
-                                                        <div>
-                                                            <Form.Item label={<p className='labelForm'>Shaxri, davlati</p>}
-                                                                       name='profileTop1000.country'>
-                                                                <Input name="profileTop1000.country"
-                                                                       onChange={handleInputChange} placeholder="Shaxri, davlati"/>
-                                                            </Form.Item>
-                                                            <Form.Item label={<p className='labelForm'>Universiteti</p>}
-                                                                       name="profileTop1000.university">
-                                                                <Input className='my-2'
-                                                                       name="profileTop1000.university" onChange={handleInputChange}
-                                                                       placeholder="Universiteti"/>
-                                                            </Form.Item>
-                                                            <Form.Item name='profileTop1000'>
-                                                                <Upload {...propsss('profileTop1000')}
-
-                                                                        {...propsFileList(data.profileTop1000)}
-                                                                >
-                                                                    <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
-                                                                </Upload>
-                                                            </Form.Item>
+                                                            {...propsFileList(data.profileTop1000)}
+                                                    >
+                                                        <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
+                                                    </Upload>
+                                                </Form.Item>
 
 
-                                                        </div>
-                                                    )}
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <Form.Item label=" " className='h-50' name='123'>
-                                        <Button className='h-50' type="primary" htmlType="submit">
-                                            Ma'lumotlarni saqlash
-                                        </Button>
-                                    </Form.Item>
-                                </Form>
-                            </>
-                    }
-
-
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <Form.Item label=" " className='h-50' name='123'>
+                            <Button className='h-50' type="primary" htmlType="submit">
+                                Ma'lumotlarni saqlash
+                            </Button>
+                        </Form.Item>
+                    </Form>
                 </div>
                 :
                 <div className='TeacherRating mb-5'

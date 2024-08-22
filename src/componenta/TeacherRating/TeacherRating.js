@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState} from 'react';
 import './teacherRating.css';
 import {EditOutlined, UploadOutlined, CloseSquareOutlined} from '@ant-design/icons';
 import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal} from 'antd';
@@ -9,7 +9,6 @@ import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useQuery } from 'react-query';
 import {ClassifairGet} from "../../api/general";
-import { options } from 'fusioncharts';
 dayjs.extend(customParseFormat);
 
 const defaultDatabaseProfiles = [
@@ -215,27 +214,6 @@ const TeacherRating = () => {
         })
     }
 
-    // const handleDateChange = (date, name) => {
-    //     const formattedDate = date ? date.format('YYYY-MM-DD') : null;
-    //     setData((prevData) => {
-    //         const keys = name.split('.');
-    //         if (keys.length === 1) {
-    //             return {
-    //                 ...prevData,
-    //                 [name]: formattedDate,
-    //             };
-    //         } else {
-    //             let newState = {...prevData};
-    //             let current = newState;
-    //             for (let i = 0; i < keys.length - 1; i++) {
-    //                 current = current[keys[i]];
-    //             }
-    //             current[keys[keys.length - 1]] = formattedDate;
-    //             return newState;
-    //         }
-    //     });
-    // };
-
     const handleFileChange = (info, section) => {
         if (info.file.status === 'done') {
             console.log(info)
@@ -329,23 +307,18 @@ const TeacherRating = () => {
 
     const handleSelectChange = (value, option) => {
         const {name} = option;
-        const [section, field] = name.split('.');
-
-        if (field) {
-            setData(prevState => ({
-                ...prevState,
-                [section]: {
-                    ...prevState[section],
-                    [field]: value
-                }
-            }));
-        } else {
-            setData(prevState => ({
-                ...prevState,
-                [name]: value
-            }));
-        }
+        const [section,] = name.split('.');
+        let valuetest = JSON.parse(value)
+        setData(prevState => ({
+            ...prevState,
+            [section]: {
+                ...prevState[section],
+                name: valuetest?.name,
+                code:valuetest?.code
+            }
+        }));
     };
+    console.log(data)
 
     const handleSubmit = () => {
         axios.put(`${ApiName}/api/profile/update`,
@@ -405,7 +378,6 @@ const TeacherRating = () => {
         }));
     };
 
-
     function profilLinke(key, value, id) {
         const date123 = {
             urlOrOrcid: value,
@@ -464,6 +436,7 @@ const TeacherRating = () => {
             console.log(data)
         }
     }
+
 
     return (
         <>
@@ -610,7 +583,7 @@ const TeacherRating = () => {
                                         name='scientificTitle.name'
                                         placeholder="Ilmiy unvon nomi"
                                         onChange={(value, option) => handleSelectChange(value, {name: "scientificTitle.name"})}
-                                        options={scientificTitle?.data?.options.map(item => ({label:item.name, value:item.code}))}
+                                        options={scientificTitle?.data?.options.map(item => ({label:item.name, value:JSON.stringify(item)}))}
                                     />
                                 </Form.Item>
                                 <div className="d-flex gap-2">
@@ -743,7 +716,7 @@ const TeacherRating = () => {
                                                 name='scientificDegree.name'
                                                 placeholder="Ilmiy daraja nomi"
                                                 onChange={(value, option) => handleSelectChange(value, {name: "scientificDegree.name"})}
-                                                options={scientificDegree?.data?.options.map(item => ({label: item.name, value: item.code}))}
+                                                options={scientificDegree?.data?.options.map(item => ({label: item.name, value:JSON.stringify(item)}))}
                                             />
                                         </Form.Item>
                                         <div className="d-flex align-items-center">

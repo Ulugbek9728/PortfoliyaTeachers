@@ -4,8 +4,8 @@ import {PlusOutlined,UploadOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import {ApiName} from '../../api/APIname';
 import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
 
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
@@ -55,12 +55,11 @@ const FormModal = (props) => {
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
                 scientificPublicationType: props.editingData.scientificPublicationType,
-                fileType: props.editingData.fileType || 'Url',
-                // fileType: props.editingData.fileType || 'Upload'
+                fileType: props.editingData.doiOrUrl ? 'Url' : "Upload",
             };
             setData(editingValues);
             form.setFieldsValue(editingValues);
-
+            setUrl(editingValues.fileType === 'Url');
         }
         else if (props.handleCancel){
             setData({

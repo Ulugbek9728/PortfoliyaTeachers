@@ -14,8 +14,9 @@ import {PlusOutlined, UploadOutlined} from "@ant-design/icons";
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
 import "./UslubiyNashrlarModal.scss";
-import moment from "moment";
 import dayjs from "dayjs";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
 
 const UslubiyNashrlarModal = (props) => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));

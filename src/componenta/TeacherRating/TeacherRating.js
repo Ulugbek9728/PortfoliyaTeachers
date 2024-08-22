@@ -7,6 +7,9 @@ import axios from 'axios';
 import {useNavigate} from "react-router-dom";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { useQuery } from 'react-query';
+import {ClassifairGet} from "../../api/general";
+import { options } from 'fusioncharts';
 dayjs.extend(customParseFormat);
 
 const defaultDatabaseProfiles = [
@@ -48,8 +51,6 @@ const defaultDatabaseProfiles = [
 
 const TeacherRating = () => {
     const navigate = useNavigate();
-    const [IlmiyUnvon, setIlmiyUnvon] = useState([])
-    const [IlmiyDaraja, setIlmiyDaraja] = useState([])
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [getFullInfo, setGetFullInfo] = useState(null);
     const [data, setData] = useState({
@@ -94,65 +95,35 @@ const TeacherRating = () => {
         if (edite) {
             setData({
                 profileId: fulInfo?.id,
-                specialist:{
-                   name: getFullInfo?.specialist.name,
-                   number: getFullInfo?.specialist.number,
-                   date: dayjs(getFullInfo?.specialist?.date)
-                },
-                scientificTitle:{
-                    name: getFullInfo?.scientificTitle.name,
-                    date: dayjs(getFullInfo?.scientificTitle.date),
-                    number: getFullInfo?.scientificTitle.number
-                },
-                scientificDegree: {
-                    name: getFullInfo?.scientificDegree.name,
-                    date: dayjs(getFullInfo?.scientificDegree.date)  ,
-                    number: getFullInfo?.scientificDegree?.number
-                },
+                specialist: getFullInfo?.specialist,
+                scientificTitle: getFullInfo?.scientificTitle,
+                scientificDegree: getFullInfo?.scientificDegree,
                 isTop1000: getFullInfo?.isTop1000,
                 profileTop1000: getFullInfo?.profileTop1000,
-                profileStateAwardDTO: {
-                    nameStateAward: getFullInfo?.profileStateAwardDTO?.nameStateAward,
-                    date:dayjs(getFullInfo?.profileStateAwardDTO?.date) ,
-                },
+                profileStateAwardDTO: getFullInfo?.profileStateAwardDTO,
                 databaseProfiles: data.databaseProfiles
             });
             setRadio(!!getFullInfo?.scientificDegree?.name);
             setRadio2(getFullInfo?.isTop1000 || false);
         }
     }, [edite, getFullInfo]);
+
     useEffect(() => {
         return()=>{
             fetchCurrentUser();
             getprofilLink()
-            ClassifairGet('h_academic_degree');
         }
 
     }, []);
-    function ClassifairGet(e) {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {
-                key: e
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                if (e==='h_academic_degree'){
-                    console.log(response.data)
-                    setIlmiyDaraja(response.data[0]?.options);
-                }
-                if (e === 'scientifictitle'){
-                  console.log(response)
-                  setIlmiyUnvon(response.data[0]?.options);
-                }
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
-    }
+
+    const scientificTitle = useQuery({
+        queryKey: ['Ilmiy_unvon_nomi'],
+      queryFn:()=>ClassifairGet('h_academic_rank').then(res=>res.data[0])
+    })
+    const scientificDegree = useQuery({
+      queryKey: ['Ilmiy_daraja_nomi'],
+      queryFn:()=>ClassifairGet('h_academic_degree').then(res=>res.data[0])
+    })
 
     const fetchCurrentUser = async () => {
         try {
@@ -639,7 +610,7 @@ const TeacherRating = () => {
                                         name='scientificTitle.name'
                                         placeholder="Ilmiy unvon nomi"
                                         onChange={(value, option) => handleSelectChange(value, {name: "scientificTitle.name"})}
-                                        options={IlmiyUnvon.map(item => ({label:item.name, value:item.code}))}
+                                        options={scientificTitle?.data?.options.map(item => ({label:item.name, value:item.code}))}
                                     />
                                 </Form.Item>
                                 <div className="d-flex gap-2">
@@ -772,7 +743,7 @@ const TeacherRating = () => {
                                                 name='scientificDegree.name'
                                                 placeholder="Ilmiy daraja nomi"
                                                 onChange={(value, option) => handleSelectChange(value, {name: "scientificDegree.name"})}
-                                                options={IlmiyDaraja.map(item => ({label: item.name, value: item.code}))}
+                                                options={scientificDegree?.data?.options.map(item => ({label: item.name, value: item.code}))}
                                             />
                                         </Form.Item>
                                         <div className="d-flex align-items-center">
@@ -822,6 +793,11 @@ const TeacherRating = () => {
                                                            name="profileTop1000.university" onChange={handleInputChange}
                                                            placeholder="Universiteti"/>
                                                 </Form.Item>
+
+
+                                            </div>
+
+                                        )}
                                                 <Form.Item name='profileTop1000'>
                                                     <Upload {...propsss('profileTop1000')}
 
@@ -830,10 +806,6 @@ const TeacherRating = () => {
                                                         <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
                                                     </Upload>
                                                 </Form.Item>
-
-
-                                            </div>
-                                        )}
                                     </>
                                 )}
                             </div>

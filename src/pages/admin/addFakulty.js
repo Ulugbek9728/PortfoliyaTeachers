@@ -14,12 +14,12 @@ function AddFakulty(props) {
 
     const {data} = useQuery({
         queryKey: ["FacultyList"],
-        queryFn: () => getFaculty().then(res => res.data)
+        queryFn: () => getFaculty(11).then(res => res.data)
     })
 
     const dekan_List = useQuery({
         queryKey: ['dekanlist'],
-        queryFn: () => getProfile('25').then(res => res.data?.data?.content)
+        queryFn: () => getProfile('25',null,null,null).then(res => res.data?.data?.content)
     })
 
     const addFakulty = useMutation({
@@ -142,14 +142,7 @@ function AddFakulty(props) {
                     </span>
             </button>
             <Modal title="Fakultet dekanini qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
-                <Form form={form} ref={formRef} onFinish={(e) =>addFakulty.mutate(e)} layout="vertical"
-                      fields={[
-                          // {
-                          //     name: 'facultyId',
-                          //     value: creatDecan?.facultyId
-                          // },
-                      ]}
-                >
+                <Form form={form} ref={formRef} onFinish={(e) =>addFakulty.mutate(e)} layout="vertical">
                     <Form.Item name="facultyId"
                                rules={[{required: true, message: 'Fakultetni tanlang'}]}
                                label="Fakultetni tanlang"

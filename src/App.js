@@ -70,11 +70,11 @@ const router = createBrowserRouter([
         element:<Profile/>,
     },
     {
-        path:'/pertfolia_admin/*',
+        path:'/dashboard-admin/*',
         element:<Admin/>,
     },
     {
-        path:'/pertfolia_fakultyadm/*',
+        path:'/dashboard-fakultyadm/*',
         element:<Fakulty/>,
     },
 ]);

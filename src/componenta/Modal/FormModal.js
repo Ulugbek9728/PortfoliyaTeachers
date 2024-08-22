@@ -16,7 +16,6 @@ const FormModal = (props) => {
     const [searchResults, setSearchResults] = useState([]);
     const [monografiya, setMonografiya] = useState(false);
     const [url, setUrl] = useState(true);
-    const [fileList, setFileList] = useState([]);
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const formRef = useRef(null);

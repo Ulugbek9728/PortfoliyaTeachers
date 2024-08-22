@@ -94,14 +94,17 @@ function Navbar(props) {
     const getProfileDropdownItems = () => {
         let res = [{
             label: fulInfo?.fullName,
-            key: fulInfo?.fullName
+            key: fulInfo?.fullName,
         }]
         fulInfo
             ?.roles
             ?.map(role => (
                 {
                     label: role,
-                    key: role
+                    key: role,
+                    onClick: (e) => {
+                        fulInfo.currentRole !== e.key && changeRoles.mutate(e.key)
+                    }
                 }
             ))?.forEach(role => res.push(role))
         res
@@ -116,11 +119,15 @@ function Navbar(props) {
                             PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/>
                         </a>
                     ),
-                    key: 'exit'
+                    key: 'exit',
                 }
             )
         return (
-            <Menu selectedKeys={fulInfo?.roles?.filter(role => fulInfo?.currentRole === role)} items={res}>
+            <Menu
+                selectedKeys={fulInfo?.roles?.filter(role => fulInfo?.currentRole === role)}
+                items={res}
+
+            >
             </Menu>
         )
     }
@@ -192,23 +199,14 @@ function Navbar(props) {
                                     Hemis orqali kirish
                                     <i className="fa-solid fa-right-to-bracket mx-2"></i>
                                 </a> :
-                                <Dropdown overlay={getProfileDropdownItems}  placement="bottomRight">
+                                <Dropdown overlay={getProfileDropdownItems} placement="bottomRight">
                                     <Avatar size={40} icon={<UserOutlined/>}
                                             className="btn btn-primary dropdown-toggle p-0"
                                             type="button" id="dropdownMenuButton" data-toggle="dropdown"
                                             aria-haspopup="true" aria-expanded="false"/>
                                 </Dropdown>
                                 // <div className="dropleft">
-                                //     <Avatar size={40} icon={<UserOutlined/>}
-                                //             className="btn btn-primary dropdown-toggle p-0"
-                                //             type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                                //             aria-haspopup="true" aria-expanded="false"/>
                                 //
-                                //
-                                //     <div className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                //     <span style={{height: 40, alignItems: "center", display: "flex"}}
-                                //           className='dropdown-item'>{fulInfo?.fullName}
-                                //     </span>
                                 //         {
                                 //             fulInfo?.roles.map((item, index) => (
                                 //                 <span key={index} style={{height: 40, alignItems: "center", display: "flex", cursor: "pointer"}}

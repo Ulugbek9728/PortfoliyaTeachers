@@ -11,7 +11,6 @@ import {ClassifairGet} from "../../api/general";
 
 function IlmiyNashrlar(props) {
     const navigate = useNavigate();
-
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();

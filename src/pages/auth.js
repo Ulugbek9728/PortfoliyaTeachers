@@ -21,14 +21,14 @@ function Auth(props) {
                             localStorage.setItem("myInfo", JSON.stringify(response.data.data));
 
                             if (response?.data?.data?.currentRole === "ROLE_ADMIN") {
-                                navigate('/pertfolia_admin/1')
+                                navigate('/dashboard-admin/1')
                             }
                             if (response?.data?.data?.currentRole === "ROLE_TEACHER") {
                                 navigate('/profile/1')
                             }
 
                             if (response?.data?.data?.currentRole === "ROLE_FACULTY") {
-                                navigate('/pertfolia_fakultyadm/1')
+                                navigate('/dashboard-fakultyadm/1')
                             } else {
                                 // navigate('/profile/1')
                             }

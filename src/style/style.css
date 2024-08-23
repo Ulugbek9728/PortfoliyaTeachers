@@ -4,6 +4,15 @@ margin: 0;
 padding: 0;
 box-sizing: border-box;
 }
+.ant-menu-submenu::after{
+    border-bottom: none!important;
+}
+.ant-menu-item-group-list .ant-menu-title-content{
+    font-size: 14px!important;
+}
+.ant-menu-title-content{
+    font-size: 18px!important;
+}
 :root {
     --primary: #06a3da;
     --secondary: #34AD54;

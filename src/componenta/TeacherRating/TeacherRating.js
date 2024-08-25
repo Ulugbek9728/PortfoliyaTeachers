@@ -105,6 +105,7 @@ const TeacherRating = () => {
             setRadio2(getFullInfo?.isTop1000 || false);
         }
     }, [edite, getFullInfo]);
+    console.log(getFullInfo)
 
     useEffect(() => {
         return()=>{
@@ -321,7 +322,6 @@ const TeacherRating = () => {
             }
         }));
     };
-    console.log(data)
 
     const handleSubmit = () => {
         axios.put(`${ApiName}/api/profile/update`,

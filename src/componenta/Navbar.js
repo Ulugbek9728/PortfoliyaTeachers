@@ -44,6 +44,46 @@ function Navbar(props) {
         },
     ];
 
+    const GetRolesMenu = () => {
+        let childrenRoles = [];
+        fulInfo?.roles?.map(role => (
+            {
+                label: role,
+                key: role,
+                onClick: (e) => {
+                    fulInfo.currentRole !== e.key && changeRoles.mutate(e.key)
+                }
+            }
+        )).forEach(roleItem => childrenRoles.push(roleItem));
+        childrenRoles?.push({
+            key: 'exit',
+            label: (<a
+                    style={{height: 40, alignItems: "center", display: "flex"}}
+                    className='dropdown-item'
+                    onClick={LogOut}
+                    href="#">
+                    PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/>
+                </a>
+            ),
+
+        });
+        return [
+            {
+                icon: <UserOutlined />,
+                label: 'Profil',
+                children: [
+                    {
+                        key: '1-1',
+                        label: fulInfo?.fullName,
+                        type: 'group',
+                        children: childrenRoles
+                    },
+
+                ],
+            },
+        ]
+    }
+
     function LogOut() {
         openNewWindow(); // Yangi oynani ochish
         setTimeout(closeWindow, 100); // 0.1 sekunddan so'ng oynani yopish
@@ -77,9 +117,9 @@ function Navbar(props) {
             if (e === 'ROLE_TEACHER') {
                 navigate('/profile/1')
             } else if (e === 'ROLE_FACULTY') {
-                navigate('/pertfolia_fakultyadm/1')
+                navigate('/dashboard-fakultyadm/1')
             } else if (e === 'ROLE_ADMIN') {
-                navigate('/pertfolia_admin/1')
+                navigate('/dashboard-admin/1')
             }
         }),
         onError: () => {
@@ -91,47 +131,6 @@ function Navbar(props) {
         }
     })
 
-    const getProfileDropdownItems = () => {
-        let res = [{
-            label: fulInfo?.fullName,
-            key: fulInfo?.fullName,
-        }]
-        fulInfo
-            ?.roles
-            ?.map(role => (
-                {
-                    label: role,
-                    key: role,
-                    onClick: (e) => {
-                        fulInfo.currentRole !== e.key && changeRoles.mutate(e.key)
-                    }
-                }
-            ))?.forEach(role => res.push(role))
-        res
-            .push(
-                {
-                    label: (
-                        <a
-                            style={{height: 40, alignItems: "center", display: "flex"}}
-                            className='dropdown-item'
-                            onClick={LogOut}
-                            href="#">
-                            PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/>
-                        </a>
-                    ),
-                    key: 'exit',
-                }
-            )
-        return (
-            <Menu
-                selectedKeys={fulInfo?.roles?.filter(role => fulInfo?.currentRole === role)}
-                items={res}
-
-            >
-            </Menu>
-        )
-    }
-
     return (
         <div className="p-0" style={{width: "100%"}}>
             <div className="container-fluid bg-dark px-5 d-none d-lg-block">
@@ -140,7 +139,8 @@ function Navbar(props) {
                         <div className="d-inline-flex align-items-center" style={{height: "45px"}}>
                             <small className="me-3 text-light"><i className="fa fa-map-marker-alt me-2"></i>Toshkent
                                 shahri, Universitet ko`chasi 2-uy</small>
-                            <small className="me-3 text-light"><i className="fa fa-phone-alt me-2"></i>+998 71 207 07 32</small>
+                            <small className="me-3 text-light"><i className="fa fa-phone-alt me-2"></i>+998 71 207 07
+                                32</small>
                             <small className="text-light"><i className="fa fa-envelope-open me-2"></i>https://webmail.tdtu.uz/</small>
                         </div>
                     </div>
@@ -193,41 +193,21 @@ function Navbar(props) {
                             {/*/!*${ApiName}*!/  http://localhost:3000/*/}
                             {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
 
+
                             {fulInfo === null ?
                                 <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
                                    className="nav-item nav-link">
                                     Hemis orqali kirish
                                     <i className="fa-solid fa-right-to-bracket mx-2"></i>
-                                </a> :
-                                <Dropdown overlay={getProfileDropdownItems} placement="bottomRight">
-                                    <Avatar size={40} icon={<UserOutlined/>}
-                                            className="btn btn-primary dropdown-toggle p-0"
-                                            type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                                            aria-haspopup="true" aria-expanded="false"/>
-                                </Dropdown>
-                                // <div className="dropleft">
-                                //
-                                //         {
-                                //             fulInfo?.roles.map((item, index) => (
-                                //                 <span key={index} style={{height: 40, alignItems: "center", display: "flex", cursor: "pointer"}}
-                                //                       onClick={() => {
-                                //                           changeRoles.mutate(item)
-                                //                           console.log(item)
-                                //                       }}
-                                //                       className={`dropdown-item ${item===fulInfo.currentRole ? 'bg-primary disabled text-white': ''}`}>
-                                //
-                                //         {item === "ROLE_TEACHER" ? "O'qituvchi" : item === 'ROLE_ADMIN' ? 'ADMIN' : item === 'ROLE_FACULTY' ? "Fakultet" : ""}
-                                //     </span>
-                                //             ))
-                                //         }
-                                //
-                                //         <a style={{height: 40, alignItems: "center", display: "flex"}}
-                                //            className='dropdown-item' onClick={LogOut}
-                                //            href="#">PLATFORMADAN CHIQISH <LogoutOutlined className='mx-4'/></a>
-                                //
-                                //     </div>
-                                //
-                                // </div>
+                                </a> : <Menu
+                                    style={{
+                                        width: 100, backgroundColor:"inherit"
+                                    }}
+                                    selectedKeys={fulInfo?.roles?.filter(role => fulInfo?.currentRole === role)}
+
+                                    mode="horizontal"
+                                    items={ GetRolesMenu()}
+                                />
                             }
 
 

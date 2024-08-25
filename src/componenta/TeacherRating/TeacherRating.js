@@ -81,7 +81,6 @@ const TeacherRating = () => {
         profileStateAwardDTO: {
             nameStateAward: "",
             date: "",
-            attach: ""
         }
 
     });
@@ -150,12 +149,16 @@ const TeacherRating = () => {
                         nameStateAward: response.data?.data.profileStateAwardDTO.nameStateAward
                     },
                     profileTop1000: {
-                        attach: JSON.parse(response.data?.data.profileTop1000.attach),
                         country: response.data?.data.profileTop1000.country,
                         university: response.data?.data.profileTop1000.university,
                     },
                     roles: response.data?.data.roles,
-                    scientificDegree: response.data?.data.scientificDegree,
+                    scientificDegree: {
+                        attach: JSON.parse(response.data?.data.scientificDegree.attach),
+                        date: response.data?.data.scientificDegree.date,
+                        name: response.data?.data.scientificDegree.name,
+                        number: response.data?.data.scientificDegree.number,
+                    },
                     scientificTitle: {
                         attach: JSON.parse(response.data?.data.scientificTitle.attach),
                         date: response.data?.data.scientificTitle.date,
@@ -342,7 +345,6 @@ const TeacherRating = () => {
                 },
                 profileTop1000: {
                     ...data.profileTop1000,
-                    attach: JSON.stringify(data.profileTop1000?.attach)
                 },
             },
             {
@@ -771,10 +773,9 @@ const TeacherRating = () => {
                                             </div>
 
                                         )}
-                                                <Form.Item name='profileTop1000'>
-                                                    <Upload {...propsss('profileTop1000')}
-
-                                                            {...propsFileList(data.profileTop1000)}
+                                                <Form.Item name='scientificDegree'>
+                                                    <Upload {...propsss('scientificDegree')}
+                                                            {...propsFileList(data.scientificDegree)}
                                                     >
                                                         <Button icon={<UploadOutlined/>}>Diplom (pdf)</Button>
                                                     </Upload>
@@ -889,9 +890,9 @@ const TeacherRating = () => {
                                     <div>
                                         <b>Diplom</b> <br/>
                                         {
-                                            getFullInfo?.profileTop1000?.attach != null ?
-                                                <a href={getFullInfo?.profileTop1000?.attach?.url}
-                                                   target={"_blank"}>{getFullInfo?.profileTop1000?.attach?.fileName}</a>
+                                            getFullInfo?.scientificDegree?.attach != null ?
+                                                <a href={getFullInfo?.scientificDegree?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.scientificDegree?.attach?.fileName}</a>
                                                 :
                                                 ''
                                         }

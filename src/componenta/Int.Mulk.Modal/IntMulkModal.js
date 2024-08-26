@@ -47,7 +47,6 @@ const IntMulkModal = (props) => {
                 issueYear: '',
                 publicationType: props?.publicationType,
                 scientificName: '',
-                publicationDatabase: '',
                 mediaIds: [],
                 authorIds: []
             })
@@ -220,7 +219,7 @@ const IntMulkModal = (props) => {
         setData(prevState => ({
             ...prevState,
             authorIds: value,
-            authorCount: value.length + 1
+            authorCount: value.length
         }));
     };
 

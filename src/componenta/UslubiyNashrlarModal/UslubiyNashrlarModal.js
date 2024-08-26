@@ -20,7 +20,6 @@ dayjs.extend(customParseFormat);
 
 const UslubiyNashrlarModal = (props) => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-    const inputRef = useRef(null);
     const [searchResults, setSearchResults] = useState([]);
     const [stylePublicationType, setStylePublicationType] = useState([]);
     const [form] = Form.useForm();
@@ -111,7 +110,7 @@ const UslubiyNashrlarModal = (props) => {
         setData((prevState) => ({
             ...prevState,
             authorIds: value,
-            authorCount: value.length + 1,
+            authorCount: value.length,
         }));
     };
 
@@ -614,7 +613,7 @@ const UslubiyNashrlarModal = (props) => {
                         }
                     >
                         <Select.Option value="uz">uz</Select.Option>
-                        <Select.Option value="rus">rus</Select.Option>
+                        <Select.Option value="ru">ru</Select.Option>
                         <Select.Option value="en">en</Select.Option>
                     </Select>
                 </Form.Item>

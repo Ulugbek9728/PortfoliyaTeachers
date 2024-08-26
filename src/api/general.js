@@ -29,17 +29,10 @@ export const ChangeRole = (value) => getInstance().post(`/api/auth/change-role/$
 export const addDekanInfo = (id, value) => getInstance().put(`/api/profile/mark-as-faculty/${id}`, value)
 export const deleteDekanInfo = (id,) => getInstance().delete(`/api/profile/un-mark-as-faculty/${id}`)
 export const getFacultyDekan = () => getInstance().get(`/api/profile/read-as-faculty`);
-export const getIlmiyNashir = (publicationName,fromlocalDate, tolocalDate, type, employeeId, scientificPublicationType,facultyId,departmentId) => getInstance().get(`/api/publication`,{
-    params:{
-        publicationName,
-        fromlocalDate,
-        tolocalDate,
-        type,
-        employeeId,
-        scientificPublicationType,
-        facultyId,
-        departmentId
-        // page:'',
-        // size:'',
-    }
+export const getdepartmentAdmin = () => getInstance().get(`/api/profile/read-as-department`);
+export const addDepartmentInfo = (id, value) => getInstance().put(`/api/profile/mark-as-department/${id}`, value)
+export const deleteDepartment = (id,) => getInstance().delete(`/api/profile/un-mark-as-department/${id}`)
+
+export const getIlmiyNashir = (filter) => getInstance().get(`/api/publication`,{
+    params:filter
 });

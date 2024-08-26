@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table} from "antd";
+import {DatePicker, Form, Popconfirm, Select, Space, Switch, Table} from "antd";
 import {SearchOutlined} from "@ant-design/icons";
 import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile} from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
@@ -9,7 +9,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
 
-function AdminIlmiyNashirlar(props) {
+function AdminUslubiyNashir(props) {
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -30,13 +30,14 @@ function AdminIlmiyNashirlar(props) {
     });
 
     const Scientificpublication = useQuery({
-        queryKey: ['Ilmiy_nashr_turi'],
-        queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res.data[0])
+        queryKey: ['Uslubiy_nashr_turi'],
+        queryFn: () => ClassifairGet('h_methodical_publication_type').then(res => res.data[0])
     })
     const {data} = useQuery({
         queryKey: ["FacultyList"],
         queryFn: () => getFaculty(11, '').then(res => res.data)
     })
+
     const kafedraList = useQuery({
         queryKey: ["Kafedra"],
         queryFn: () => getFaculty(12, srcItem?.faculty).then(res =>
@@ -45,7 +46,7 @@ function AdminIlmiyNashirlar(props) {
     })
     const teacher_List = useQuery({
         queryKey: ['teacherList'],
-        queryFn: () => getProfile(null, srcItem?.faculty, srcItem?.department, srcItem?.query).then(res => res.data?.data?.content)
+        queryFn: () => getProfile(null, srcItem?.faculty, srcItem?.department, srcItem?.query).then(res => res?.data?.data?.content)
     })
 
     const publication_List = useQuery({
@@ -53,9 +54,9 @@ function AdminIlmiyNashirlar(props) {
         queryFn: () => getIlmiyNashir({
             fromlocalDate: srcItem?.dataSrc[0],
             tolocalDate: srcItem?.dataSrc[1],
-            type: "SCIENTIFIC_PUBLICATIONS",
+            type: "STYLE_PUBLICATIONS",
             employeeId: srcItem?.employeeId,
-            scientificPublicationType: srcItem?.srcType,
+            stylePublicationType: srcItem?.srcType,
             facultyId: srcItem?.faculty,
             departmentId: srcItem?.department,
         }).then(res => res?.data?.data?.content)
@@ -108,29 +109,20 @@ function AdminIlmiyNashirlar(props) {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
-            title: 'Ilmiy nashr turi',
-            render: (item, record, index) => (<>{item?.scientificPublicationType?.name}</>),
-            width: 150
-        },
-        {
-            title: 'Ilmiy nashr tili',
-            width: 100,
-            render: (item, record, index) => (<>{item?.language}</>)
-        },
-        {
-            title: 'Nashrning bibliografik matni',
+            title: 'Uslubiy nashr nomi',
             dataIndex: 'scientificName',
-            width: 150,
+            width: 350,
         },
         {
-            title: "Ilm-fan sohasi",
-            render: (item, record, index) => (<>{item?.scientificField?.name}</>),
-            width: 150,
-        },
-        {
-            title: "Xalqaro ilmiy bazalar",
-            render: (item, record, index) => (<>{item?.publicationDatabase?.name}</>),
-            width: 150,
+            title: 'Mualliflar',
+            render: (item) => (<ol>
+                {JSON.parse(item.authors)?.map((itemm) => (
+                    <li key={itemm.id}>
+                        {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
+                    </li>
+                ))}
+            </ol>),
+            width: 350
         },
         {
             title: 'Mualliflar soni',
@@ -138,32 +130,26 @@ function AdminIlmiyNashirlar(props) {
             width: 80,
         },
         {
-            title: 'Mualliflar',
-            render: (item) => (<ol>
-                {JSON.parse(item.authors).map((itemm) => (
-                    <li key={itemm.id}>
-                        {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
-                    </li>
-                ))}
-            </ol>),
-            width: 300
-        },
-        {
             title: 'Nashr yili',
             dataIndex: 'issueYear',
             width: 150
+        },
+        {
+            title: 'Uslubiy nashr turi',
+            render: (item, record, index) => (<>{item?.stylePublicationType?.name}</>),
+            width: 150
+        },
+        {
+            title: 'Uslubiy nashr tili',
+            width: 100,
+            render: (item, record, index) => (<>{item?.language}</>)
         },
         {
             title: 'url',
             render: (item, record, index) => (
                 <a href={item.doiOrUrl === '' ? item.mediaIds[0].attachResDTO.url : item.doiOrUrl}
                    target={"_blank"}>file</a>),
-            width: 80
-        },
-        {
-            title: 'Ilmiy yoki ilmiy texnik kengash qarori',
-            dataIndex: 'decisionScientificCouncil',
-            width: 150
+            width: 50
         },
         {
             title: 'Tekshirish',
@@ -195,8 +181,8 @@ function AdminIlmiyNashirlar(props) {
         //                     ></path>
         //                 </svg>
         //             </button>
-        //             <Popconfirm title="Ilmiy nashirni o'chirish"
-        //                         description="Ilmiy nashirni o'chirishni tasdiqlaysizmi?"
+        //             <Popconfirm title="Int.mulkni o'chirish"
+        //                         description="Int.mulkni o'chirishni tasdiqlaysizmi?"
         //                         onConfirm={(e) => handleDelete(record.id)}
         //                         okText="Ha" cancelText="Yo'q"
         //             >
@@ -239,10 +225,10 @@ function AdminIlmiyNashirlar(props) {
         //                     </svg>
         //                 </button>
         //             </Popconfirm>
-        //
         //         </Space>
         //     ),
         // },
+
     ];
 
     function onChangeField(fieldKey, value) {
@@ -352,8 +338,8 @@ function AdminIlmiyNashirlar(props) {
                     />
                 </Form.Item>
 
-                <Form.Item label="Ilmiy nashr turi" name="srcType">
-                    <Select name="srcType" labelInValue style={{width: 250,}} placeholder='Ilmiy nashr turi'
+                <Form.Item label="Uslubiy nashr turi" name="srcType">
+                    <Select name="srcType" labelInValue style={{width: 250,}} placeholder='Uslubiy  nashr turi'
                             options={Scientificpublication?.data?.options.map(item => ({
                                 label: item.name,
                                 value: item.code
@@ -397,4 +383,4 @@ function AdminIlmiyNashirlar(props) {
     );
 }
 
-export default AdminIlmiyNashirlar;
+export default AdminUslubiyNashir;

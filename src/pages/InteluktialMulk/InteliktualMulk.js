@@ -69,7 +69,7 @@ const InteliktualMulk = () => {
             message.success('Publication status updated successfully');
            getIntelektualMulk()
         }).catch((error) => {
-            console.log('API error:', error.response ? error.response.data : error.message);
+            console.log('API error:', error?.response ? error?.response?.data : error?.message);
             message.error('Failed to update publication status');
         });
     };
@@ -93,10 +93,9 @@ const InteliktualMulk = () => {
         {
             title: 'Mualliflar',
             render: (item) => (<ol>
-                <li>{fulInfo.secondName + ' ' + fulInfo.firstName + ' ' + fulInfo.thirdName}</li>
                 {JSON.parse(item?.authors).map((itemm) => (
-                    <li key={itemm.id}>
-                        {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
+                    <li key={itemm?.id}>
+                        {itemm?.name + ' (' + itemm?.workplace + ' ' + itemm?.position + ')'}
                     </li>
                 ))}
             </ol>),
@@ -129,7 +128,7 @@ const InteliktualMulk = () => {
             width: 150,
             render: (text, record) => (
                 <Switch
-                    checked={record.publicationStatus === "ACTIVE"}
+                    checked={record?.publicationStatus === "ACTIVE"}
                     onChange={() => toggleActiveStatus(record)}
                 />
             )
@@ -211,7 +210,7 @@ const InteliktualMulk = () => {
         })
             .then(response => {
                 console.log(response);
-                if (response.data.message === "Success") {
+                if (response?.data?.message === "Success") {
                     message.success("Ma'lumot o`chirildi");
                     getIntelektualMulk();
                 }
@@ -243,18 +242,18 @@ const InteliktualMulk = () => {
                 tolocalDate: DateListe[1]
             }
         }).then((response) => {
-            console.log(response.data.data.content)
+            console.log(response?.data?.data?.content)
             setTableParams({
                 ...tableParams,
                 pagination: {
-                    pageSize: response.data.data.size,
-                    total: response.data.data.totalElements
+                    pageSize: response?.data?.data?.size,
+                    total: response?.data?.data?.totalElements
                 }
             })
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
-            if (error.response.data.message==="Token yaroqsiz!"){
+            if (error?.response?.data?.message==="Token yaroqsiz!"){
                 localStorage.removeItem("myInfo");
 
                 navigate('/')

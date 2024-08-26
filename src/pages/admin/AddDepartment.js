@@ -1,59 +1,63 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Table, Modal, Select, Form, Button, notification, Space, Popconfirm} from 'antd';
 import {useQuery, useMutation} from "react-query"
-import {addDekanInfo, getFaculty, getProfile, getFacultyDekan, deleteDekanInfo} from "../../api/general";
+import {
+    addDepartmentInfo,
+    getFaculty,
+    getProfile,
+    getdepartmentAdmin,
+    deleteDepartment
+} from "../../api/general";
 
-
-function AddFakulty(props) {
-
+function AddDepartment(props) {
     const [form] = Form.useForm();
     const formRef = useRef(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [dekanAdd, setDekanAdd] = useState(null);
+    const [departmentAdd, setDepartmentAdd] = useState(null);
 
     const {data} = useQuery({
-        queryKey: ["FacultyList"],
-        queryFn: () => getFaculty(11).then(res => res.data)
+        queryKey: ["DepartmentList"],
+        queryFn: () => getFaculty(13).then(res => res.data)
     })
 
-    const dekan_List = useQuery({
-        queryKey: ['dekanlist'],
-        queryFn: () => getProfile('25',null,null,null).then(res => res.data?.data?.content)
+    const User_List = useQuery({
+        queryKey: ['Userlist'],
+        queryFn: () => getProfile(null,null,null,null).then(res => res.data?.data?.content)
     })
 
-    const addFakulty = useMutation({
-        mutationFn: (id) => addDekanInfo(id.userID, dekanAdd),
+    const addDepartment = useMutation({
+        mutationFn: (id) => addDepartmentInfo(id.userID, departmentAdd),
         onSuccess: () => {
-            FacultyDekan.refetch()
+            DepartmentsListadmin.refetch()
             notification.success({
-                message: "fakultet qo'shildi"
+                message: "Bo'lim qo'shildi"
             })
             form.resetFields();
             setIsModalOpen(false)
         },
         onError: () => {
             notification.error({
-                message: "fakultet eror",
+                message: "Bo'lim qo'shishda eror",
                 duration: 1,
                 placement: 'top'
             })
         }
     })
 
-    const deletFakulty = useMutation({
-        mutationFn:(id)=>deleteDekanInfo(id),
+    const deletDepartment = useMutation({
+        mutationFn:(id)=>deleteDepartment(id),
         onSuccess:()=>{
-            FacultyDekan.refetch()
+            DepartmentsListadmin.refetch()
             notification.success({
-                message: "fakultet o'chirildi"
+                message: "Bo'lim o'chirildi"
             })
         }
     })
 
-    const FacultyDekan = useQuery({
-        queryKey: ['Fakultydekanlist'],
-        queryFn: () => getFacultyDekan().then(res => res.data?.data)
+    const DepartmentsListadmin = useQuery({
+        queryKey: ['AdminDepartmentlist'],
+        queryFn: () => getdepartmentAdmin().then(res => res.data?.data)
     })
 
     const columns = [
@@ -68,16 +72,16 @@ function AddFakulty(props) {
             key: 'fullName',
         },
         {
-            title: 'Fakultet',
-            render: (item, record, index) => (<>{item.faculty.name}</>)
+            title: "Bo'lim",
+            render: (item, record, index) => (<>{item?.department?.name}</>)
         },
         {
             title: 'Harakatlar',
             render: (text, record) => (
                 <Space size="middle">
-                    <Popconfirm title="Fakultetni o'chirish"
-                                description="Fakultetni o'chirishni tasdiqlaysizmi?"
-                                onConfirm={(e) => deletFakulty.mutate(record.id)}
+                    <Popconfirm title="Bo'limni o'chirish"
+                                description="Bo'limni o'chirishni tasdiqlaysizmi?"
+                                onConfirm={(e) => deletDepartment.mutate(record.id)}
                                 okText="Ha" cancelText="Yo'q"
                     >
                         <button className="delet"
@@ -130,7 +134,7 @@ function AddFakulty(props) {
         <div>
             <button type="button" className=" button1" onClick={() => setIsModalOpen(true)}>
                     <span className="button__text">
-                        Dekan qo'shish
+                        Bo'lim qo'shish
                     </span>
                 <span className="button__icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
@@ -141,22 +145,22 @@ function AddFakulty(props) {
                         </svg>
                     </span>
             </button>
-            <Modal title="Fakultet dekanini qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
-                <Form form={form} ref={formRef} onFinish={(e) =>addFakulty.mutate(e)} layout="vertical">
-                    <Form.Item name="facultyId"
-                               rules={[{required: true, message: 'Fakultetni tanlang'}]}
-                               label="Fakultetni tanlang"
+            <Modal title="Bo'lim qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
+                <Form form={form} ref={formRef} onFinish={(e) =>addDepartment.mutate(e)} layout="vertical">
+                    <Form.Item name="departmentId"
+                               rules={[{required: true, message: "Bo'limni tanlang"}]}
+                               label="Bo'limni tanlang"
                     >
                         <Select
-                            name="facultyId"
+                            name="departmentId"
                             onChange={(e, option) => {
-                                setDekanAdd({
-                                    ...dekanAdd,
+                                setDepartmentAdd({
+                                    ...departmentAdd,
                                     id: e,
                                     name: option.label,
                                 })
                             }}
-                            placeholder='Facultet'
+                            placeholder="Bo'lim"
                             options={data?.map((item, index) => (
                                 {value: item.id, label: item.name, key: item.id}
                             ))}
@@ -166,12 +170,11 @@ function AddFakulty(props) {
                     <Form.Item name="userID"
                                rules={[{
                                    required: true,
-                                   message: 'Dekani tanlang'
+                                   message: 'Hodimni tanlang'
                                }]}
-                               label="Dekani tanlang">
-
-                        <Select name="userID" placeholder='Dekan F.I.Sh'
-                                options={dekan_List.data?.map((item, index) => (
+                               label="Hodimni tanlang">
+                        <Select name="userID" placeholder='Hodimni F.I.Sh'
+                                options={User_List.data?.map((item, index) => (
                                     {value: item.id, label: item.fullName, key: item.id}
                                 ))}
                         />
@@ -191,11 +194,11 @@ function AddFakulty(props) {
             <Table
                 rowKey="id"
                 columns={columns}
-                dataSource={FacultyDekan.data}
-                loading={FacultyDekan.isLoading}
+                dataSource={DepartmentsListadmin.data}
+                loading={DepartmentsListadmin.isLoading}
             />
         </div>
     );
 }
 
-export default AddFakulty;
+export default AddDepartment;

@@ -150,15 +150,15 @@ const IlmiySaloxiyati = () => {
             setTableParams({
                 ...tableParams,
                 pagination: {
-                    pageSize: response.data.data.size,
-                    total: response.data.data.totalElements
+                    pageSize: response?.data?.data?.size,
+                    total: response?.data?.data?.totalElements
                 }
             })
-            console.log(response.data.data.content)
+            console.log(response?.data?.data?.content)
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
-            if (error.response.data.message==="Token yaroqsiz!"){
+            if (error?.response?.data?.message==="Token yaroqsiz!"){
                 localStorage.removeItem("myInfo");
 
                 navigate('/')
@@ -176,7 +176,7 @@ const IlmiySaloxiyati = () => {
         })
             .then(response => {
                 console.log(response);
-                if (response.data.message === "Success") {
+                if (response?.data?.message === "Success") {
                     message.success('Ma`lumot o`chirildi');
                     getIlmiySaloxiyat();
                 }

@@ -17,32 +17,28 @@ export const ClassifairGet = (e) => getInstance().get(`/api/classifier`,{
         key: e
     },
 })
-export const getProfile = (e,faculty,department,query) => getInstance().get(`/api/profile`,{
-    params: {
-        staffPosition: e,
-        facultyId:faculty? faculty:null,
-        departmentId:department? department: null,
-        query:query? query: null
-    },
+export const getProfile = (filter) => getInstance().get(`/api/profile`,{
+    params:filter ,
 })
 export const ChangeRole = (value) => getInstance().post(`/api/auth/change-role/${value}`)
 export const addDekanInfo = (id, value) => getInstance().put(`/api/profile/mark-as-faculty/${id}`, value)
 export const deleteDekanInfo = (id,) => getInstance().delete(`/api/profile/un-mark-as-faculty/${id}`)
 export const getFacultyDekan = () => getInstance().get(`/api/profile/read-as-faculty`);
-export const getIlmiyNashir = (publicationName,fromlocalDate, tolocalDate, type, employeeId, scientificPublicationType,facultyId,departmentId) => getInstance().get(`/api/publication`,{
-    params:{
-        publicationName,
-        fromlocalDate,
-        tolocalDate,
-        type,
-        employeeId,
-        scientificPublicationType,
-        facultyId,
-        departmentId
-        // page:'',
-        // size:'',
-    }
+export const getdepartmentAdmin = () => getInstance().get(`/api/profile/read-as-department`);
+export const addDepartmentInfo = (id, value) => getInstance().put(`/api/profile/mark-as-department/${id}`, value)
+export const deleteDepartment = (id,) => getInstance().delete(`/api/profile/un-mark-as-department/${id}`)
+export const getIlmiyNashir = (filter) => getInstance().get(`/api/publication`,{
+    params:filter
 });
+export const getPublikatsiya = (filter) => getInstance().get(`/api/publication/current-user`,{
+    params:filter
+});
+export const getIlmiySaloxiyat = (filter) => getInstance().get(`api/employee-student`,{
+    params:filter
+});
+export const DeletIlmiySalohiyat = (id,) => getInstance().delete(`/api/employee-student/${id}`)
+export const DeletIntelektual = (value) => getInstance().put(`/api/publication/update_status`, value)
+
 
 export const fetchCurrentUser = () => getInstance().get(`/api/profile/current`);
 

@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table} from "antd";
-import {SearchOutlined} from "@ant-design/icons";
-import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile} from "../../api/general";
+import {DatePicker, Form, Popconfirm, Select, Space, Table} from "antd";
+import {ClassifairGet, getFaculty, getIlmiySaloxiyat, getProfile} from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
 import {useQuery} from "react-query";
 import dayjs from 'dayjs';
@@ -9,7 +8,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
 
-function AdminIlmiyNashirlar(props) {
+function AdminIlmiySaloxiyat(props) {
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -29,10 +28,7 @@ function AdminIlmiyNashirlar(props) {
         },
     });
 
-    const Scientificpublication = useQuery({
-        queryKey: ['Ilmiy_nashr_turi'],
-        queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res.data[0])
-    })
+
     const {data} = useQuery({
         queryKey: ["FacultyList"],
         queryFn: () => getFaculty(11, '').then(res => res.data)
@@ -45,21 +41,21 @@ function AdminIlmiyNashirlar(props) {
     })
     const teacher_List = useQuery({
         queryKey: ['teacherList'],
-        queryFn: () => getProfile({
-            facultyId:srcItem?.faculty,
-            departmentId:srcItem?.department,
-            query:srcItem?.query
-        }).then(res => res.data?.data?.content)
+        queryFn: () => getProfile(
+            {
+                facultyId:srcItem?.faculty,
+                departmentId:srcItem?.department,
+                query:srcItem?.query
+            }).then(res => res.data?.data?.content)
     })
 
     const publication_List = useQuery({
-        queryKey: ['publicationList'],
-        queryFn: () => getIlmiyNashir({
+        queryKey: ['scientificPublication'],
+        queryFn: () => getIlmiySaloxiyat({
             fromlocalDate: srcItem?.dataSrc[0],
             tolocalDate: srcItem?.dataSrc[1],
-            type: "SCIENTIFIC_PUBLICATIONS",
             employeeId: srcItem?.employeeId,
-            scientificPublicationType: srcItem?.srcType,
+            scientificLeadershipType: srcItem?.srcType,
             facultyId: srcItem?.faculty,
             departmentId: srcItem?.department,
         }).then(res => res?.data?.data?.content)
@@ -112,78 +108,41 @@ function AdminIlmiyNashirlar(props) {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
-            title: 'Ilmiy nashr turi',
-            render: (item, record, index) => (<>{item?.scientificPublicationType?.name}</>),
+            title: 'Ilmiy raxbarlik turi ',
+            dataIndex: 'scientificLeadershipType',
+            width: 300,
+        },
+        {
+            title: 'Shogirdning ilmiy darajasi',
+            render: (item, record, index) => (<>{item?.studentAcademicDegree?.name}</>),
+            width: 300,
+        },
+        {
+            title: 'Shogirt F.I.SH',
+            render: (item, record, index) => (<>{item?.studentId?.fullName} ({item?.studentId?.workplace} {item?.studentId?.position})</>),
+            width: 200,
+        },
+        {
+            title: 'Ximoya qilgan yili',
+            dataIndex: 'yearOfProtection',
             width: 150
         },
         {
-            title: 'Ilmiy nashr tili',
-            width: 100,
-            render: (item, record, index) => (<>{item?.language}</>)
-        },
-        {
-            title: 'Nashrning bibliografik matni',
-            dataIndex: 'scientificName',
-            width: 150,
-        },
-        {
-            title: "Ilm-fan sohasi",
-            render: (item, record, index) => (<>{item?.scientificField?.name}</>),
-            width: 150,
-        },
-        {
-            title: "Xalqaro ilmiy bazalar",
-            render: (item, record, index) => (<>{item?.publicationDatabase?.name}</>),
-            width: 150,
-        },
-        {
-            title: 'Mualliflar soni',
-            dataIndex: 'authorCount',
-            width: 80,
-        },
-        {
-            title: 'Mualliflar',
-            render: (item) => (<ol>
-                {JSON.parse(item.authors).map((itemm) => (
-                    <li key={itemm.id}>
-                        {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
-                    </li>
-                ))}
-            </ol>),
-            width: 300
-        },
-        {
-            title: 'Nashr yili',
-            dataIndex: 'issueYear',
+            title: 'Dissertatsiya mavzusi',
+            dataIndex: 'dissertationTopic',
             width: 150
         },
         {
             title: 'url',
             render: (item, record, index) => (
-                <a href={item.doiOrUrl === '' ? item.mediaIds[0].attachResDTO.url : item.doiOrUrl}
-                   target={"_blank"}>file</a>),
-            width: 80
-        },
-        {
-            title: 'Ilmiy yoki ilmiy texnik kengash qarori',
-            dataIndex: 'decisionScientificCouncil',
-            width: 150
+                <a href={item.media?.url} target={"_blank"}>file</a>),
+            width: 50
         },
         {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
         },
-        // {
-        //     title: "So'rov Faol",
-        //     width: 150,
-        //     render: (text, record) => (
-        //         <Switch
-        //             checked={record.publicationStatus === "ACTIVE"}
-        //             onChange={() => toggleActiveStatus(record)}
-        //         />
-        //     )
-        // },
         // {
         //     title: 'Harakatlar',
         //     width: 100,
@@ -300,7 +259,7 @@ function AdminIlmiyNashirlar(props) {
                         onChange={onChangeDate}/>
                 </Form.Item>
                 <Form.Item name="facultyId"
-                           rules={[{required: true, message: 'Fakultetni tanlang'}]}
+                           rules={[{message: 'Fakultetni tanlang'}]}
                            label="Fakultetni tanlang"
                 >
                     <Select style={{width: 250,}}
@@ -320,7 +279,6 @@ function AdminIlmiyNashirlar(props) {
                     name="kafedraId"
                     rules={[
                         {
-                            required: true,
                             message: 'Kafedrani tanlang'
                         }
                     ]}
@@ -356,12 +314,22 @@ function AdminIlmiyNashirlar(props) {
                     />
                 </Form.Item>
 
-                <Form.Item label="Ilmiy nashr turi" name="srcType">
-                    <Select name="srcType" labelInValue style={{width: 250,}} placeholder='Ilmiy nashr turi'
-                            options={Scientificpublication?.data?.options.map(item => ({
-                                label: item.name,
-                                value: item.code
-                            }))}
+                <Form.Item label="Ilmiy raxbarlik turi" name="srcType">
+                    <Select name="srcType" allowClear labelInValue style={{width: 250,}} placeholder='Ilmiy raxbarlik turi'
+                            options={[
+                                {
+                                    label: 'Ilmiy raxbarligi ostida ximoya qilgan fan nomzodi shogird',
+                                    value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'
+                                },
+                                {
+                                    label: 'Ilmiy raxbarligi ostida ximoya qilgan falsafa doktori shogird',
+                                    value: 'Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'
+                                },
+                                {
+                                    label: 'Ilmiy raxbarligi ostida ximoya qilgan fan doktori shogird',
+                                    value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'
+                                }
+                            ]}
                             onChange={(value) => {
                                 onChangeField('srcType', value?.value);
                             }}
@@ -374,9 +342,8 @@ function AdminIlmiyNashirlar(props) {
                     rowKey="id"
                     columns={columns}
                     dataSource={publication_List?.data}
-                    scroll={{y: 550}}
                     loading={publication_List.isLoading}
-
+                    scroll={{y: 550}}
                     pagination={
                         {
                             total: tableParams.pagination.total,
@@ -398,4 +365,4 @@ function AdminIlmiyNashirlar(props) {
     );
 }
 
-export default AdminIlmiyNashirlar;
+export default AdminIlmiySaloxiyat;

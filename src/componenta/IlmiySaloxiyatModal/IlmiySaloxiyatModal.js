@@ -41,7 +41,6 @@ const IlmiySaloxiyatModal = (props) => {
         } else if (props.handleCancel) {
             setData({})
             form.resetFields();
-
         }
     }, [props.editingData, form, props.handleCancel]);
 
@@ -200,7 +199,7 @@ const IlmiySaloxiyatModal = (props) => {
         request.then(response => {
             message.success(`Ilmiy saloxiyat ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             form.resetFields();
-            props.getIlmiySaloxiyat()
+            props.getIlmiySaloxiyat123()
             setData({})
             if (props.onSuccess) {
                 props.onSuccess();

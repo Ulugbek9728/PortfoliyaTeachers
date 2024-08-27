@@ -133,7 +133,7 @@ const FormModal = (props) => {
         setData(prevState => ({
             ...prevState,
             authorIds: value,
-            authorCount: value.length+1
+            authorCount: value.length
         }));
     };
 
@@ -398,15 +398,15 @@ const FormModal = (props) => {
                             onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}>
                     </Select>
                 </Form.Item>
-                <Form.Item layout="vertical" label="Mualliflar" name="authorIds"
+                <Form.Item layout="vertical" label="Hammualliflar" name="authorIds"
                     labelCol={{span: 24}} wrapperCol={{span: 24}}
-                    rules={[{required: true, message: 'Iltimos mualliflarni tanlang'}]}
+                    // rules={[{message: 'Iltimos mualliflarni tanlang'}]}
                     className='col-6'
                 >
                     <Select size='large'
                             mode="multiple"
                             allowClear
-                            placeholder="Mualliflarni qidirish"
+                            placeholder="Hammualliflarni qidirish"
                             onChange={handleChange}
                             filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
                             filterSort={(optionA, optionB) =>

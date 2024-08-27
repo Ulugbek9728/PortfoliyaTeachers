@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {Space, Table, Modal, Form, DatePicker, Input, Switch, message, Select, Popconfirm} from 'antd';
-import { SearchOutlined} from '@ant-design/icons';
+import {SearchOutlined} from '@ant-design/icons';
 import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
@@ -26,32 +26,8 @@ function IlmiyNashrlar(props) {
         },
     });
     const [srcItem, setSrcItem] = useState({});
-        const onChangeDate = (value, dateString) => {
-            setDateListe(dateString);
-        };
-
-    const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        const requestData = {id: record.id, publicationStatus: newStatus};
-
-        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        }).then((response) => {
-
-            const updatedItem = response.data;
-            setDataList(dataList.map(item => item.id === record.id ? {
-                ...item,
-                publicationStatus: updatedItem.publicationStatus
-            } : item));
-            message.success('Publication status updated successfully');
-            getIlmiyNashir();
-        }).catch((error) => {
-            console.log('API error:', error.response ? error.response.data : error.message);
-            message.error('Failed to update publication status');
-        });
+    const onChangeDate = (value, dateString) => {
+        setDateListe(dateString);
     };
 
     const columns = [
@@ -93,7 +69,6 @@ function IlmiyNashrlar(props) {
         {
             title: 'Mualliflar',
             render: (item) => (<ol>
-                <li>{fulInfo.secondName + ' ' + fulInfo.firstName + ' ' + fulInfo.thirdName}</li>
                 {JSON.parse(item.authors).map((itemm) => (
                     <li key={itemm.id}>
                         {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
@@ -110,7 +85,8 @@ function IlmiyNashrlar(props) {
         {
             title: 'url',
             render: (item, record, index) => (
-                <a href={item.doiOrUrl===''? item.mediaIds[0].attachResDTO.url: item.doiOrUrl} target={"_blank"}>file</a>),
+                <a href={item.doiOrUrl === '' ? item.mediaIds[0].attachResDTO.url : item.doiOrUrl}
+                   target={"_blank"}>file</a>),
             width: 50
         },
         {
@@ -122,16 +98,6 @@ function IlmiyNashrlar(props) {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
-        },
-        {
-            title: "So'rov Faol",
-            width: 150,
-            render: (text, record) => (
-                <Switch
-                    checked={record.publicationStatus === "ACTIVE"}
-                    onChange={() => toggleActiveStatus(record)}
-                />
-            )
         },
         {
             title: 'Harakatlar',
@@ -198,13 +164,13 @@ function IlmiyNashrlar(props) {
         },
     ];
 
-    const Scientificpublication  = useQuery({
-        queryKey:['Ilmiy_nashr_turi'],
-        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
+    const Scientificpublication = useQuery({
+        queryKey: ['Ilmiy_nashr_turi'],
+        queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res?.data[0])
     })
 
     useEffect(() => {
-            getIlmiyNashir();
+        getIlmiyNashir();
     }, []);
 
     const handleDelete = (id) => {
@@ -219,7 +185,7 @@ function IlmiyNashrlar(props) {
         })
             .then(response => {
                 console.log(response);
-                if (response.data.message === "Success") {
+                if (response?.data?.message === "Success") {
                     message.success('Maqola muvaffaqiyatli o`chirildi');
                     getIlmiyNashir();
                 }
@@ -236,7 +202,7 @@ function IlmiyNashrlar(props) {
             },
             params: {
                 size: tableParams.pagination.pageSize,
-                page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
+                page: tableParams.pagination.current > 0 ? tableParams.pagination.current - 1 : 0,
                 type: 'SCIENTIFIC_PUBLICATIONS',
                 publicationName: srcItem?.srcInput,
                 scientificPublicationType: srcItem?.srcType,
@@ -251,11 +217,11 @@ function IlmiyNashrlar(props) {
                     total: response?.data?.data?.totalElements
                 }
             })
-            const fetchedData = response?.data?.data?.content.map(item => ({...item, key:item.id}));
+            const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
             console.log('API error:', error);
-            if (error.response?.data?.message==="Token yaroqsiz!"){
+            if (error?.response?.data?.message === "Token yaroqsiz!") {
                 localStorage.removeItem("myInfo");
                 navigate('/')
             }
@@ -280,10 +246,11 @@ function IlmiyNashrlar(props) {
                 open={open}
                 onCancel={handleCancel}
                 width={1300}
-                style={{ right: "-80px" }}
-                footer={null} 
+                style={{right: "-80px"}}
+                footer={null}
             >
-                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData} getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel} />
+                <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData}
+                           getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel}/>
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>
@@ -292,7 +259,8 @@ function IlmiyNashrlar(props) {
                       className='d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang" name="srcDate">
-                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD" onChange={onChangeDate}/>
+                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD"
+                                                onChange={onChangeDate}/>
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr nomi" name="srcInput">
                         <Input name='srcInput' size="large" style={{width: '400px'}}
@@ -313,7 +281,7 @@ function IlmiyNashrlar(props) {
                     </Form.Item>
                     <Form.Item label=''>
                         <button className="btn btn-success mt-4" type="submit">
-                            <span className="button__text"><SearchOutlined /></span>
+                            <span className="button__text"><SearchOutlined/></span>
                         </button>
                     </Form.Item>
                 </Form>

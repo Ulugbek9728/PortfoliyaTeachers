@@ -13,7 +13,6 @@ import { useEffect } from 'react';
 import {useNavigate} from "react-router-dom";
 const UslubiyNashrlar = () => {
     const navigate = useNavigate();
-
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -47,7 +46,6 @@ const UslubiyNashrlar = () => {
         {
             title: 'Mualliflar',
             render: (item) => (<ol>
-                <li>{fulInfo.secondName + ' ' + fulInfo.firstName + ' ' + fulInfo.thirdName}</li>
                 {JSON.parse(item.authors)?.map((itemm) => (
                     <li key={itemm.id}>
                         {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
@@ -86,16 +84,6 @@ const UslubiyNashrlar = () => {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
-        },
-        {
-            title: "So'rov Faol",
-            width: 150,
-            render: (text, record) => (
-                <Switch
-                    checked={record.publicationStatus === "ACTIVE"}
-                    onChange={() => toggleActiveStatus(record)}
-                />
-            )
         },
         {
             title: 'Harakatlar',
@@ -210,15 +198,15 @@ const UslubiyNashrlar = () => {
             setTableParams({
                 ...tableParams,
                 pagination: {
-                    pageSize: response.data.data.size,
-                    total: response.data.data.totalElements
+                    pageSize: response?.data?.data?.size,
+                    total: response?.data?.data?.totalElements
                 }
             })
             console.log('Fetched data:', response?.data?.data?.content);
             const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
             setDataList(fetchedData);
         }).catch((error) => {
-            if (error.response.data.message==="Token yaroqsiz!"){
+            if (error?.response?.data?.message==="Token yaroqsiz!"){
                 localStorage.removeItem("myInfo");
 
                 navigate('/')
@@ -227,29 +215,6 @@ const UslubiyNashrlar = () => {
         });
     }    
 
-    const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";        
-        const requestData = { id: record.id, publicationStatus: newStatus };
-
-        console.log('Request data:', requestData);
-
-        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        }).then((response) => {
-            console.log('API response:', response.data);
-
-            const updatedItem = response.data;
-            setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
-            message.success('Publication status updated successfully');
-            getIlmiyNashir(1, tableParams.pagination.total);
-        }).catch((error) => {
-            console.log('API error:', error.response ? error.response.data : error.message);
-            message.error('Failed to update publication status');
-        });
-    };
     const handleCancel = () => {
         setOpen(false);
         setEditingData(null);
@@ -266,7 +231,7 @@ const UslubiyNashrlar = () => {
             }
         })
             .then(response => {
-                setStylePublicationType(response.data);
+                setStylePublicationType(response?.data);
             })
             .catch(error => {
                 console.log(error, 'error');
@@ -285,6 +250,7 @@ const UslubiyNashrlar = () => {
         footer={null} 
       >
         <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData}  handleCancel={handleCancel}/>
+
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>

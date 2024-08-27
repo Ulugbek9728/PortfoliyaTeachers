@@ -48,10 +48,10 @@ function Navbar(props) {
         let childrenRoles = [];
         fulInfo?.roles?.map(role => (
             {
-                label: role,
+                label: role ==='ROLE_DEPARTMENT'? "BO'LIM ADMIN":role==='ROLE_TEACHER'? "O'QITUVCHI" : role==='ROLE_ADMIN'? 'ADMIN' :role==='ROLE_FACULTY'? 'FAKULTET' :'',
                 key: role,
                 onClick: (e) => {
-                    fulInfo.currentRole !== e.key && changeRoles.mutate(e.key)
+                    changeRoles.mutate(e.key)
                 }
             }
         )).forEach(roleItem => childrenRoles.push(roleItem));
@@ -111,7 +111,8 @@ function Navbar(props) {
             value = {
                 ...fulInfo,
                 currentRole: e,
-                accessToken: res?.data?.data?.accessToken
+                accessToken: res?.data?.data?.accessToken,
+                roles:res?.data?.data?.roles,
             }
             localStorage.setItem("myInfo", JSON.stringify(value));
             if (e === 'ROLE_TEACHER') {
@@ -124,7 +125,7 @@ function Navbar(props) {
         }),
         onError: () => {
             notification.error({
-                message: "fakultet eror",
+                message: "ChangeRoles eror",
                 duration: 1,
                 placement: 'top'
             })
@@ -192,10 +193,8 @@ function Navbar(props) {
                             </Dropdown>
                             {/*/!*${ApiName}*!/  http://localhost:3000/*/}
                             {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
-
-
                             {fulInfo === null ?
-                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
+                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://portfolio.uplink.uz/auth`}
                                    className="nav-item nav-link">
                                     Hemis orqali kirish
                                     <i className="fa-solid fa-right-to-bracket mx-2"></i>
@@ -209,8 +208,6 @@ function Navbar(props) {
                                     items={ GetRolesMenu()}
                                 />
                             }
-
-
                         </div>
 
                     </div>

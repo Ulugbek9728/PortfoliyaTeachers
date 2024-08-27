@@ -1,10 +1,14 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {FileTextOutlined, UserOutlined,} from '@ant-design/icons';
 import { Layout,} from 'antd';
 import Navbar from "../../componenta/Navbar";
 import {NavLink, Route, Routes} from "react-router-dom";
 import AddFakulty from "./addFakulty";
 import AdminIlmiyNashirlar from "./admin_ilmiyNashirlar";
+import AddDepartment from "./AddDepartment";
+import AdminUslubiyNashir from "./adminUslubiyNashir";
+import AdminIntelektualMulk from "./adminIntelektualMulk";
+import AdminIlmiySaloxiyat from "./adminIlmiySaloxiyat";
 
 const { Sider, Content} = Layout;
 
@@ -15,23 +19,28 @@ const items = [
         icon: <UserOutlined/>,
     },
     {
+        label: "Bo'lim qo'shish",
+        key: '2',
+        icon: <UserOutlined/>,
+    },
+    {
         label: "Ilmiy nashirlar",
-        key: "2",
+        key: "3",
         icon: <FileTextOutlined />,
     },
     {
         label: "Uslubiy nashirlar",
-        key: "3",
-        icon: <FileTextOutlined/>,
-    },
-    {
-        label: "Intelektual mulk agentligi tomonidan berilgan ishlar",
         key: "4",
         icon: <FileTextOutlined/>,
     },
     {
-        label: "Ilmiy saloxiyatni oshirishdagi hissasi",
+        label: "Intelektual mulk agentligi tomonidan berilgan ishlar",
         key: "5",
+        icon: <FileTextOutlined/>,
+    },
+    {
+        label: "Ilmiy saloxiyatni oshirishdagi hissasi",
+        key: "6",
         icon: <FileTextOutlined/>,
     },
 ];
@@ -61,10 +70,11 @@ function Admin(props) {
                     >
                         <Routes>
                             <Route path={"/1"} element={ <AddFakulty/>}/>
-                            <Route path={"/2/*"} element={ <AdminIlmiyNashirlar/>}/>
-                            {/*<Route path={"/3"} element={ <UslubiyNashrlar/>}/>*/}
-                            {/*<Route path={"/4"} element={ <InteliktualMulk/>}/>*/}
-                            {/*<Route path={"/5"} element={ <IlmiySaloxiyati/>}/>*/}
+                            <Route path={"/2"} element={ <AddDepartment/>}/>
+                            <Route path={"/3/*"} element={ <AdminIlmiyNashirlar/>}/>
+                            <Route path={"/4/*"} element={ <AdminUslubiyNashir/>}/>
+                            <Route path={"/5/*"} element={ <AdminIntelektualMulk/>}/>
+                            <Route path={"/6/*"} element={ <AdminIlmiySaloxiyat/>}/>
                         </Routes>
                     </Content>
                 </Layout>

@@ -1,78 +1,109 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {Space, Table, Select, Modal, Popconfirm , message, Form, DatePicker, Switch} from 'antd';
+import {Space, Table, Select, Modal, Popconfirm, message, Form, DatePicker, Switch, notification} from 'antd';
 import "./InteliktualMulk.scss"
 import IntMulkModal from '../../componenta/Int.Mulk.Modal/IntMulkModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
-import {SearchOutlined} from "@ant-design/icons";
-import {useNavigate} from "react-router-dom";
-
+import {useNavigate, useSearchParams} from "react-router-dom";
+import {useMutation, useQuery} from "react-query";
+import {ClassifairGet, DeletIntelektual, getPublikatsiya} from "../../api/general";
+import dayjs from "dayjs";
 
 const InteliktualMulk = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
-    const [DateListe, setDateListe] = useState(['', '']);
     const [open, setOpen] = useState(false)
-    const [Scientificpublication, setScientificpublication] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [tableParams, setTableParams] = useState({
         pagination: {current: 0, pageSize: 5, total: 10},
     });
     const [editingData, setEditingData] = useState(null);
 
-    const [srcItem, setSrcItem] = useState({});
+    const [srcItem, setSrcItem] = useState({
+        dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
+        srcType: searchParams.get('srcType') || null,
+    });
 
     const onChangeDate = (value, dateString) => {
-        setDateListe(dateString)
+        if (value === null) {
+            setSrcItem({
+                ...srcItem,
+                dataSrc: dateString
+            })
+            searchParams.delete('from');
+            searchParams.delete('to');
+            setSearchParams(searchParams, {replace: true});
+        } else {
+            setSrcItem({
+                ...srcItem,
+                dataSrc: dateString
+            })
+            setSearchParams((prevParams) => {
+                prevParams.set("from", dateString[0]);
+                return prevParams;
+            }, {replace: true});
+            setSearchParams((prevParams) => {
+                prevParams.set("to", dateString[1]);
+                return prevParams;
+            }, {replace: true});
+        }
     };
+
+    const Scientificpublication = useQuery({
+        queryKey: ['Ilmiy_nashr_turi'],
+        queryFn: () => ClassifairGet('h_patient_type').then(res => res?.data[0])
+    })
+
+    const publication_List = useQuery({
+        queryKey: ['publicationList_Intelektual'],
+        queryFn: () => getPublikatsiya({
+            fromlocalDate: srcItem?.dataSrc[0],
+            tolocalDate: srcItem?.dataSrc[1],
+            type: "INTELLECTUAL_PROPERTY",
+            intellectualPropertyPublicationType: srcItem?.srcType,
+        }).then(res => {
+            const fetchedData = res?.data?.data?.content.map(item => ({...item, key: item.id}));
+            setDataList(fetchedData);
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    pageSize: res?.data?.data?.size,
+                    total: res?.data?.data?.totalElements
+                }
+            })
+
+        }).catch((error) => {
+            if (error?.response?.data?.message === "Token yaroqsiz!") {
+                localStorage.removeItem("myInfo");
+                navigate('/')
+            }
+            console.log('API error:', error);
+            message.error('Failed to fetch data');
+        })
+    })
 
     useEffect(() => {
-            ClassifairGet()
-            getIntelektualMulk()
-    }, []);
-    function ClassifairGet() {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {
-                key: 'h_patient_type'
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                setScientificpublication(response.data);
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
+        publication_List.refetch()
+    }, [srcItem]);
+
+    function onChangeField(fieldKey, value) {
+        console.log(value)
+        console.log(fieldKey)
+        if (value === undefined) {
+            searchParams.delete(fieldKey);
+            setSearchParams(searchParams, {replace: true});
+            setSrcItem({...srcItem, [fieldKey]: null});
+        } else {
+            setSrcItem({...srcItem, [fieldKey]: value});
+            setSearchParams((prevParams) => {
+                prevParams.set(fieldKey, value);
+                return prevParams;
+            }, {replace: true});
+        }
     }
-
-    const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        const requestData = {id: record.id, publicationStatus: newStatus};
-
-        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        }).then((response) => {
-            const updatedItem = response.data;
-            setDataList(dataList.map(item => item.id === record.id ? {
-                ...item,
-                publicationStatus: updatedItem.publicationStatus
-            } : item));
-            message.success('Publication status updated successfully');
-           getIntelektualMulk()
-        }).catch((error) => {
-            console.log('API error:', error.response ? error.response.data : error.message);
-            message.error('Failed to update publication status');
-        });
-    };
 
     const columns = [
         {
@@ -93,10 +124,9 @@ const InteliktualMulk = () => {
         {
             title: 'Mualliflar',
             render: (item) => (<ol>
-                <li>{fulInfo.secondName + ' ' + fulInfo.firstName + ' ' + fulInfo.thirdName}</li>
                 {JSON.parse(item?.authors).map((itemm) => (
-                    <li key={itemm.id}>
-                        {itemm.name + ' (' + itemm?.workplace + ' ' + itemm.position + ')'}
+                    <li key={itemm?.id}>
+                        {itemm?.name + ' (' + itemm?.workplace + ' ' + itemm?.position + ')'}
                     </li>
                 ))}
             </ol>),
@@ -115,24 +145,14 @@ const InteliktualMulk = () => {
         {
             title: 'url',
             render: (item) => (
-                item.mediaIds===null ? '':
-                <a href={item?.mediaIds[0]?.attachResDTO?.url} target={"_blank"}>file</a>),
+                item.mediaIds === null ? '' :
+                    <a href={item?.mediaIds[0]?.attachResDTO?.url} target={"_blank"}>file</a>),
             width: 50
         },
         {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
-        },
-        {
-            title: "So'rov Faol",
-            width: 150,
-            render: (text, record) => (
-                <Switch
-                    checked={record.publicationStatus === "ACTIVE"}
-                    onChange={() => toggleActiveStatus(record)}
-                />
-            )
         },
         {
             title: 'Harakatlar',
@@ -150,12 +170,12 @@ const InteliktualMulk = () => {
                         </svg>
                     </button>
                     <Popconfirm title="Int.mulkni o'chirish"
-                        description="Int.mulkni o'chirishni tasdiqlaysizmi?"
-                        onConfirm={(e) => handleDelete(record.id)}
-                        okText="Ha" cancelText="Yo'q"
+                                description="Int.mulkni o'chirishni tasdiqlaysizmi?"
+                                onConfirm={(e) => deletIntelektualMulk.mutate(record.id)}
+                                okText="Ha" cancelText="Yo'q"
                     >
                         <button className="delet"
-                                >
+                        >
                             <svg
                                 className="bin-top"
                                 viewBox="0 0 39 7"
@@ -199,27 +219,25 @@ const InteliktualMulk = () => {
         },
 
     ];
-    const handleDelete = (id) => {
-        axios.put(`${ApiName}/api/publication/update_status`, {
+
+    const deletIntelektualMulk = useMutation({
+        mutationFn:(id)=>DeletIntelektual({
             id,
             publicationStatus: 'DELETED'
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                console.log(response);
-                if (response.data.message === "Success") {
-                    message.success("Ma'lumot o`chirildi");
-                    getIntelektualMulk();
-                }
+        }),
+        onSuccess:()=>{
+            publication_List.refetch()
+            notification.success({
+                message: "Ma'lumot o'chirildi"
             })
-            .catch(error => {
-                message.error("Ma'lumot o`chirishda xatolik");
-            });
-    }
+        },
+        onError:()=>{
+            notification.error({
+                message: "Ma'lumot o'chirishda xato"
+            })
+        }
+    })
+
     const onEdit = (record) => {
         setEditingData(record);
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
@@ -229,82 +247,56 @@ const InteliktualMulk = () => {
         setEditingData(null);
     };
 
-    function getIntelektualMulk() {
-        axios.get(`${ApiName}/api/publication/current-user`, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            },
-            params: {
-                size: tableParams.pagination.pageSize,
-                page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
-                type: 'INTELLECTUAL_PROPERTY',
-                intellectualPropertyPublicationType: srcItem?.srcType,
-                fromlocalDate: DateListe[0],
-                tolocalDate: DateListe[1]
-            }
-        }).then((response) => {
-            console.log(response.data.data.content)
-            setTableParams({
-                ...tableParams,
-                pagination: {
-                    pageSize: response.data.data.size,
-                    total: response.data.data.totalElements
-                }
-            })
-            const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
-            setDataList(fetchedData);
-        }).catch((error) => {
-            if (error.response.data.message==="Token yaroqsiz!"){
-                localStorage.removeItem("myInfo");
+    return (
+        <div className='p-4'>
+            <Modal
+                title={editingData ? "Intelektual mulk tahrirlash" : "Intelektual mulk punkti"}
+                centered
+                open={open}
+                onCancel={handleCancel}
+                width={1000}
+                style={{right: "-80px"}}
+            >
+                <IntMulkModal publicationType="INTELLECTUAL_PROPERTY" editingData={editingData}
+                              handleCancel={handleCancel} getIntelektualMulk={() => publication_List.refetch()}/>
+            </Modal>
 
-                navigate('/')
-            }
-            console.log('API error:', error);
-            message.error('Failed to fetch data');
-        });
-    }
-
-  return (
-    <div className='p-4'>
-    <Modal
-        title={editingData ? "Intelektual mulk tahrirlash" : "Intelektual mulk punkti"}
-        centered
-        open={open}
-        onCancel={handleCancel}
-        width={1000}
-        style={{right:"-80px"}}
-      >
-        <IntMulkModal publicationType="INTELLECTUAL_PROPERTY" editingData={editingData}
-                      handleCancel={handleCancel} getIntelektualMulk={getIntelektualMulk}/>
-      </Modal>
-            
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
                       className='d-flex align-items-center gap-4'
-                      onFinish={() => getIntelektualMulk()}
+                      fields={[
+                          {
+                              name: "srcDate",
+                              value: srcItem.dataSrc[0] && srcItem.dataSrc[1] ? [dayjs(srcItem.dataSrc[0], 'YYYY-MM-DD'), dayjs(srcItem.dataSrc[1], 'YYYY-MM-DD')] : null
+                          },
+                          {
+                              name: "srcType",
+                              value: srcItem?.srcType
+                          },
+                      ]}
                 >
                     <Form.Item label="Mudatini belgilang" name="srcDate">
-                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD" onChange={onChangeDate}/>
+                        <DatePicker.RangePicker  size="large" allowClear name="srcDate" format="YYYY-MM-DD" onChange={onChangeDate}/>
                     </Form.Item>
 
                     <Form.Item label="Intelektual mulk turi" name="srcType">
-                        <Select name="srcType" style={{width: 300,}}  placeholder='Intelektual mulk turi'
-                                options={Scientificpublication[0]?.options?.map(item => ({
+                        <Select name="srcType" style={{width: 300,}} allowClear placeholder='Intelektual mulk turi'
+                                options={Scientificpublication?.data?.options.map(item => ({
                                     label: item.name,
                                     value: item.code
                                 }))}
-                                onChange={(value, option) => setSrcItem({...srcItem, srcType: option.value})}
+                                onChange={(value) => {
+                                    console.log(value)
+                                    onChangeField('srcType', value);
+                                }}
                         />
-                    </Form.Item>
-                    <Form.Item label=" ">
-                        <button className="btn btn-success" type="submit">
-                            <span className="button__text"><SearchOutlined /></span>
-                        </button>
                     </Form.Item>
                 </Form>
 
                 <button type="button" className="button1"
-                    onClick={() => {setOpen(true)}}>
+                        onClick={() => {
+                            setOpen(true)
+                        }}>
                     <span className="button__text">Intelektual mulk</span>
                     <span className="button__icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
@@ -319,6 +311,7 @@ const InteliktualMulk = () => {
             </div>
             <Table
                 columns={columns}
+                loading={publication_List.isLoading}
                 dataSource={dataList}
                 pagination={
                     {
@@ -332,8 +325,6 @@ const InteliktualMulk = () => {
                                     total: page
                                 }
                             })
-
-                            getIntelektualMulk();
                         }
                     }
                 }
@@ -342,7 +333,7 @@ const InteliktualMulk = () => {
                 }}
             />
         </div>
-  )
+    )
 }
 
 export default InteliktualMulk

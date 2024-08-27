@@ -1,17 +1,14 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {Table, Select, Modal, Form, message, Space, Popconfirm} from 'antd';
-import { SearchOutlined} from '@ant-design/icons';
-
+import {Table, Select, Modal, Form, Space, Popconfirm, DatePicker, notification} from 'antd';
+import {DeletIlmiySalohiyat, getIlmiySaloxiyat} from "../../api/general";
 import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySaloxiyatModal';
-import axios from "axios";
-import {ApiName} from "../../api/APIname";
-import {useNavigate} from "react-router-dom";
+import {useSearchParams} from "react-router-dom";
+import {useMutation, useQuery} from "react-query";
+import dayjs from "dayjs";
 
 const IlmiySaloxiyati = () => {
-    const navigate = useNavigate();
-
+    const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
-    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [form] = Form.useForm();
     const [open, setOpen] = useState(false)
     const [tableParams, setTableParams] = useState({
@@ -21,9 +18,35 @@ const IlmiySaloxiyati = () => {
             total: 10
         },
     });
-    const [srcItem, setSrcItem] = useState({});
-    const [dataList, setDataList] = useState([]);
+    const [srcItem, setSrcItem] = useState({
+        dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
+        srcType: searchParams.get('srcType') || null,
+    });
     const [editingData, setEditingData] = useState(null);
+
+    const publication_List = useQuery({
+        queryKey: ['scientificPublication'],
+        queryFn: () => getIlmiySaloxiyat({
+            fromlocalDate: srcItem?.dataSrc[0],
+            tolocalDate: srcItem?.dataSrc[1],
+            scientificLeadershipType: srcItem?.srcType,
+        }).then(res => res?.data?.data?.content)
+    })
+
+    const deletIlmiySal = useMutation({
+        mutationFn:(id)=>DeletIlmiySalohiyat(id),
+        onSuccess:()=>{
+            publication_List.refetch()
+            notification.success({
+                message: "Ma'lumot o'chirildi"
+            })
+        },
+        onError:()=>{
+            notification.error({
+                message: "Ma'lumot o'chirishda xato"
+            })
+        }
+    })
 
     const columns = [
         {
@@ -34,12 +57,12 @@ const IlmiySaloxiyati = () => {
         {
             title: 'Ilmiy raxbarlik turi ',
             dataIndex: 'scientificLeadershipType',
-            width: 300,
+            width: 250,
         },
         {
             title: 'Shogirdning ilmiy darajasi',
             render: (item, record, index) => (<>{item?.studentAcademicDegree?.name}</>),
-            width: 300,
+            width: 200,
         },
         {
             title: 'Shogirt F.I.SH',
@@ -49,7 +72,7 @@ const IlmiySaloxiyati = () => {
         {
             title: 'Ximoya qilgan yili',
             dataIndex: 'yearOfProtection',
-            width: 150
+            width: 100
         },
         {
             title: 'Dissertatsiya mavzusi',
@@ -61,11 +84,6 @@ const IlmiySaloxiyati = () => {
             render: (item, record, index) => (
                 <a href={item.media?.url} target={"_blank"}>file</a>),
             width: 50
-        },
-        {
-            title: 'Tekshirish',
-            dataIndex: 'address',
-            width: 100
         },
         {
             title: 'Harakatlar',
@@ -84,7 +102,7 @@ const IlmiySaloxiyati = () => {
                     </button>
                     <Popconfirm title="Ilmiy nashirni o'chirish"
                                 description="Ilmiy nashirni o'chirishni tasdiqlaysizmi?"
-                                onConfirm={(e) => handleDelete(record.id)}
+                                onConfirm={(e) => deletIlmiySal.mutate(record.id)}
                                 okText="Ha" cancelText="Yo'q"
                     >
                         <button className="delet"
@@ -132,67 +150,56 @@ const IlmiySaloxiyati = () => {
         },
     ];
 
-    useEffect(() => {
-            getIlmiySaloxiyat();
-    }, []);
-
-    function getIlmiySaloxiyat() {
-        axios.get(`${ApiName}/api/employee-student`, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            },
-            params: {
-                size: tableParams.pagination.pageSize,
-                page: tableParams.pagination.current > 0 ? tableParams.pagination.current - 1 : 0,
-                scientificLeadershipType: srcItem?.srcType,
-            }
-        }).then((response) => {
-            setTableParams({
-                ...tableParams,
-                pagination: {
-                    pageSize: response?.data?.data?.size,
-                    total: response?.data?.data?.totalElements
-                }
-            })
-            console.log(response?.data?.data?.content)
-            const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
-            setDataList(fetchedData);
-        }).catch((error) => {
-            if (error?.response?.data?.message==="Token yaroqsiz!"){
-                localStorage.removeItem("myInfo");
-
-                navigate('/')
-            }
-            console.log('API error:', error);
-        });
-    }
-
-    const handleDelete = (id) => {
-        axios.delete(`${ApiName}/api/employee-student/${id}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                console.log(response);
-                if (response?.data?.message === "Success") {
-                    message.success('Ma`lumot o`chirildi');
-                    getIlmiySaloxiyat();
-                }
-            })
-            .catch(error => {
-                message.error('Ma`lumot o`chirishda xatolik');
-            });
-    };
     const onEdit = (record) => {
         setEditingData(record);
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
+
     const handleCancel = () => {
         setOpen(false);
         setEditingData(null);
     };
+    useEffect(() => {
+        publication_List.refetch()
+    }, [srcItem]);
+    const onChangeDate = (value, dateString) => {
+        if (value === null) {
+            setSrcItem({
+                ...srcItem,
+                dataSrc: dateString
+            })
+            searchParams.delete('from');
+            searchParams.delete('to');
+            setSearchParams(searchParams, {replace: true});
+        } else {
+            setSrcItem({
+                ...srcItem,
+                dataSrc: dateString
+            })
+            setSearchParams((prevParams) => {
+                prevParams.set("from", dateString[0]);
+                return prevParams;
+            }, {replace: true});
+            setSearchParams((prevParams) => {
+                prevParams.set("to", dateString[1]);
+                return prevParams;
+            }, {replace: true});
+        }
+    };
+    function onChangeField(fieldKey, value) {
+        if (value === undefined) {
+            searchParams.delete(fieldKey);
+            setSearchParams(searchParams, {replace: true});
+            setSrcItem({...srcItem, [fieldKey]: null});
+        } else {
+            setSrcItem({...srcItem, [fieldKey]: value});
+            setSearchParams((prevParams) => {
+                prevParams.set(fieldKey, value);
+                return prevParams;
+            }, {replace: true});
+        }
+    }
+
     return (
         <div className='p-4'>
             <Modal
@@ -204,37 +211,52 @@ const IlmiySaloxiyati = () => {
                 style={{right: "-80px"}}
             >
                 <IlmiySaloxiyatModal editingData={editingData} handleCancel={handleCancel}
-                                     getIlmiySaloxiyat={getIlmiySaloxiyat}/>
+                                     getIlmiySaloxiyat123={()=> publication_List.refetch()}/>
             </Modal>
             <div className=' d-flex  align-items-center justify-content-between'>
-                <Form form={form} ref={formRef} colon={false}
+                <Form form={form}
                       layout="vertical"
-                      onFinish={() => getIlmiySaloxiyat()}
-                      className=' col-3 d-flex align-items-center gap-4'>
-
-                    <Form.Item layout="vertical" label="Ilmiy raxbarlik turi" name="scientificLeadershipType"
-                               labelCol={{span: 24}}
-                               wrapperCol={{span: 24}} className='col-12'>
-                        <Select name='scientificLeadershipType' onChange={(e) => {
-                            setSrcItem({
-                                ...srcItem,
-                                srcType: e
-                            })
-                        }}>
-                            <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'>
-                                Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird
-                            </Select.Option>
-                            <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'>
-                                Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird
-                            </Select.Option>
-                            <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'>
-                                Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird</Select.Option>
-                        </Select>
+                      ref={formRef}
+                      colon={false}
+                      className='d-flex align-items-center gap-4'
+                      fields={[
+                          {
+                              name: "srcDate",
+                              value: srcItem.dataSrc[0] && srcItem.dataSrc[1] ? [dayjs(srcItem.dataSrc[0], 'YYYY-MM-DD'), dayjs(srcItem.dataSrc[1], 'YYYY-MM-DD')] : null
+                          },
+                          {
+                              name: "srcType",
+                              value: srcItem?.srcType
+                          },
+                      ]}
+                >
+                    <Form.Item label="Mudatini belgilang" name="srcDate">
+                        <DatePicker.RangePicker
+                            allowClear size="large" style={{width: 250,}} name="srcDate"
+                            format="YYYY-MM-DD"
+                            onChange={onChangeDate}/>
                     </Form.Item>
-                    <Form.Item label='  '>
-                        <button className="btn btn-success" type="submit">
-                            <span className="button__text"><SearchOutlined /></span>
-                        </button>
+
+                    <Form.Item label="Ilmiy raxbarlik turi" name="srcType">
+                        <Select name="srcType" allowClear labelInValue style={{width: 250,}} placeholder='Ilmiy raxbarlik turi'
+                                options={[
+                                    {
+                                        label: 'Ilmiy raxbarligi ostida ximoya qilgan fan nomzodi shogird',
+                                        value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'
+                                    },
+                                    {
+                                        label: 'Ilmiy raxbarligi ostida ximoya qilgan falsafa doktori shogird',
+                                        value: 'Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'
+                                    },
+                                    {
+                                        label: 'Ilmiy raxbarligi ostida ximoya qilgan fan doktori shogird',
+                                        value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'
+                                    }
+                                ]}
+                                onChange={(value) => {
+                                    onChangeField('srcType', value?.value);
+                                }}
+                        />
                     </Form.Item>
                 </Form>
 
@@ -256,14 +278,26 @@ const IlmiySaloxiyati = () => {
 
             </div>
             <Table
+                rowKey="id"
                 columns={columns}
-                dataSource={dataList}
-                pagination={{
-                    pageSize: 50,
-                }}
-                scroll={{
-                    y: 660,
-                }}
+                dataSource={publication_List?.data}
+                loading={publication_List.isLoading}
+                scroll={{y: 550}}
+                pagination={
+                    {
+                        total: tableParams.pagination.total,
+                        pageSize: tableParams.pagination.pageSize,
+                        onChange: (page, pageSize) => {
+                            setTableParams({
+                                ...tableParams,
+                                pagination: {
+                                    pageSize: pageSize,
+                                    total: page
+                                }
+                            })
+                        }
+                    }
+                }
             />
         </div>
     )

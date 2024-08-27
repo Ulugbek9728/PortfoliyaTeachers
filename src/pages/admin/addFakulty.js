@@ -19,7 +19,9 @@ function AddFakulty(props) {
 
     const dekan_List = useQuery({
         queryKey: ['dekanlist'],
-        queryFn: () => getProfile('25',null,null,null).then(res => res.data?.data?.content)
+        queryFn: () => getProfile({
+            staffPosition: 25,
+        }).then(res => res.data?.data?.content)
     })
 
     const addFakulty = useMutation({

@@ -30,30 +30,6 @@ function IlmiyNashrlar(props) {
         setDateListe(dateString);
     };
 
-    const toggleActiveStatus = (record) => {
-        const newStatus = record.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        const requestData = {id: record.id, publicationStatus: newStatus};
-
-        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        }).then((response) => {
-
-            const updatedItem = response.data;
-            setDataList(dataList.map(item => item.id === record.id ? {
-                ...item,
-                publicationStatus: updatedItem.publicationStatus
-            } : item));
-            message.success('Publication status updated successfully');
-            getIlmiyNashir();
-        }).catch((error) => {
-            console.log('API error:', error.response ? error?.response?.data : error.message);
-            message.error('Failed to update publication status');
-        });
-    };
-
     const columns = [
         {
             title: '№',
@@ -122,16 +98,6 @@ function IlmiyNashrlar(props) {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
-        },
-        {
-            title: "So'rov Faol",
-            width: 150,
-            render: (text, record) => (
-                <Switch
-                    checked={record.publicationStatus === "ACTIVE"}
-                    onChange={() => toggleActiveStatus(record)}
-                />
-            )
         },
         {
             title: 'Harakatlar',

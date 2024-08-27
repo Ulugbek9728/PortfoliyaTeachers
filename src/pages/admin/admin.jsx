@@ -8,6 +8,7 @@ import AdminIlmiyNashirlar from "./admin_ilmiyNashirlar";
 import AddDepartment from "./AddDepartment";
 import AdminUslubiyNashir from "./adminUslubiyNashir";
 import AdminIntelektualMulk from "./adminIntelektualMulk";
+import AdminIlmiySaloxiyat from "./adminIlmiySaloxiyat";
 
 const { Sider, Content} = Layout;
 
@@ -72,8 +73,8 @@ function Admin(props) {
                             <Route path={"/2"} element={ <AddDepartment/>}/>
                             <Route path={"/3/*"} element={ <AdminIlmiyNashirlar/>}/>
                             <Route path={"/4/*"} element={ <AdminUslubiyNashir/>}/>
-                            <Route path={"/5"} element={ <AdminIntelektualMulk/>}/>
-                            {/*<Route path={"/5"} element={ <IlmiySaloxiyati/>}/>*/}
+                            <Route path={"/5/*"} element={ <AdminIntelektualMulk/>}/>
+                            <Route path={"/6/*"} element={ <AdminIlmiySaloxiyat/>}/>
                         </Routes>
                     </Content>
                 </Layout>

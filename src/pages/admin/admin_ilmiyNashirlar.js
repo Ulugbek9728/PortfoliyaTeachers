@@ -45,7 +45,11 @@ function AdminIlmiyNashirlar(props) {
     })
     const teacher_List = useQuery({
         queryKey: ['teacherList'],
-        queryFn: () => getProfile(null, srcItem?.faculty, srcItem?.department, srcItem?.query).then(res => res.data?.data?.content)
+        queryFn: () => getProfile({
+            facultyId:srcItem?.faculty,
+            departmentId:srcItem?.department,
+            query:srcItem?.query
+        }).then(res => res.data?.data?.content)
     })
 
     const publication_List = useQuery({
@@ -363,11 +367,6 @@ function AdminIlmiyNashirlar(props) {
                             }}
                     />
                 </Form.Item>
-                <Form.Item label=' '>
-                    <button className="btn btn-success " type="submit">
-                        <span className="button__text"><SearchOutlined/></span>
-                    </button>
-                </Form.Item>
             </Form>
 
             <div className="mt-4">
@@ -376,6 +375,8 @@ function AdminIlmiyNashirlar(props) {
                     columns={columns}
                     dataSource={publication_List?.data}
                     scroll={{y: 550}}
+                    loading={publication_List.isLoading}
+
                     pagination={
                         {
                             total: tableParams.pagination.total,

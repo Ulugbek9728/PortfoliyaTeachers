@@ -65,7 +65,9 @@ function Profile(props) {
                 </Sider>
                 <Layout>
                     <Content style={{
-                        width: "100%", overflow: 'initial', background: "#e5e9f4"
+                        width: "100%",
+                        overflow: 'initial',
+                        background: "#e5e9f4"
                     }}>
                         <Routes>
                             <Route path={"/1"} element={ <TeacherRating/>}/>

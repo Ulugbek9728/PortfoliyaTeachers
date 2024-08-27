@@ -23,7 +23,7 @@ function AddDepartment(props) {
 
     const User_List = useQuery({
         queryKey: ['Userlist'],
-        queryFn: () => getProfile(null,null,null,null).then(res => res.data?.data?.content)
+        queryFn: () => getProfile().then(res => res.data?.data?.content)
     })
 
     const addDepartment = useMutation({

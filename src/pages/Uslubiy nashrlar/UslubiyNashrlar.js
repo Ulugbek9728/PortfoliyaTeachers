@@ -13,7 +13,6 @@ import { useEffect } from 'react';
 import {useNavigate} from "react-router-dom";
 const UslubiyNashrlar = () => {
     const navigate = useNavigate();
-
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -85,16 +84,6 @@ const UslubiyNashrlar = () => {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
-        },
-        {
-            title: "So'rov Faol",
-            width: 150,
-            render: (text, record) => (
-                <Switch
-                    checked={record.publicationStatus === "ACTIVE"}
-                    onChange={() => toggleActiveStatus(record)}
-                />
-            )
         },
         {
             title: 'Harakatlar',
@@ -226,29 +215,6 @@ const UslubiyNashrlar = () => {
         });
     }    
 
-    const toggleActiveStatus = (record) => {
-        const newStatus = record?.publicationStatus === "ACTIVE" ? "NOT_ACTIVE" : "ACTIVE";
-        const requestData = { id: record?.id, publicationStatus: newStatus };
-
-        console.log('Request data:', requestData);
-
-        axios.put(`${ApiName}/api/publication/update_status`, requestData, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        }).then((response) => {
-            console.log('API response:', response?.data);
-
-            const updatedItem = response?.data;
-            setDataList(dataList.map(item => item.id === record.id ? { ...item, publicationStatus: updatedItem.publicationStatus } : item));
-            message.success('Publication status updated successfully');
-            getIlmiyNashir(1, tableParams.pagination.total);
-        }).catch((error) => {
-            console.log('API error:', error.response ? error?.response?.data : error.message);
-            message.error('Failed to update publication status');
-        });
-    };
     const handleCancel = () => {
         setOpen(false);
         setEditingData(null);

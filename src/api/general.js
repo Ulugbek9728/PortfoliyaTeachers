@@ -43,3 +43,7 @@ export const getIlmiyNashir = (publicationName,fromlocalDate, tolocalDate, type,
         // size:'',
     }
 });
+
+export const fetchCurrentUser = () => getInstance().get(`/api/profile/current`);
+
+export const profileUpdate = (data) => getInstance().put(`/api/profile/update`, data);

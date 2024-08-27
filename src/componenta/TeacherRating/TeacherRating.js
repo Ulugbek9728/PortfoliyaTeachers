@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState,useRef} from 'react';
 import './teacherRating.css';
 import {EditOutlined, UploadOutlined, CloseSquareOutlined} from '@ant-design/icons';
-import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal} from 'antd';
+import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal, notification} from 'antd';
 import {ApiName} from "../../api/APIname";
 import axios from 'axios';
 import {useNavigate} from "react-router-dom";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { useQuery } from 'react-query';
-import {ClassifairGet} from "../../api/general";
+import { useMutation, useQuery } from 'react-query';
+import {ClassifairGet, fetchCurrentUser,profileUpdate} from "../../api/general";
 dayjs.extend(customParseFormat);
 
 const defaultDatabaseProfiles = [
@@ -51,7 +51,6 @@ const defaultDatabaseProfiles = [
 const TeacherRating = () => {
     const navigate = useNavigate();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-    const [getFullInfo, setGetFullInfo] = useState(null);
     const [data, setData] = useState({
         profileId: fulInfo?.id,
         specialist: {
@@ -84,39 +83,68 @@ const TeacherRating = () => {
         }
 
     });
+    const formRef = useRef(null);
+    const [form] = Form.useForm();
     const [edite, setEdite] = useState(false);
     const [radio, setRadio] = useState(false);
     const [radio2, setRadio2] = useState(data.isTop1000);
 
-    useEffect(() => {
+    const getFullInfo = useQuery({
+        queryKey:['get_full_info'],
+        queryFn:()=> fetchCurrentUser()
+    
+        .then(res=>{
+            console.log(res.data);
+           const item = res?.data?.data;
+            return {
+                ...item,
+                specialist: {
+                    ...item.specialist,
+                    attach: JSON.parse(item?.specialist?.attach)
+                },
+                scientificTitle:{
+                  ...item.scientificTitle,
+                  attach: JSON.parse(item?.scientificTitle?.attach)
+                },
+                scientificDegree:{
+                 ...item.scientificDegree,
+                 attach: JSON.parse(item?.scientificDegree?.attach)
+                },
+                profileStateAwardDTO:{
+                ...item.profileStateAwardDTO,
+                attach: JSON.parse(item?.profileStateAwardDTO?.attach)
+                }
+            }
+        })
+    })
 
+    useEffect(() => {
         if (edite) {
+            const userData = getFullInfo?.data;
             setData({
                 profileId: fulInfo?.id,
-                specialist: getFullInfo?.specialist,
-                scientificTitle: getFullInfo?.scientificTitle,
-                scientificDegree: getFullInfo?.scientificDegree,
-                isTop1000: getFullInfo?.isTop1000,
-                profileTop1000: getFullInfo?.profileTop1000,
-                profileStateAwardDTO: getFullInfo?.profileStateAwardDTO,
+                specialist: userData?.specialist,
+                scientificTitle: userData?.scientificTitle,
+                scientificDegree: userData?.scientificDegree,
+                isTop1000: userData?.isTop1000,
+                profileTop1000: userData?.profileTop1000,
+                profileStateAwardDTO:userData?.profileStateAwardDTO,
                 databaseProfiles: data.databaseProfiles
             });
-            setRadio(!!getFullInfo?.scientificDegree?.name);
-            setRadio2(getFullInfo?.isTop1000 || false);
+            setRadio(!!userData?.scientificDegree?.name);
+            setRadio2(userData?.isTop1000 || false);
         }
-    }, [edite, getFullInfo]);
-    console.log(getFullInfo)
+    }, [edite]);
 
     useEffect(() => {
         return()=>{
-            fetchCurrentUser();
             getprofilLink()
         }
 
     }, []);
 
     const scientificTitle = useQuery({
-        queryKey: ['Ilmiy_unvon_nomi'],
+      queryKey: ['Ilmiy_unvon_nomi'],
       queryFn:()=>ClassifairGet('h_academic_rank').then(res=>res.data[0])
     })
     const scientificDegree = useQuery({
@@ -124,67 +152,6 @@ const TeacherRating = () => {
       queryFn:()=>ClassifairGet('h_academic_degree').then(res=>res.data[0])
     })
 
-    const fetchCurrentUser = async () => {
-        try {
-            const response = await axios.get(`${ApiName}/api/profile/current`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            });
-
-            if (response.data.isSuccess === true) {
-                setGetFullInfo({
-                    ...getFullInfo,
-                    firstName: response.data?.data.firstName,
-                    fullName: response.data?.data.fullName,
-                    secondName: response.data?.data.secondName,
-                    shortName: response.data?.data.shortName,
-                    thirdName: response.data?.data.thirdName,
-                    imageUrl: response.data?.data.imageUrl,
-                    isTop1000: response.data?.data.isTop1000,
-                    profileId: response.data?.data.profileId,
-                    profileStateAwardDTO: {
-                        attach: JSON.parse(response.data.data.profileStateAwardDTO.attach),
-                        date: response.data?.data.profileStateAwardDTO.date,
-                        nameStateAward: response.data?.data.profileStateAwardDTO.nameStateAward
-                    },
-                    profileTop1000: {
-                        country: response.data?.data.profileTop1000.country,
-                        university: response.data?.data.profileTop1000.university,
-                    },
-                    roles: response.data?.data.roles,
-                    scientificDegree: {
-                        attach: JSON.parse(response.data?.data.scientificDegree.attach),
-                        date: response.data?.data.scientificDegree.date,
-                        name: response.data?.data.scientificDegree.name,
-                        number: response.data?.data.scientificDegree.number,
-                    },
-                    scientificTitle: {
-                        attach: JSON.parse(response.data?.data.scientificTitle.attach),
-                        date: response.data?.data.scientificTitle.date,
-                        name: response.data?.data.scientificTitle.name,
-                        number: response.data?.data.scientificTitle.number,
-                    },
-                    specialist: {
-                        attach: JSON.parse(response.data?.data.specialist.attach),
-                        date: response.data?.data.specialist.date,
-                        name: response.data?.data.specialist.name,
-                        number: response.data?.data.specialist.number,
-                    }
-
-                });
-
-            }
-        } catch (error) {
-            if (error.response?.data?.message==="Token yaroqsiz!"){
-                localStorage.removeItem("myInfo");
-
-                navigate('/')
-            }
-            console.log('Xatolik yuz berdi:', error);
-        }
-    };
 
     function getprofilLink() {
         axios.get(`${ApiName}/api/author-profile/current`, {
@@ -193,7 +160,6 @@ const TeacherRating = () => {
                 Authorization: `Bearer ${fulInfo?.accessToken}`,
             }
         }).then(res => {
-
             const resDatabaseType = res.data.data;
             setData({
                 ...data,
@@ -323,46 +289,46 @@ const TeacherRating = () => {
         }));
     };
 
-    const handleSubmit = () => {
-        axios.put(`${ApiName}/api/profile/update`,
-            {
-                ...data,
-                specialist: {
-                    ...data.specialist,
-                    attach: JSON.stringify(data.specialist.attach)
-                },
-                scientificTitle: {
-                    ...data.scientificTitle,
-                    attach: JSON.stringify(data.scientificTitle?.attach)
-                },
-                scientificDegree: {
-                    ...data.scientificDegree,
-                    attach: JSON.stringify(data.scientificDegree?.attach)
-                },
-                profileStateAwardDTO: {
-                    ...data.profileStateAwardDTO,
-                    attach: JSON.stringify(data.profileStateAwardDTO?.attach)
-                },
-                profileTop1000: {
-                    ...data.profileTop1000,
-                },
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            .then(response => {
-                message.success('Form submitted successfully');
-                setEdite(false);
-                fetchCurrentUser();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                message.error('Error submitting form');
-            });
-    };
+ const addProfileInfo = useMutation({
+
+  mutationFn:(data) => profileUpdate({
+    ...data,
+    specialist: {
+        ...data.specialist,
+        attach: JSON.stringify(data.specialist.attach)
+    },
+    scientificTitle: {
+        ...data.scientificTitle,
+        attach: JSON.stringify(data.scientificTitle?.attach)
+    },
+    scientificDegree: {
+        ...data.scientificDegree,
+        attach: JSON.stringify(data.scientificDegree?.attach)
+    },
+    profileStateAwardDTO: {
+        ...data.profileStateAwardDTO,
+        attach: JSON.stringify(data.profileStateAwardDTO?.attach)
+    },
+    profileTop1000: {
+        ...data.profileTop1000,
+    },
+  }),
+  onSuccess: () => {
+    getFullInfo.refetch()
+    notification.success({
+       message:'malumot qoshildi'
+    })
+    form.resetFields()
+    setEdite(false)
+  },
+  onError: () => {
+    notification.error({
+        message: "fakultet eror",
+        duration: 1,
+        placement: 'top'
+    })
+  }
+})
 
     const handleRadioChange = (e) => {
         const {value} = e.target;
@@ -439,19 +405,18 @@ const TeacherRating = () => {
         }
     }
 
-
     return (
         <>
 
             {edite ?
-                <div className="TeacherRating"
-                >
+                <div className="TeacherRating">
                     <div className="d-flex justify-content-end">
                         <button className='btn btn-danger' style={{height: 50}} onClick={() => {
                             setEdite(false)
                         }}><CloseSquareOutlined/></button>
                     </div>
-                    <Form onFinish={handleSubmit} 
+                    <Form
+                        onFinish={(e) => addProfileInfo.mutate(data)} 
                           labelAlign="left" 
                           layout="vertical" 
                           colon={false}
@@ -542,7 +507,9 @@ const TeacherRating = () => {
                                   value: data.profileTop1000?.university
                               },
                           ]}
-                          style={{maxWidth: '100%'}}>
+                          form={form} 
+                          ref={formRef}
+                        style={{maxWidth: '100%'}}>
                         <div className="d-flex gap-5 labelForm">
                             <div style={{width: '33%'}}>
                                 <Form.Item label={<p className='labelForm'>Mutaxassislik nomi</p>}
@@ -818,22 +785,22 @@ const TeacherRating = () => {
                                 <div className='col-4 card p-4'>
                                     <div className=''>
                                         <b>Mutaxasislik nomi</b>
-                                        <p> {getFullInfo?.specialist?.name}</p>
+                                        <p> {getFullInfo?.data?.specialist?.name}</p>
                                     </div>
                                     <div className=''>
                                         <b>Diplom sanasi</b>
-                                        <p> {getFullInfo?.specialist?.date}</p>
+                                        <p> {getFullInfo?.data?.specialist?.date}</p>
                                     </div>
                                     <div>
                                         <b>Diplom raqami</b>
-                                        <p> {getFullInfo?.specialist?.number}</p>
+                                        <p> {getFullInfo?.data?.specialist?.number}</p>
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
                                         {
-                                            getFullInfo?.specialist?.attach != null ?
-                                                <a href={getFullInfo?.specialist?.attach?.url}
-                                                   target={"_blank"}>{getFullInfo?.specialist?.attach?.fileName}</a>
+                                            getFullInfo?.data?.specialist?.attach != null ?
+                                                <a href={getFullInfo?.data?.specialist?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.data?.specialist?.attach?.fileName}</a>
                                                 :
                                                 ''
                                         }
@@ -843,22 +810,22 @@ const TeacherRating = () => {
                                 <div className='col-4 card p-4'>
                                     <div className=''>
                                         <b>Ilmiy unvon nomi</b>
-                                        <p> {getFullInfo?.scientificTitle?.name}</p>
+                                        <p> {getFullInfo?.data?.scientificTitle?.name}</p>
                                     </div>
                                     <div className=''>
                                         <b>Diplom sanasi</b>
-                                        <p> {getFullInfo?.scientificTitle?.date}</p>
+                                        <p> {getFullInfo?.data?.scientificTitle?.date}</p>
                                     </div>
                                     <div className=''>
                                         <b>Diplom raqami</b>
-                                        <p> {getFullInfo?.scientificTitle?.number}</p>
+                                        <p> {getFullInfo?.data?.scientificTitle?.number}</p>
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
                                         {
-                                            getFullInfo?.scientificTitle?.attach != null ?
-                                                <a href={getFullInfo?.scientificTitle?.attach?.url}
-                                                   target={"_blank"}>{getFullInfo?.scientificTitle?.attach?.fileName}</a>
+                                            getFullInfo?.data?.scientificTitle?.attach != null ?
+                                                <a href={getFullInfo?.data?.scientificTitle?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.data?.scientificTitle?.attach?.fileName}</a>
                                                 :
                                                 ''
                                         }
@@ -869,30 +836,30 @@ const TeacherRating = () => {
                                 <div className='col-4 card p-4'>
                                     <div className=''>
                                         <b>Ilmiy daraja nomi</b>
-                                        <p> {getFullInfo?.scientificDegree?.name}</p>
+                                        <p> {getFullInfo?.data?.scientificDegree?.name}</p>
                                     </div>
                                     <div className=''>
                                         <b>Davlati</b>
-                                        <p> {getFullInfo?.profileTop1000?.country}</p>
+                                        <p> {getFullInfo?.data?.profileTop1000?.country}</p>
                                     </div>
                                     <div className=''>
                                         <b>Universituti</b>
-                                        <p> {getFullInfo?.profileTop1000?.university}</p>
+                                        <p> {getFullInfo?.data?.profileTop1000?.university}</p>
                                     </div>
                                     <div className=''>
                                         <b>Diplom sanasi</b>
-                                        <p> {getFullInfo?.scientificDegree?.date}</p>
+                                        <p> {getFullInfo?.data?.scientificDegree?.date}</p>
                                     </div>
                                     <div className=''>
                                         <b>Diplom raqami</b>
-                                        <p> {getFullInfo?.scientificDegree?.number}</p>
+                                        <p> {getFullInfo?.data?.scientificDegree?.number}</p>
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
                                         {
-                                            getFullInfo?.scientificDegree?.attach != null ?
-                                                <a href={getFullInfo?.scientificDegree?.attach?.url}
-                                                   target={"_blank"}>{getFullInfo?.scientificDegree?.attach?.fileName}</a>
+                                            getFullInfo?.data?.scientificDegree?.attach != null ?
+                                                <a href={getFullInfo?.data?.scientificDegree?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.data?.scientificDegree?.attach?.fileName}</a>
                                                 :
                                                 ''
                                         }
@@ -902,18 +869,18 @@ const TeacherRating = () => {
                                 <div className='col-4 card p-4'>
                                     <div>
                                         <b>Davlat mukofoti nomi</b>
-                                        <p> {getFullInfo?.profileStateAwardDTO?.nameStateAward}</p>
+                                        <p> {getFullInfo?.data?.profileStateAwardDTO?.nameStateAward}</p>
                                     </div>
                                     <div>
                                         <b>Davlat mukofotini olgan sanasi</b>
-                                        <p> {getFullInfo?.profileStateAwardDTO?.date}</p>
+                                        <p> {getFullInfo?.data?.profileStateAwardDTO?.date}</p>
                                     </div>
                                     <div>
                                         <b>Diplom</b> <br/>
                                         {
-                                            getFullInfo?.profileStateAwardDTO?.attach != null ?
-                                                <a href={getFullInfo?.profileStateAwardDTO?.attach?.url}
-                                                   target={"_blank"}>{getFullInfo?.profileStateAwardDTO?.attach?.fileName}</a>
+                                            getFullInfo?.data?.profileStateAwardDTO?.attach != null ?
+                                                <a href={getFullInfo?.data?.profileStateAwardDTO?.attach?.url}
+                                                   target={"_blank"}>{getFullInfo?.data?.profileStateAwardDTO?.attach?.fileName}</a>
                                                 :
                                                 ''
                                         }

@@ -247,15 +247,15 @@ function IlmiyNashrlar(props) {
             setTableParams({
                 ...tableParams,
                 pagination: {
-                    pageSize: response.data.data.size,
-                    total: response.data.data.totalElements
+                    pageSize: response?.data?.data?.size,
+                    total: response?.data?.data?.totalElements
                 }
             })
             const fetchedData = response?.data?.data?.content.map(item => ({...item, key:item.id}));
             setDataList(fetchedData);
         }).catch((error) => {
             console.log('API error:', error);
-            if (error.response.data.message==="Token yaroqsiz!"){
+            if (error.response?.data?.message==="Token yaroqsiz!"){
                 localStorage.removeItem("myInfo");
                 navigate('/')
             }

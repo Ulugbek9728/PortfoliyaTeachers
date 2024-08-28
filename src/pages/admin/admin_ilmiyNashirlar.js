@@ -1,26 +1,30 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table} from "antd";
-import {SearchOutlined} from "@ant-design/icons";
+import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input } from "antd";
+import {MenuFoldOutlined, CheckOutlined, CloseOutlined} from "@ant-design/icons";
 import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile} from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
 import {useQuery} from "react-query";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
+const { TextArea } = Input;
 dayjs.extend(customParseFormat);
 
 function AdminIlmiyNashirlar(props) {
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
+    const [form2] = Form.useForm();
+    const [form3] = Form.useForm();
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
         faculty: searchParams.get('faculty') || null,
         department: searchParams.get('department') || null,
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,
+        srcDatabase: searchParams.get('srcDatabase') || null,
+        scientificField: searchParams.get('scientificField') || null,
     });
-
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 0,
@@ -28,6 +32,8 @@ function AdminIlmiyNashirlar(props) {
             total: 10
         },
     });
+    const [open, setOpen] = useState(false);
+    const [open1, setOpen1] = useState(false);
 
     const Scientificpublication = useQuery({
         queryKey: ['Ilmiy_nashr_turi'],
@@ -46,12 +52,11 @@ function AdminIlmiyNashirlar(props) {
     const teacher_List = useQuery({
         queryKey: ['teacherList'],
         queryFn: () => getProfile({
-            facultyId:srcItem?.faculty,
-            departmentId:srcItem?.department,
-            query:srcItem?.query
+            facultyId: srcItem?.faculty,
+            departmentId: srcItem?.department,
+            query: srcItem?.query
         }).then(res => res.data?.data?.content)
     })
-
     const publication_List = useQuery({
         queryKey: ['publicationList'],
         queryFn: () => getIlmiyNashir({
@@ -65,6 +70,15 @@ function AdminIlmiyNashirlar(props) {
         }).then(res => res?.data?.data?.content)
     })
 
+    const Xalqaro = useQuery({
+        queryKey: ['h_publication_database'],
+        queryFn: () => ClassifairGet('h_publication_database').then(res => res.data[0])
+    })
+    const IlmFan = useQuery({
+        queryKey: ['h_science_branch'],
+        queryFn: () => ClassifairGet('h_science_branch').then(
+            res => res.data[0]?.options?.filter(item => item?.code?.endsWith('00.00')))
+    })
     const onChangeDate = (value, dateString) => {
         if (value === null) {
             setSrcItem({
@@ -170,83 +184,55 @@ function AdminIlmiyNashirlar(props) {
             width: 150
         },
         {
-            title: 'Tekshirish',
-            dataIndex: 'address',
-            width: 100
+            title: "Status",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    // checked={record.publicationStatus === "ACTIVE"}
+                    // onChange={() => toggleActiveStatus(record)}
+                />
+            )
+
         },
-        // {
-        //     title: "So'rov Faol",
-        //     width: 150,
-        //     render: (text, record) => (
-        //         <Switch
-        //             checked={record.publicationStatus === "ACTIVE"}
-        //             onChange={() => toggleActiveStatus(record)}
-        //         />
-        //     )
-        // },
-        // {
-        //     title: 'Harakatlar',
-        //     width: 100,
-        //     render: (text, record) => (
-        //         <Space size="middle">
-        //             <button type="primary" className='editBtn'
-        //                     style={{"minWidth": '30px'}}
-        //                     onClick={() => onEdit(record)}
-        //             >
-        //                 <svg height="1em" viewBox="0 0 512 512">
-        //                     <path
-        //                         d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"
-        //                     ></path>
-        //                 </svg>
-        //             </button>
-        //             <Popconfirm title="Ilmiy nashirni o'chirish"
-        //                         description="Ilmiy nashirni o'chirishni tasdiqlaysizmi?"
-        //                         onConfirm={(e) => handleDelete(record.id)}
-        //                         okText="Ha" cancelText="Yo'q"
-        //             >
-        //                 <button className="delet"
-        //                 >
-        //                     <svg
-        //                         className="bin-top"
-        //                         viewBox="0 0 39 7"
-        //                         fill="none"
-        //                         xmlns="http://www.w3.org/2000/svg"
-        //                     >
-        //                         <line y1="5" x2="39" y2="5" stroke="white" strokeWidth="4"></line>
-        //                         <line
-        //                             x1="12"
-        //                             y1="1.5"
-        //                             x2="26.0357"
-        //                             y2="1.5"
-        //                             stroke="white"
-        //                             strokeWidth="3"
-        //                         ></line>
-        //                     </svg>
-        //                     <svg
-        //                         className="bin-bottom"
-        //                         viewBox="0 0 33 39"
-        //                         fill="none"
-        //                         xmlns="http://www.w3.org/2000/svg"
-        //                     >
-        //                         <mask id="path-1-inside-1_8_19" fill="white">
-        //                             <path
-        //                                 d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
-        //                             ></path>
-        //                         </mask>
-        //                         <path
-        //                             d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-        //                             fill="white"
-        //                             mask="url(#path-1-inside-1_8_19)"
-        //                         ></path>
-        //                         <path d="M12 6L12 29" stroke="white" strokeWidth="4"></path>
-        //                         <path d="M21 6V29" stroke="white" strokeWidth="4"></path>
-        //                     </svg>
-        //                 </button>
-        //             </Popconfirm>
-        //
-        //         </Space>
-        //     ),
-        // },
+        {
+            title: "1030",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    // checked={record.publicationStatus === "ACTIVE"}
+                    // onChange={() => toggleActiveStatus(record)}
+                />
+            )
+        },
+        {
+            title: "KPI",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    // checked={record.publicationStatus === "ACTIVE"}
+                    // onChange={() => toggleActiveStatus(record)}
+                />
+            )
+        },
+        {
+            title: 'Rad etish',
+            width: 100,
+            render: (text, record) => (
+
+                    <button type="primary" className='btn btn-danger'
+                            style={{"minWidth": '30px'}}
+                            onClick={()=>setOpen1(true)}
+                    >
+                        <CloseOutlined />
+                    </button>
+            ),
+        },
     ];
 
     function onChangeField(fieldKey, value) {
@@ -263,12 +249,17 @@ function AdminIlmiyNashirlar(props) {
         }
     }
 
+    function onChangeFieldClear(fieldKey) {
+        searchParams.delete(fieldKey);
+        setSearchParams(searchParams, {replace: true});
+        setSrcItem({...srcItem, [fieldKey]: null});
+    }
+
     return (
         <div>
             <Form form={form}
                   layout="vertical"
                   ref={formRef}
-                  colon={false}
                   className='d-flex align-items-center gap-4'
                   fields={[
                       {
@@ -287,10 +278,7 @@ function AdminIlmiyNashirlar(props) {
                           name: "srcPerson",
                           value: srcItem?.employeeId
                       },
-                      {
-                          name: "srcType",
-                          value: srcItem?.srcType
-                      },
+
                   ]}
             >
                 <Form.Item label="Mudatini belgilang" name="srcDate">
@@ -300,7 +288,6 @@ function AdminIlmiyNashirlar(props) {
                         onChange={onChangeDate}/>
                 </Form.Item>
                 <Form.Item name="facultyId"
-                           rules={[{required: true, message: 'Fakultetni tanlang'}]}
                            label="Fakultetni tanlang"
                 >
                     <Select style={{width: 250,}}
@@ -318,12 +305,6 @@ function AdminIlmiyNashirlar(props) {
                 </Form.Item>
                 <Form.Item
                     name="kafedraId"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Kafedrani tanlang'
-                        }
-                    ]}
                     label="Kafedrani tanlang"
                 >
                     <Select style={{width: 250,}}
@@ -339,7 +320,6 @@ function AdminIlmiyNashirlar(props) {
                     />
 
                 </Form.Item>
-
                 <Form.Item label="O'qituvchini tanlang" name="srcPerson">
                     <Select style={{width: 250,}}
                             showSearch
@@ -355,26 +335,178 @@ function AdminIlmiyNashirlar(props) {
                             ))}
                     />
                 </Form.Item>
-
-                <Form.Item label="Ilmiy nashr turi" name="srcType">
-                    <Select name="srcType" labelInValue style={{width: 250,}} placeholder='Ilmiy nashr turi'
-                            options={Scientificpublication?.data?.options.map(item => ({
-                                label: item.name,
-                                value: item.code
-                            }))}
+                <Form.Item label="Status" name="srcPerson">
+                    <Select style={{width: 250,}}
+                            showSearch
+                            allowClear
+                            name='srcPerson'
+                            placeholder="O'qituvchi"
                             onChange={(value) => {
-                                onChangeField('srcType', value?.value);
+                                onChangeField('employeeId', value);
                             }}
+                            onSearch={onSearch}
+                            options={teacher_List?.data?.map((item, index) => (
+                                {value: item.id, label: item.fullName, key: item.id}
+                            ))}
                     />
                 </Form.Item>
+                <div className="d-flex justify-content-between align-items-center">
+                    <Form.Item
+                        label="1030"
+                        name="1030"
+                    >
+                        <Switch name='1030'
+                                checkedChildren={<CheckOutlined/>}
+                                unCheckedChildren={<CloseOutlined/>}/>
+
+                    </Form.Item>
+                    <Form.Item
+                        label="KPI"
+                        name="kpi"
+                    >
+                        <Switch name='kpi'
+                                checkedChildren={<CheckOutlined/>}
+                                unCheckedChildren={<CloseOutlined/>}/>
+
+                    </Form.Item>
+                </div>
+                <Form.Item label=' '>
+                    <button className='btn btn-primary' onClick={()=>setOpen(true)}>
+                        <MenuFoldOutlined/>
+                    </button>
+                </Form.Item>
             </Form>
+
+            <Form className='d-flex align-items-center gap-4'
+                  layout="vertical"
+                  ref={formRef}
+                  colon={false}>
+                {
+                    srcItem?.srcType ? <Form.Item label='Ilmiy nashr turi'>
+                        <Tag bordered={false} name='122' color="processing" closable
+                             onClose={(e) => onChangeFieldClear("srcType")}
+                        >
+                            {
+                                Scientificpublication?.data?.options?.filter((item) => item?.code === srcItem?.srcType)[0].name
+                            }
+                        </Tag>
+                    </Form.Item> : ''
+                }
+                {
+                    srcItem?.srcDatabase ? <Form.Item label='Xalqaro ilmiy baza'>
+                        <Tag bordered={false} color="processing" closable
+                             onClose={(e) => onChangeFieldClear("srcDatabase")}
+                        >
+                            {
+                                Xalqaro?.data?.options?.filter((item) => item?.code === srcItem?.srcDatabase)[0].name
+                            }
+                        </Tag>
+                    </Form.Item> : ''
+                }
+                {
+                    srcItem?.scientificField ? <Form.Item label='Ilm-fan sohasi'>
+                        <Tag bordered={false} color="processing" closable
+                             onClose={(e) => onChangeFieldClear("scientificField")}
+                        >
+                            {
+                                IlmFan?.data?.filter((item) => item?.code === srcItem?.scientificField)[0].name
+                            }
+                        </Tag>
+                    </Form.Item> : ''
+                }
+
+            </Form>
+
+            <Drawer title="Filter" onClose={()=>setOpen(false)} open={open}>
+                <Form form={form2}
+                      layout="vertical"
+                      ref={formRef}
+                      fields={[
+                          {
+                              name: "srcType",
+                              value: srcItem?.srcType
+                          },
+                          {
+                              name: "srcDatabase",
+                              value: srcItem?.srcDatabase
+                          },
+                          {
+                              name: "scientificField",
+                              value: srcItem.scientificField
+                          }
+                      ]}
+                >
+                    <Form.Item
+                        label="Ilmiy nashr turi"
+                        name="srcType">
+                        <Select value={srcItem?.srcType} name="srcType" allowClear
+                                placeholder='Ilmiy nashr turi'
+                                options={Scientificpublication?.data?.options.map(item => ({
+                                    label: item?.name,
+                                    value: item?.code
+                                }))}
+                                onChange={(value) => {
+                                    onChangeField('srcType', value);
+                                }}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label="Xalqaro ilmiy bazalar"
+                        name="srcDatabase"
+                    >
+                        <Select name="srcDatabase" allowClear
+                                placeholder='Xalqaro ilmiy bazalar'
+                                options={Xalqaro?.data?.options?.map(item => ({
+                                    label: item.name,
+                                    value: item.code
+                                }))}
+                                onChange={(value) =>
+                                    onChangeField('srcDatabase', value)}>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item
+                        label="Ilm-fan sohasi"
+                        name="scientificField"
+                    >
+                        <Select name="scientificField" allowClear
+                                placeholder='Ilm-fan sohasi'
+                                options={IlmFan?.data?.map(item => ({label: item.name, value: item.code}))}
+                                onChange={(value) => onChangeField("scientificField", value)}>
+                        </Select>
+                    </Form.Item>
+
+                </Form>
+            </Drawer>
+            <Drawer title="Rad etish" onClose={()=>setOpen1(false)} open={open1}>
+                <div className="">
+                    <p>123</p>
+                    <p>456</p>
+                    <p>789</p>
+                </div>
+              <Form
+                  form={form3}
+                  layout="vertical"
+                  ref={formRef} className="d-flex align-items-center justify-content-between"
+                  onFinish={(e)=>console.log(e)}
+              >
+                  <Form.Item name='izox'>
+                      <TextArea placeholder="Rad etishga izox yozing" allowClear style={{height: 100, width:250, resize: 'none',}}/>
+                  </Form.Item>
+                  <Form.Item>
+                      <button className="btn btn-success">
+                          <CheckOutlined />
+                      </button>
+                  </Form.Item>
+
+              </Form>
+            </Drawer>
 
             <div className="mt-4">
                 <Table
                     rowKey="id"
                     columns={columns}
                     dataSource={publication_List?.data}
-                    scroll={{y: 550}}
+                    // scroll={{y: 550}}
                     loading={publication_List.isLoading}
 
                     pagination={

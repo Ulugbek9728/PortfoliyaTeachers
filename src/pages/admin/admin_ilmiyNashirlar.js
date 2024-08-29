@@ -1,13 +1,20 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input } from "antd";
+import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification} from "antd";
 import {MenuFoldOutlined, CheckOutlined, CloseOutlined} from "@ant-design/icons";
-import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile} from "../../api/general";
+import {
+    ClassifairGet,
+    getFaculty,
+    getIlmiyNashir,
+    getProfile,
+    ToglActiveStatus,
+    ToglActiveStatusKPIand1030
+} from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
-const { TextArea } = Input;
+const {TextArea} = Input;
 dayjs.extend(customParseFormat);
 
 function AdminIlmiyNashirlar(props) {
@@ -22,8 +29,11 @@ function AdminIlmiyNashirlar(props) {
         department: searchParams.get('department') || null,
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,
-        srcDatabase: searchParams.get('srcDatabase') || null,
+        publicationDatabase: searchParams.get('publicationDatabase') || null,
         scientificField: searchParams.get('scientificField') || null,
+        status: searchParams.get('status') || null,
+        kpi: searchParams.get('kpi') || null,
+        rule1030: searchParams.get('rule1030') || null,
     });
     const [tableParams, setTableParams] = useState({
         pagination: {
@@ -67,18 +77,69 @@ function AdminIlmiyNashirlar(props) {
             scientificPublicationType: srcItem?.srcType,
             facultyId: srcItem?.faculty,
             departmentId: srcItem?.department,
+            status: srcItem?.status,
+            kpi: srcItem?.kpi,
+            rule1030: srcItem?.rule1030,
+            publicationDatabase: srcItem?.publicationDatabase,
+            scientificField: srcItem?.scientificField
         }).then(res => res?.data?.data?.content)
     })
-
     const Xalqaro = useQuery({
         queryKey: ['h_publication_database'],
         queryFn: () => ClassifairGet('h_publication_database').then(res => res.data[0])
     })
+
     const IlmFan = useQuery({
         queryKey: ['h_science_branch'],
         queryFn: () => ClassifairGet('h_science_branch').then(
             res => res.data[0]?.options?.filter(item => item?.code?.endsWith('00.00')))
     })
+
+    const KPIand1030 = useMutation({
+        mutationFn: (e) => {
+            let newStatus1030
+            let newStatusKPI
+            if (e?.key === "1030") {
+                newStatus1030 = !e?.record?.rule1030;
+                newStatusKPI = e?.record?.kpi
+            } else {
+                newStatusKPI = !e?.record?.kpi;
+                newStatus1030 = e?.record?.rule1030;
+            }
+            ToglActiveStatusKPIand1030({
+                publicationId: e?.record?.id,
+                kpi: newStatusKPI,
+                rule1030: newStatus1030
+            })
+        },
+        onSuccess: () => {
+            notification.success({
+                message: "Status o'zgardi"
+            })
+            setSrcItem({...srcItem})
+        }
+
+    })
+
+    const Status = useMutation({
+        mutationFn: (e) => {
+            console.log(e)
+            let newStatus = e?.publicationStatus === "NOT_ACTIVE" ? "ACCEPTED" : "NOT_ACTIVE";
+
+            ToglActiveStatus({
+                id: e?.id,
+                publicationStatus: newStatus
+            })
+        },
+        onSuccess: () => {
+            notification.success({
+                message: "Status o'zgardi"
+            })
+            setSrcItem({...srcItem})
+        }
+
+    })
+
     const onChangeDate = (value, dateString) => {
         if (value === null) {
             setSrcItem({
@@ -183,6 +244,7 @@ function AdminIlmiyNashirlar(props) {
             dataIndex: 'decisionScientificCouncil',
             width: 150
         },
+
         {
             title: "Status",
             width: 80,
@@ -190,8 +252,8 @@ function AdminIlmiyNashirlar(props) {
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
-                    // checked={record.publicationStatus === "ACTIVE"}
-                    // onChange={() => toggleActiveStatus(record)}
+                    checked={record.publicationStatus === "ACTIVE"}
+                    onChange={() => Status.mutate(record)}
                 />
             )
 
@@ -203,8 +265,8 @@ function AdminIlmiyNashirlar(props) {
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
-                    // checked={record.publicationStatus === "ACTIVE"}
-                    // onChange={() => toggleActiveStatus(record)}
+                    checked={record?.rule1030}
+                    onChange={() => KPIand1030.mutate({record, key: "1030"})}
                 />
             )
         },
@@ -215,8 +277,8 @@ function AdminIlmiyNashirlar(props) {
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
-                    // checked={record.publicationStatus === "ACTIVE"}
-                    // onChange={() => toggleActiveStatus(record)}
+                    checked={record?.kpi}
+                    onChange={() => KPIand1030.mutate({record, key: "KPI"})}
                 />
             )
         },
@@ -225,18 +287,21 @@ function AdminIlmiyNashirlar(props) {
             width: 100,
             render: (text, record) => (
 
-                    <button type="primary" className='btn btn-danger'
-                            style={{"minWidth": '30px'}}
-                            onClick={()=>setOpen1(true)}
-                    >
-                        <CloseOutlined />
-                    </button>
+                <button type="primary" className='btn btn-danger'
+                        style={{"minWidth": '30px'}}
+                        onClick={() => setOpen1(true)}
+                >
+                    <CloseOutlined/>
+                </button>
             ),
         },
     ];
 
+
     function onChangeField(fieldKey, value) {
-        if (value === undefined) {
+        console.log(fieldKey)
+        console.log(value)
+        if (value === undefined || value === false) {
             searchParams.delete(fieldKey);
             setSearchParams(searchParams, {replace: true});
             setSrcItem({...srcItem, [fieldKey]: null});
@@ -278,7 +343,18 @@ function AdminIlmiyNashirlar(props) {
                           name: "srcPerson",
                           value: srcItem?.employeeId
                       },
-
+                      {
+                          name: "Status",
+                          value: srcItem?.status
+                      },
+                      {
+                          name: "1030",
+                          value: srcItem?.rule1030
+                      },
+                      {
+                          name: "kpi",
+                          value: srcItem?.kpi
+                      }
                   ]}
             >
                 <Form.Item label="Mudatini belgilang" name="srcDate">
@@ -335,19 +411,28 @@ function AdminIlmiyNashirlar(props) {
                             ))}
                     />
                 </Form.Item>
-                <Form.Item label="Status" name="srcPerson">
+                <Form.Item label="Status" name="Status">
                     <Select style={{width: 250,}}
-                            showSearch
+                            name="Status"
                             allowClear
-                            name='srcPerson'
-                            placeholder="O'qituvchi"
+                            placeholder='Stasus'
                             onChange={(value) => {
-                                onChangeField('employeeId', value);
+                                onChangeField('status', value);
                             }}
-                            onSearch={onSearch}
-                            options={teacher_List?.data?.map((item, index) => (
-                                {value: item.id, label: item.fullName, key: item.id}
-                            ))}
+                            options={[
+                                {
+                                    label: "Yangi",
+                                    value: 'NOT_ACTIVE'
+                                },
+                                {
+                                    label: "Qabul qilingan",
+                                    value: 'ACCEPTED'
+                                },
+                                {
+                                    label: "Qabul qilinmagan",
+                                    value: 'REJECTED'
+                                }
+                            ]}
                     />
                 </Form.Item>
                 <div className="d-flex justify-content-between align-items-center">
@@ -355,23 +440,35 @@ function AdminIlmiyNashirlar(props) {
                         label="1030"
                         name="1030"
                     >
-                        <Switch name='1030'
-                                checkedChildren={<CheckOutlined/>}
-                                unCheckedChildren={<CloseOutlined/>}/>
+                        <Switch
+                            name='1030'
+                            checkedChildren={<CheckOutlined/>}
+                            unCheckedChildren={<CloseOutlined/>}
+                            checked={srcItem?.rule1030}
+                            onChange={() => {
+                                onChangeField('rule1030', !srcItem?.rule1030);
+                            }}
+                        />
 
                     </Form.Item>
                     <Form.Item
                         label="KPI"
                         name="kpi"
                     >
-                        <Switch name='kpi'
-                                checkedChildren={<CheckOutlined/>}
-                                unCheckedChildren={<CloseOutlined/>}/>
+                        <Switch
+                            name='kpi'
+                            checkedChildren={<CheckOutlined/>}
+                            unCheckedChildren={<CloseOutlined/>}
+                            checked={srcItem?.kpi}
+                            onChange={() => {
+                                onChangeField('kpi', !srcItem?.kpi);
+                            }}
+                        />
 
                     </Form.Item>
                 </div>
                 <Form.Item label=' '>
-                    <button className='btn btn-primary' onClick={()=>setOpen(true)}>
+                    <button className='btn btn-primary' onClick={() => setOpen(true)}>
                         <MenuFoldOutlined/>
                     </button>
                 </Form.Item>
@@ -393,12 +490,12 @@ function AdminIlmiyNashirlar(props) {
                     </Form.Item> : ''
                 }
                 {
-                    srcItem?.srcDatabase ? <Form.Item label='Xalqaro ilmiy baza'>
+                    srcItem?.publicationDatabase ? <Form.Item label='Xalqaro ilmiy baza'>
                         <Tag bordered={false} color="processing" closable
-                             onClose={(e) => onChangeFieldClear("srcDatabase")}
+                             onClose={(e) => onChangeFieldClear("publicationDatabase")}
                         >
                             {
-                                Xalqaro?.data?.options?.filter((item) => item?.code === srcItem?.srcDatabase)[0].name
+                                Xalqaro?.data?.options?.filter((item) => item?.code === srcItem?.publicationDatabase)[0].name
                             }
                         </Tag>
                     </Form.Item> : ''
@@ -417,7 +514,7 @@ function AdminIlmiyNashirlar(props) {
 
             </Form>
 
-            <Drawer title="Filter" onClose={()=>setOpen(false)} open={open}>
+            <Drawer title="Filter" onClose={() => setOpen(false)} open={open}>
                 <Form form={form2}
                       layout="vertical"
                       ref={formRef}
@@ -427,8 +524,8 @@ function AdminIlmiyNashirlar(props) {
                               value: srcItem?.srcType
                           },
                           {
-                              name: "srcDatabase",
-                              value: srcItem?.srcDatabase
+                              name: "publicationDatabase",
+                              value: srcItem?.publicationDatabase
                           },
                           {
                               name: "scientificField",
@@ -452,16 +549,16 @@ function AdminIlmiyNashirlar(props) {
                     </Form.Item>
                     <Form.Item
                         label="Xalqaro ilmiy bazalar"
-                        name="srcDatabase"
+                        name="publicationDatabase"
                     >
-                        <Select name="srcDatabase" allowClear
+                        <Select name="publicationDatabase" allowClear
                                 placeholder='Xalqaro ilmiy bazalar'
                                 options={Xalqaro?.data?.options?.map(item => ({
                                     label: item.name,
                                     value: item.code
                                 }))}
                                 onChange={(value) =>
-                                    onChangeField('srcDatabase', value)}>
+                                    onChangeField('publicationDatabase', value)}>
                         </Select>
                     </Form.Item>
                     <Form.Item
@@ -477,28 +574,44 @@ function AdminIlmiyNashirlar(props) {
 
                 </Form>
             </Drawer>
-            <Drawer title="Rad etish" onClose={()=>setOpen1(false)} open={open1}>
-                <div className="">
-                    <p>123</p>
-                    <p>456</p>
-                    <p>789</p>
+            <Drawer title="Rad etish" onClose={() => setOpen1(false)} open={open1}>
+                <div className="comentariya">
+                    <div className="d-flex">
+                        <span>8/29/2024</span>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto officiis, ratione? Ea
+                            enim ipsum nemo nostrum provident soluta sunt veniam.
+                        </p>
+                    </div>
+                    <div className="d-flex">
+                        <span>8/29/2024</span>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto officiis, ratione? Ea
+                            enim ipsum nemo nostrum provident soluta sunt veniam.
+                        </p>
+                    </div>
+                    <div className="d-flex">
+                        <span>8/29/2024</span>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto officiis, ratione? Ea
+                            enim ipsum nemo nostrum provident soluta sunt veniam.
+                        </p>
+                    </div>
                 </div>
-              <Form
-                  form={form3}
-                  layout="vertical"
-                  ref={formRef} className="d-flex align-items-center justify-content-between"
-                  onFinish={(e)=>console.log(e)}
-              >
-                  <Form.Item name='izox'>
-                      <TextArea placeholder="Rad etishga izox yozing" allowClear style={{height: 100, width:250, resize: 'none',}}/>
-                  </Form.Item>
-                  <Form.Item>
-                      <button className="btn btn-success">
-                          <CheckOutlined />
-                      </button>
-                  </Form.Item>
+                <Form
+                    form={form3}
+                    layout="vertical"
+                    ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
+                    onFinish={(e) => console.log(e)}
+                >
+                    <Form.Item name='izox'>
+                        <TextArea placeholder="Rad etishga izox yozing" allowClear
+                                  style={{height: 100, width: 250, resize: 'none',}}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <button className="btn btn-success">
+                            <CheckOutlined/>
+                        </button>
+                    </Form.Item>
 
-              </Form>
+                </Form>
             </Drawer>
 
             <div className="mt-4">

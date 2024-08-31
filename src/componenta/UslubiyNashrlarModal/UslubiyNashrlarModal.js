@@ -559,7 +559,7 @@ const UslubiyNashrlarModal = (props) => {
                         name="file"
                         // valuePropName="fileList"
                     >
-                        <Upload name='file' {...uploadProps}>
+                        <Upload accept="application/pdf,application/vnd.ms-excel" name='file' {...uploadProps}>
                             <Button icon={<UploadOutlined/>}>PDF</Button>
                         </Upload>
                     </Form.Item>

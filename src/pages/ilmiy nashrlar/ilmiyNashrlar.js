@@ -84,9 +84,15 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'url',
-            render: (item, record, index) => (
-                <a href={item.doiOrUrl === '' ? item.mediaIds[0].attachResDTO.url : item.doiOrUrl}
-                   target={"_blank"}>file</a>),
+            render: (item, record, index) => {
+                const url = item?.doiOrUrl === '' 
+                    ? (item?.mediaIds && item.mediaIds.length > 0 ? item.mediaIds[0]?.attachResDTO?.url : '') 
+                    : item?.doiOrUrl;
+        
+                return (
+                    <a href={url} target="_blank">file</a>
+                );
+            },
             width: 50
         },
         {

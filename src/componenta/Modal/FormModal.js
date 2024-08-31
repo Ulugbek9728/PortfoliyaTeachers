@@ -19,6 +19,26 @@ const FormModal = (props) => {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const formRef = useRef(null);
+    const [defaultPDFList, setDefaultPDFList] = useState(
+        props.editingData?.mediaIds?.filter(item => item.attachResDTO.section === 'defaultPDF').map(item => ({
+            uid: item.attachResDTO.id,
+            id: item.attachResDTO.id,
+            name: item.attachResDTO.fileName,
+            status: 'done',
+            url: item.attachResDTO.url,
+        })) || []
+    );
+    
+    const [monografiyaPdfList, setMonografiyaPdfList] = useState(
+        props.editingData?.mediaIds?.filter(item => item.attachResDTO.section === 'monografiyaPdf').map(item => ({
+            uid: item.attachResDTO.id,
+            id: item.attachResDTO.id,
+            name: item.attachResDTO.fileName,
+            status: 'done',
+            url: item.attachResDTO.url,
+        })) || []
+    );
+    
     const [data2, setData2] = useState({
         citizenship: "",
         fullName: "",
@@ -172,67 +192,54 @@ const FormModal = (props) => {
         }
     };
 
-    const uploadProps = {
+    const uploadProps = (section) => ({
         name: 'file',
         action: `${ApiName}/api/v1/attach/upload`,
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
-        fileList: props.editingData?.mediaIds?.map((item)=> {
-            const attachResDTO = item.attachResDTO;
-            return {
-                uid: attachResDTO.id,
-                id:attachResDTO.id,
-                name: attachResDTO.fileName,
-                status: 'done',
-                url: attachResDTO.url }
-        }),
+        fileList: section === 'defaultPDF' ? defaultPDFList : monografiyaPdfList, 
+        beforeUpload: (file) => {
+            const isSizeValid = file.size / 1024 / 1024 < 1; 
+            if (!isSizeValid) {
+                message.error(`${file.name} fayl hajmi 1 MB dan oshmasin.`);
+                return Upload.LIST_IGNORE; 
+            }
+            return true; 
+        },
         onChange: (info) => {
-
+            if (section === 'defaultPDF') {
+                setDefaultPDFList(info.fileList);
+            } else {
+                setMonografiyaPdfList(info.fileList); 
+            }
+    
             if (info.file.status === 'done') {
                 message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
                 setData(prevState => ({
                     ...prevState,
-                    mediaIds: [info.file.response.id],
+                    mediaIds: [...prevState.mediaIds, info.file.response.id],
                 }));
-            }
-            else if (info.file.status === 'removed') {
-                if(props.editingData){  
-                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.id);
-                    setData(prevState => ({
-                        ...prevState,
-                        mediaIds: [result],
-                    }));
-                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
-                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
-                    }).then((res) => {
-                        message.success("File o'chirildi")
-                    }).catch((error) => {
-                        message.error(`${info.file.name} file delete failed.`);
-                    })
-                }
-                else{
-                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
-                    setData(prevState => ({
-                        ...prevState,
-                        mediaIds: [result],
-                    }));
-                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
-                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
-                    }).then((res) => {
-                        message.success("File o'chirildi")
-                    }).catch((error) => {
-                        message.error(`${info.file.name} file delete failed.`);
-                    })
-                }
-            }
-            else if (info.file.status === 'error') {
+            } else if (info.file.status === 'removed') {
+                const updatedMediaIds = data.mediaIds.filter(id => id !== info.file.response.id);
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: updatedMediaIds, 
+                }));
+                axios.delete(`${ApiName}/api/v1/attach/${info.file.response.id}`, {
+                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                }).then(() => {
+                    message.success("File o'chirildi");
+                }).catch(() => {
+                    message.error(`${info.file.name} file delete failed.`);
+                });
+            } else if (info.file.status === 'error') {
                 message.error(`${info.file.name} fayl yuklashda xato.`);
             }
         }
-
-    };
-
+    });
+    
+    
     const onFinish = () => {
         axios.post(`${ApiName}/api/author/create`, data2, {
             headers: {
@@ -361,6 +368,7 @@ const FormModal = (props) => {
                 </Form.Item>
 
                 {monografiya && (
+                 <>
                     <Form.Item layout="vertical" className='col-6'
                         label="Ilmiy yoki ilmiy texnik kengash qarori"
                         name="decisionScientificCouncil" labelCol={{span: 24}} wrapperCol={{span: 24}}
@@ -373,10 +381,26 @@ const FormModal = (props) => {
                             className='py-2'
                         />
                     </Form.Item>
+                    <Form.Item
+                        layout="vertical"
+                        label="Fayl yukla"
+                        labelCol={{span: 24}}
+                        wrapperCol={{span: 24}}
+                        className='col-6'
+                        name='monografiya.file'
+                    >
+                        <Upload   accept="application/pdf,application/vnd.ms-excel"  {...uploadProps('monografiyaPdf')}
+                         
+                        >
+                        <Button icon={<UploadOutlined />}>PDF</Button>
+                        </Upload>
+                    </Form.Item>
+                 </>
                 )}
 
                 <Form.Item layout="vertical"
-                    label="Nashrning bibliografik matni"
+                    label="
+                    Nashrning bibliografik matni"
                     name="scientificName" labelCol={{span: 24}} wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
                     className='col-6'
@@ -568,17 +592,17 @@ const FormModal = (props) => {
                     <Form.Item
                         layout="vertical"
                         label="Fayl yuklash"
-                        name="file"
+                        name="defaultfile"
                         labelCol={{span: 24}}
                         wrapperCol={{span: 24}}
                         className='col-6'
                     >
-                        <Upload name='file' {...uploadProps}>
+                        <Upload accept="application/pdf,application/vnd.ms-excel"  {...uploadProps('defaultPDF')}
+                        >
                         <Button icon={<UploadOutlined />}>PDF</Button>
                         </Upload>
                     </Form.Item>
                 )}
-
                 <Form.Item
                     layout="vertical"
                     label="Nashr yili"

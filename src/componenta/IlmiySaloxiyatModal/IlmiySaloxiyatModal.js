@@ -127,8 +127,6 @@ const IlmiySaloxiyatModal = (props) => {
             : undefined,
 
         onChange: (info) => {
-            console.log(info)
-
             if (info.file.status === 'done') {
                 message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
                 setData(prevState => ({
@@ -427,7 +425,7 @@ const IlmiySaloxiyatModal = (props) => {
                     wrapperCol={{span: 24}}
                     className='col-6'
                 >
-                    <Upload name='file' {...uploadProps}>
+                    <Upload accept="application/pdf,application/vnd.ms-excel" name='file' {...uploadProps}>
                         <Button icon={<UploadOutlined/>}>PDF</Button>
                     </Upload>
                 </Form.Item>

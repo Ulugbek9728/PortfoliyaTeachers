@@ -144,9 +144,9 @@ function AdminIntelektualMulk(props) {
         },
         {
             title: 'url',
-            render: (item) => (
-                item.mediaIds===null ? '':
-                    <a href={item?.mediaIds[0]?.attachResDTO?.url} target={"_blank"}>file</a>),
+            render: (item, record, index) => (
+                <a href={item.doiOrUrl  ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url }
+                   target={"_blank"}>file</a>),
             width: 50
         },
         {

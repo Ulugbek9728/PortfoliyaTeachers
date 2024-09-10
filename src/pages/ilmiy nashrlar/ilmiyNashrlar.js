@@ -1,13 +1,13 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {Space, Table, Modal, Form, DatePicker, Input, Switch, message, Select, Popconfirm} from 'antd';
+import {Space, Table, Modal, Form, DatePicker, Input, Switch, message, Select, Popconfirm, notification} from 'antd';
 import {SearchOutlined} from '@ant-design/icons';
 import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
-import {useNavigate} from "react-router-dom";
-import {useQuery} from "react-query";
-import {ClassifairGet} from "../../api/general";
+import {useNavigate, useSearchParams} from "react-router-dom";
+import {useMutation, useQuery} from "react-query";
+import {ClassifairGet, DeletIlmiyNashr, getIlmiyNashrPublikatsiya} from "../../api/general";
 
 function IlmiyNashrlar(props) {
     const navigate = useNavigate();
@@ -25,7 +25,8 @@ function IlmiyNashrlar(props) {
             total: 10
         },
     });
-    const [srcItem, setSrcItem] = useState({});
+    const [srcItem, setSrcItem] = useState({
+    });
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString);
     };
@@ -122,7 +123,7 @@ function IlmiyNashrlar(props) {
                     </button>
                     <Popconfirm title="Ilmiy nashirni o'chirish"
                                 description="Ilmiy nashirni o'chirishni tasdiqlaysizmi?"
-                                onConfirm={(e) => handleDelete(record.id)}
+                                onConfirm={(e) => deletedIlmiyNashr.mutate(record.id)}
                                 okText="Ha" cancelText="Yo'q"
                     >
                         <button className="delet"
@@ -172,67 +173,62 @@ function IlmiyNashrlar(props) {
 
     const Scientificpublication = useQuery({
         queryKey: ['Ilmiy_nashr_turi'],
-        queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res?.data[0])
+        queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res?.data[0]),
     })
 
     useEffect(() => {
-        getIlmiyNashir();
-    }, []);
+        publication_List.refetch()
+    }, [srcItem]);
 
-    const handleDelete = (id) => {
-        axios.put(`${ApiName}/api/publication/update_status`, {
-            id,
-            publicationStatus: 'DELETED'
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
+    const deletedIlmiyNashr = useMutation({
+      mutationFn:(id)=>DeletIlmiyNashr({
+      id,
+      publicationStatus: 'DELETED'
+    }),
+    onSuccess:()=>{
+        publication_List.refetch()
+        notification.success({
+            message: "Ma'lumot o'chirildi"
         })
-            .then(response => {
-                console.log(response);
-                if (response?.data?.message === "Success") {
-                    message.success('Maqola muvaffaqiyatli o`chirildi');
-                    getIlmiyNashir();
-                }
-            })
-            .catch(error => {
-                message.error('Maqolani o`chirishda xatolik');
-            });
-    };
+    },
+    onError:()=>{
+        notification.error({
+            message: "Ma'lumot o'chirishda xato"
+        })
+    }
+    })
 
-    function getIlmiyNashir() {
-        axios.get(`${ApiName}/api/publication/current-user`, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            },
-            params: {
-                size: tableParams.pagination.pageSize,
-                page: tableParams.pagination.current > 0 ? tableParams.pagination.current - 1 : 0,
-                type: 'SCIENTIFIC_PUBLICATIONS',
-                publicationName: srcItem?.srcInput,
-                scientificPublicationType: srcItem?.srcType,
-                fromlocalDate: DateListe[0],
-                tolocalDate: DateListe[1]
-            }
-        }).then((response) => {
+
+    const publication_List = useQuery({
+        queryKey: ['publicationList_Ilmiy'],
+        queryFn: () => getIlmiyNashrPublikatsiya({
+            size: tableParams.pagination.pageSize,
+            page: tableParams.pagination.current > 0 ? tableParams.pagination.current - 1 : 0,
+            type: 'SCIENTIFIC_PUBLICATIONS',
+            publicationName: srcItem?.srcInput,
+            scientificPublicationType: srcItem?.srcType,
+            fromlocalDate: DateListe[0],
+            tolocalDate: DateListe[1]
+        }).then(res => {
+            const fetchedData = res?.data?.data?.content.map(item => ({...item, key: item.id}));
+            setDataList(fetchedData);
             setTableParams({
                 ...tableParams,
                 pagination: {
-                    pageSize: response?.data?.data?.size,
-                    total: response?.data?.data?.totalElements
+                    pageSize: res?.data?.data?.size,
+                    total: res?.data?.data?.totalElements
                 }
             })
-            const fetchedData = response?.data?.data?.content.map(item => ({...item, key: item.id}));
-            setDataList(fetchedData);
+
         }).catch((error) => {
-            console.log('API error:', error);
             if (error?.response?.data?.message === "Token yaroqsiz!") {
                 localStorage.removeItem("myInfo");
                 navigate('/')
             }
-        });
-    }
+            console.log('API error:', error);
+            message.error('Failed to fetch data');
+        })
+    })
 
     const onEdit = (record) => {
         setEditingData(record);
@@ -256,12 +252,12 @@ function IlmiyNashrlar(props) {
                 footer={null}
             >
                 <FormModal publicationType="SCIENTIFIC_PUBLICATIONS" editingData={editingData}
-                           getIlmiyNashir={getIlmiyNashir} handleCancel={handleCancel}/>
+                           getIlmiyNashir={() => publication_List.refetch()} handleCancel={handleCancel}/>
             </Modal>
 
             <div className='d-flex align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
-                      onFinish={() => getIlmiyNashir()}
+                      onFinish={() => publication_List.refetch()}
                       className='d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang" name="srcDate">
@@ -310,6 +306,7 @@ function IlmiyNashrlar(props) {
             <div className="mt-4">
                 <Table
                     columns={columns}
+                    loading={publication_List.isLoading}
                     dataSource={dataList}
                     scroll={{y: 550}}
                     pagination={
@@ -324,7 +321,7 @@ function IlmiyNashrlar(props) {
                                         total: page
                                     }
                                 })
-                                getIlmiyNashir();
+                                
                             }
                         }
                     }

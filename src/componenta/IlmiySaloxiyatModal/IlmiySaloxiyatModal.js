@@ -6,6 +6,8 @@ import {ApiName} from "../../api/APIname";
 import {useState} from 'react';
 import axios from "axios";
 import dayjs from "dayjs";
+import { useMutation, useQuery } from 'react-query';
+import { addAuthor, ClassifairGet, SaloxiyatCreate, SaloxiyatUpdate } from '../../api/general';
 
 
 const IlmiySaloxiyatModal = (props) => {
@@ -13,7 +15,7 @@ const IlmiySaloxiyatModal = (props) => {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const formRef = useRef(null);
-    const [IlmFan, setIlmFan] = useState([]);
+    // const [IlmFan, setIlmFan] = useState([]);
     const [data, setData] = useState({});
     const [data2, setData2] = useState({
         citizenship: "",
@@ -25,7 +27,6 @@ const IlmiySaloxiyatModal = (props) => {
     const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
-        ClassifairGet();
         handleSearch()
         if (props.editingData) {
             const editingValues = {
@@ -44,21 +45,13 @@ const IlmiySaloxiyatModal = (props) => {
         }
     }, [props.editingData, form, props.handleCancel]);
 
-    function ClassifairGet() {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {key: 'h_science_branch'},
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                setIlmFan(response.data[0]?.options?.filter(item => item?.code?.endsWith('00.00')))
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
-    }
+
+    const IlmFan = useQuery({
+        queryKey: ['h_science_branch'],
+        queryFn:()=>ClassifairGet('h_science_branch').then(
+            res=> res.data[0]?.options?.filter(item=>item?.code?.endsWith('00.00'))
+        )
+    })
 
     const handleSearch = async () => {
         try {
@@ -91,22 +84,18 @@ const IlmiySaloxiyatModal = (props) => {
             [name]: value
         }));
     };
-    const onFinish = () => {
-        axios.post(`${ApiName}/api/author/create`, data2, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-            },
-        }).then(response => {
-            console.log(data2);
-            form2.resetFields();
-            handleSearch()
-            message.success(`Muallif muvaffaqiyatli qo'shildi`);
-        }).catch(error => {
-            console.log(error);
-            message.error(`Muallif 'qo'shishda xatolik`);
-        });
-    };
+    const useAddAuthor = useMutation({
+        mutationFn:(data2) => addAuthor(data2),
+        onSuccess: () => {
+           form2.resetFields();
+           handleSearch();
+           message.success('Muallif muvaffaqiyatli qo`shildi');
+       },
+       onError: (error) => {
+           console.error(error);
+           message.error('Muallifni qo`shishda xatolik yuz berdi');
+       },
+       })
 
     const uploadProps = {
         name: 'file',
@@ -168,56 +157,90 @@ const IlmiySaloxiyatModal = (props) => {
 
     };
 
-    const handleSubmit = () => {
-        const request = props.editingData
-            ? axios.put(`${ApiName}/api/employee-student/${props.editingData.id}`, {
+    // const handleSubmit = () => {
+    //     const request = props.editingData
+    //         ? axios.put(`${ApiName}/api/employee-student/${props.editingData.id}`, {
 
-                yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD'),
-                mediaId:data.mediaId,
-                scientificLeadershipType:data.scientificLeadershipType,
-                studentAcademicDegree:data.studentAcademicDegree,
-                studentId:data.studentId,
-                dissertationTopic:data.dissertationTopic,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            : axios.post(`${ApiName}/api/employee-student`, {
+    //             yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD'),
+    //             mediaId:data.mediaId,
+    //             scientificLeadershipType:data.scientificLeadershipType,
+    //             studentAcademicDegree:data.studentAcademicDegree,
+    //             studentId:data.studentId,
+    //             dissertationTopic:data.dissertationTopic,
+    //         }, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 Authorization: `Bearer ${fulInfo?.accessToken}`,
+    //             },
+    //         })
+    //         : axios.post(`${ApiName}/api/employee-student`, {
+    //                 ...data,
+    //                 yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD')
+    //             },
+    //             {
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                     Authorization: `Bearer ${fulInfo?.accessToken}`,
+    //                 },
+    //             })
+    //     request.then(response => {
+    //         message.success(`Ilmiy saloxiyat ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
+    //         form.resetFields();
+    //         props.getIlmiySaloxiyat123()
+    //         setData({})
+    //         if (props.onSuccess) {
+    //             props.onSuccess();
+    //         }
+    //         if (props.handleCancel) {
+    //             props.handleCancel();
+    //         }
+
+    //     }).catch(error => {
+    //         console.log(error);
+    //         message.error(`Ilmiy saloxiyat ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
+    //     });
+    // };
+
+    const addIlmiyNashrInfo = useMutation({
+        mutationFn: (data) => {    
+            const request = props.editingData 
+                ? SaloxiyatUpdate({
+                    yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD'),
+                    mediaId:data.mediaId,
+                    scientificLeadershipType:data.scientificLeadershipType,
+                    studentAcademicDegree:data.studentAcademicDegree,
+                    studentId:data.studentId,
+                    dissertationTopic:data.dissertationTopic,
+                })
+                : SaloxiyatCreate({
                     ...data,
                     yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD')
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    },
-                })
-        request.then(response => {
+                });
+            return request;
+        },
+        onSuccess: (response) => {
             message.success(`Ilmiy saloxiyat ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             form.resetFields();
             props.getIlmiySaloxiyat123()
-            setData({})
             if (props.onSuccess) {
                 props.onSuccess();
             }
             if (props.handleCancel) {
                 props.handleCancel();
             }
-
-        }).catch(error => {
-            console.log(error);
+        },
+        onError: (error) => {
+            console.error(error);
             message.error(`Ilmiy saloxiyat ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
-        });
-    };
+        },
+    });
 
     return (
         <>
             <Form className='row'
                   form={form} ref={formRef}
                   initialValues={data}
-                  onFinish={handleSubmit}
+                  onFinish={(e) => addIlmiyNashrInfo.mutate(data)}
                   fields={[
                       {
                           name: "yearOfProtection",
@@ -294,7 +317,7 @@ const IlmiySaloxiyatModal = (props) => {
                                             margin: '8px 0',
                                         }}
                                     />
-                                    <Form onFinish={onFinish}
+                                    <Form onFinish={()=> useAddAuthor.mutate(data2)}
                                           name="wrap"
                                           form={form2}
                                     >
@@ -413,7 +436,7 @@ const IlmiySaloxiyatModal = (props) => {
                                 }
                             })}
 
-                            options={IlmFan.map(item => ({label: item.name, value: item.code}))}
+                            options={IlmFan?.data?.map(item => ({label: item.name, value: item.code}))}
                     >
                     </Select>
                 </Form.Item>

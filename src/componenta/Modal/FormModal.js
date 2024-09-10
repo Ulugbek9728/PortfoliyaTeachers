@@ -4,11 +4,11 @@ import {PlusOutlined,UploadOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import {ApiName} from '../../api/APIname';
 import dayjs from 'dayjs';
-import {ClassifairGet} from "../../api/general";
+import {ClassifairGet, IlmiyNashrCreate, IlmiyNashrUpdate,addAuthor, search} from "../../api/general";
 
 
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
@@ -61,24 +61,29 @@ const FormModal = (props) => {
         authorIds: []
     });
 
+    const Scientificpublication = useQuery({
+        queryKey: ['h_scientific_publication_type'],
+        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
+    })
     useEffect(() => {
-        handleSearch()
+        handleSearch('');
         if (props.editingData) {
             const editingValues = {
                 ...props.editingData,
                 issueYear: dayjs(props.editingData.issueYear),
-                authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
-                mediaIds:props.editingData.mediaIds?.map((item)=>item.attachResDTO.id),
+                authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item => item.id) : [],
+                mediaIds: props.editingData.mediaIds?.map((item) => item.attachResDTO.id),
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
                 scientificPublicationType: props.editingData.scientificPublicationType,
+                fileType: props.editingData.fileType || 'Url',
                 fileType: props.editingData.doiOrUrl ? 'Url' : "Upload",
             };
+    
             setData(editingValues);
             form.setFieldsValue(editingValues);
             setUrl(editingValues.fileType === 'Url');
-        }
-        else if (props.handleCancel){
+        } else if (props.handleCancel) {
             setData({
                 authorCount: 0,
                 issueYear: '',
@@ -92,13 +97,11 @@ const FormModal = (props) => {
                 fileType: '',
                 mediaIds: [],
                 authorIds: []
-            })
+            });
             form.resetFields();
-
         }
-    }, [props.editingData, form, props.handleCancel]);
-
-
+    }, [props.editingData, form, props.handleCancel, Scientificpublication?.data]);
+    
     const Xalqaro = useQuery({
         queryKey: ['h_publication_database'],
         queryFn:()=>ClassifairGet('h_publication_database').then(res=>res.data[0])
@@ -109,10 +112,26 @@ const FormModal = (props) => {
             res=> res.data[0]?.options?.filter(item=>item?.code?.endsWith('00.00'))
         )
     })
-    const Scientificpublication = useQuery({
-        queryKey: ['h_scientific_publication_type'],
-        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
-    })
+
+    // const handleSearch = (query) => {
+    //     return useQuery({
+    //         queryKey: ['searchAuthors', query],  // Query key'ni query parametr bilan belgilash
+    //         queryFn: () => search(query),  // queryFn sifatida search funksiyasini chaqiring
+    //         onSuccess: (data) => {
+    //             if (data?.data?.isSuccess && !data?.data?.error) {
+    //                 setSearchResults(data?.data?.data || []);  // Qidiruv natijalarini yangilash
+    //             } else {
+    //                 console.error('Error in response:', data?.data?.message);
+    //                 setSearchResults([]);  // Xatolik yuz berganda natijalarni bo'shatish
+    //             }
+    //         },
+    //         onError: (error) => {
+    //             console.error('Error fetching search results:', error);  // Xatolikni konsolda ko'rsatish
+    //             setSearchResults([]);  // Xatolik yuz berganda natijalarni bo'shatish
+    //         },
+    //     });
+    // };
+
 
     const handleSearch = async () => {
         try {
@@ -134,6 +153,7 @@ const FormModal = (props) => {
         }
 
     };
+
     const handleChange = (value) => {
         setData(prevState => ({
             ...prevState,
@@ -165,7 +185,6 @@ const FormModal = (props) => {
         if (name === "scientificPublicationType") {
             setMonografiya(Scientificpublication?.data?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
         }
-
         if (name === "fileType") {
             setUrl(value === 'Url');
         }
@@ -219,47 +238,38 @@ const FormModal = (props) => {
     });
     
     
-    const onFinish = () => {
-        axios.post(`${ApiName}/api/author/create`, data2, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-            },
-        }).then(response => {
-            form2.resetFields();
-            handleSearch()
-            message.success(`Muallif muvaffaqiyatli qo'shildi`);
-        }).catch(error => {
-            console.log(error);
-            message.error(`Muallif 'qo'shishda xatolik`);
-        });
-    };
+    const useAddAuthor = useMutation({
+     mutationFn:(data2) => addAuthor(data2),
+     onSuccess: () => {
+        form2.resetFields();
+        handleSearch();
+        message.success('Muallif muvaffaqiyatli qo`shildi');
+    },
+    onError: (error) => {
+        console.error(error);
+        message.error('Muallifni qo`shishda xatolik yuz berdi');
+    },
+    })
+    
 
-    const handleSubmit = (values) => {
-        const request = props.editingData
-            ? axios.put(`${ApiName}/api/publication/update`, {
-                ...data,
-                issueYear: data.issueYear.format('YYYY-MM-DD')
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            : axios.post(`${ApiName}/api/publication/create`, {
-                ...data,
-                issueYear: data.issueYear.format('YYYY-MM-DD')
-            },
-             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-        request.then(response => {
-            message.success(`Ilmiy nashir ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
-            form.resetFields();
+    const addIlmiyNashrInfo = useMutation({
+        mutationFn: (data) => {    
+            const request = props.editingData 
+                ? IlmiyNashrUpdate({
+                    ...data,
+                    issueYear: data.issueYear.format('YYYY-MM-DD'),
+                })
+                : IlmiyNashrCreate({
+                    
+                    ...data,
+                    issueYear: data.issueYear.format('YYYY-MM-DD'),
+                });
+            return request;
+        },
+        onSuccess: (response) => {
+            message.success(`Ilmiy nashr ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             props.getIlmiyNashir()
+            form.resetFields();
             setData({
                 authorCount: 0,
                 issueYear: '',
@@ -279,17 +289,19 @@ const FormModal = (props) => {
             }
             if (props.handleCancel) {
                 props.handleCancel();
-              }
-
-        }).catch(error => {
-            console.log(error);
-            message.error(`Ilmiy nashir ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
-        });
-    };
+            }
+        },
+        onError: (error) => {
+            console.error(error);
+            message.error(`Ilmiy nashr ${props.editingData ? 'yangilashda' : "qo'shishda"} xatolik yuz berdi`);
+        },
+    });
+    
+   
     return (
         <div>
             <Form form={form} ref={formRef} initialValues={data}
-                className='row' onFinish={handleSubmit}
+                className='row' onFinish={(e) => addIlmiyNashrInfo.mutate(data)}
                 fields={[
                     {
                         name: "scientificPublicationType",
@@ -413,8 +425,8 @@ const FormModal = (props) => {
                             onChange={handleChange}
                             filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
                             filterSort={(optionA, optionB) =>
-                                (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
-                            options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))}
+                            (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
+                            options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))} 
                             dropdownRender={(menu) => (
                                 <>
                                     {menu}
@@ -423,7 +435,7 @@ const FormModal = (props) => {
                                             margin: '8px 0',
                                         }}
                                     />
-                                    <Form onFinish={onFinish}
+                                    <Form onFinish={(e) => useAddAuthor.mutate(data2)}
                                         name="wrap"
                                         form={form2}
                                     >

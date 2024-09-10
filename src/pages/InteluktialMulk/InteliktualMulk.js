@@ -53,7 +53,7 @@ const InteliktualMulk = () => {
     };
 
     const Scientificpublication = useQuery({
-        queryKey: ['Ilmiy_nashr_turi'],
+        queryKey: ['Intelektual_mulk_turi'],
         queryFn: () => ClassifairGet('h_patient_type').then(res => res?.data[0])
     })
 

@@ -9,6 +9,7 @@ import AddDepartment from "./AddDepartment";
 import AdminUslubiyNashir from "./adminUslubiyNashir";
 import AdminIntelektualMulk from "./adminIntelektualMulk";
 import AdminIlmiySaloxiyat from "./adminIlmiySaloxiyat";
+import "../../style/admin.scss"
 
 const { Sider, Content} = Layout;
 
@@ -50,7 +51,7 @@ function Admin(props) {
         <>
             <Navbar/>
             <Layout hasSider>
-                <Sider style={{overflow: 'auto', height: '84.5vh',}}>
+                <Sider style={{overflow: 'auto', height: '100vh',position: "sticky", top: 0}}>
                     <div className='verticalMenu'>
                         {items.map((i, index)=>{
                             return<NavLink key={index} to={`${i.key}`}>

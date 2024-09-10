@@ -4,14 +4,14 @@ import {PlusOutlined,UploadOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import {ApiName} from '../../api/APIname';
 import dayjs from 'dayjs';
+import {ClassifairGet} from "../../api/general";
+
 
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import {useQuery} from "react-query";
 dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
-    const [Scientificpublication, setScientificpublication] = useState([]);
-    const [IlmFan, setIlmFan] = useState([]);
-    const [XalqaroIlmiyBaza, setXalqaroIlmiyBaza] = useState([]);
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [searchResults, setSearchResults] = useState([]);
     const [monografiya, setMonografiya] = useState(false);
@@ -62,9 +62,6 @@ const FormModal = (props) => {
     });
 
     useEffect(() => {
-        ClassifairGet('h_scientific_publication_type');
-        ClassifairGet('h_science_branch');
-        ClassifairGet('h_publication_database');
         handleSearch()
         if (props.editingData) {
             const editingValues = {
@@ -101,32 +98,21 @@ const FormModal = (props) => {
         }
     }, [props.editingData, form, props.handleCancel]);
 
-    function ClassifairGet(e) {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {
-                key: e
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                if (e==='h_scientific_publication_type'){
-                    setScientificpublication(response.data[0]?.options);
-                }
-                if (e==='h_science_branch'){
-                    setIlmFan(response.data[0]?.options?.filter(item=>item?.code?.endsWith('00.00')))
-                }
-                if (e==='h_publication_database'){
-                    setXalqaroIlmiyBaza(response.data[0]?.options)
-                }
 
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
-    }
+    const Xalqaro = useQuery({
+        queryKey: ['h_publication_database'],
+        queryFn:()=>ClassifairGet('h_publication_database').then(res=>res.data[0])
+    })
+    const IlmFan = useQuery({
+        queryKey: ['h_science_branch'],
+        queryFn:()=>ClassifairGet('h_science_branch').then(
+            res=> res.data[0]?.options?.filter(item=>item?.code?.endsWith('00.00'))
+        )
+    })
+    const Scientificpublication = useQuery({
+        queryKey: ['h_scientific_publication_type'],
+        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
+    })
 
     const handleSearch = async () => {
         try {
@@ -148,7 +134,6 @@ const FormModal = (props) => {
         }
 
     };
-
     const handleChange = (value) => {
         setData(prevState => ({
             ...prevState,
@@ -156,7 +141,6 @@ const FormModal = (props) => {
             authorCount: value.length
         }));
     };
-
     const handleInputChange = (event) => {
         const {name, value} = event.target;
         setData(prevState => ({
@@ -171,20 +155,15 @@ const FormModal = (props) => {
     };
 
     const handleSelectChange = (value, option) => {
-        console.log(value)
-        console.log(option)
         const {name} = option;
         setData(prevState => ({
             ...prevState,
-
-            [name]: name === 'scientificPublicationType' ? Scientificpublication.filter(item => item.code === value)[0] :
-             name === 'scientificField' ? IlmFan.filter(item => item.code === value)[0] :
-             name === 'publicationDatabase' ? XalqaroIlmiyBaza.filter(item => item.code === value)[0] : value,
+            [name]: name === 'scientificPublicationType' ? Scientificpublication?.data?.options?.filter(item => item.code === value)[0] :
+             name === 'scientificField' ? IlmFan?.data?.filter(item => item.code === value)[0] :
+             name === 'publicationDatabase' ? Xalqaro?.data?.options?.filter(item => item.code === value)[0] : value,
         }));
-        console.log(data)
-
         if (name === "scientificPublicationType") {
-            setMonografiya(Scientificpublication.filter(item => item.code === value)[0]?.name === 'Monografiya');
+            setMonografiya(Scientificpublication?.data?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
         }
 
         if (name === "fileType") {
@@ -361,7 +340,7 @@ const FormModal = (props) => {
                     rules={[{required: true, message: 'Iltimos ilmiy nashr turini tanlang'}]}
                 >
                     <Select placeholder='Ilmiy nashr turi'
-                        options={Scientificpublication.map(item => ({label: item.name, value: item.code}))}
+                        options={Scientificpublication?.data?.options.map(item => ({label: item.name, value: item.code}))}
                         name="scientificPublicationType"
                         onChange={(value, option) => handleSelectChange(value, {name: "scientificPublicationType"})}
                     />
@@ -418,7 +397,7 @@ const FormModal = (props) => {
                     name="scientificField" labelCol={{ span: 24 }} wrapperCol={{ span: 24 }} className='col-6'
                 >
                     <Select name="scientificField" placeholder='Ilm-fan sohasi'
-                            options={IlmFan.map(item => ({label: item.name, value: item.code}))}
+                            options={IlmFan?.data?.map(item => ({label: item.name, value: item.code}))}
                             onChange={(value, option) => handleSelectChange(value, { name: "scientificField" })}>
                     </Select>
                 </Form.Item>
@@ -565,9 +544,13 @@ const FormModal = (props) => {
                     wrapperCol={{ span: 24 }}
                     className='col-6'
                 >
-                    <Select value={data.scientificField} name="scientificField"
-                            options={XalqaroIlmiyBaza.map(item => ({label: item.name, value: item.code}))}
-                            onChange={(value, option) => handleSelectChange(value, { name: "publicationDatabase" })}>
+                    <Select name="scientificField"
+                            options={Xalqaro?.data?.options?.map(item => ({
+                                label: item.name,
+                                value: item.code}))}
+                            onChange={(value) =>
+                                handleSelectChange(value, { name: "publicationDatabase" })
+                    }>
                     </Select>
                 </Form.Item>
 

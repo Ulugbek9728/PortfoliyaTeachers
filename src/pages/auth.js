@@ -37,7 +37,9 @@ function Auth(props) {
                         } else {
                             setMessage(response?.data?.message)
                         }
-                    })
+                    }).catch((error)=>{
+                    console.log(error)
+                })
             },
         }
     );

@@ -123,7 +123,6 @@ const TeacherRating = () => {
             }
         })
     })
-
     useEffect(() => {
         if (edite) {
             const userData = getFullInfo?.data;
@@ -245,6 +244,14 @@ const TeacherRating = () => {
         action: `${ApiName}/api/v1/attach/upload`,
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+        beforeUpload: (file) => {
+            const isSizeValid = file.size / 1024 / 1024 < 1; 
+            if (!isSizeValid) {
+                message.error(`${file.name} fayl hajmi 1 MB dan oshmasin.`);
+                return Upload.LIST_IGNORE; 
+            }
+            return true; 
         },
         onChange: (info) => handleFileChange(info, section),
     });
@@ -534,7 +541,7 @@ const TeacherRating = () => {
                           ]}
                           form={form} 
                           ref={formRef}
-                        style={{maxWidth: '100%'}}>
+                          style={{maxWidth: '100%'}}>
                         <div className="d-flex gap-5 labelForm">
                             <div style={{width: '33%'}}>
                                 <Form.Item label={<p className='labelForm'>Mutaxassislik nomi</p>}

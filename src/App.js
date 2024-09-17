@@ -12,6 +12,7 @@ import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
 import Fakulty from "./pages/fakulty/fakulty";
+import TeachersInfo from "./pages/admin/TeachersInfo";
 
 
 const router = createBrowserRouter([
@@ -76,6 +77,16 @@ const router = createBrowserRouter([
     {
         path:'/dashboard-fakultyadm/*',
         element:<Fakulty/>,
+    },
+    {
+        path: "/userInfo",
+        element: (<TeachersInfo/>),
+        children:[
+            {
+                path: "/userInfo/:id",
+                element: (<TeachersInfo/>),
+            },
+        ]
     },
 ]);
 

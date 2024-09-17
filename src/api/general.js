@@ -40,6 +40,9 @@ export const DeletIlmiySalohiyat = (id,) => getInstance().delete(`/api/employee-
 export const DeletIntelektual = (value) => getInstance().put(`/api/publication/update_status`, value)
 export const ToglActiveStatusKPIand1030 = (value) => getInstance().put(`/api/kpi/update`, value)
 export const ToglActiveStatus = (value) => getInstance().put(`/api/publication/update_status`, value)
+export const Comment = (value) => getInstance().post(`/api/comment`, value)
+export const getComment = (filter) => getInstance().get(`/api/comment/${filter}`);
+
 
 
 export const fetchCurrentUser = () => getInstance().get(`/api/profile/current`);

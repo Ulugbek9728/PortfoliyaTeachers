@@ -1,13 +1,15 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification} from "antd";
-import {MenuFoldOutlined, CheckOutlined, CloseOutlined} from "@ant-design/icons";
+import {MenuFoldOutlined, CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
 import {
     ClassifairGet,
     getFaculty,
     getIlmiyNashir,
     getProfile,
     ToglActiveStatus,
-    ToglActiveStatusKPIand1030
+    ToglActiveStatusKPIand1030,
+    Comment,
+    getComment
 } from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
 import {useMutation, useQuery} from "react-query";
@@ -44,7 +46,8 @@ function AdminIlmiyNashirlar(props) {
     });
     const [open, setOpen] = useState(false);
     const [open1, setOpen1] = useState(false);
-
+    const [messages, seMessages] = useState(null);
+    const [publicationID, setPublicationID] = useState(null);
     const Scientificpublication = useQuery({
         queryKey: ['Ilmiy_nashr_turi'],
         queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res.data[0])
@@ -88,13 +91,11 @@ function AdminIlmiyNashirlar(props) {
         queryKey: ['h_publication_database'],
         queryFn: () => ClassifairGet('h_publication_database').then(res => res.data[0])
     })
-
     const IlmFan = useQuery({
         queryKey: ['h_science_branch'],
         queryFn: () => ClassifairGet('h_science_branch').then(
             res => res.data[0]?.options?.filter(item => item?.code?.endsWith('00.00')))
     })
-
     const KPIand1030 = useMutation({
         mutationFn: (e) => {
             let newStatus1030
@@ -110,34 +111,53 @@ function AdminIlmiyNashirlar(props) {
                 publicationId: e?.record?.id,
                 kpi: newStatusKPI,
                 rule1030: newStatus1030
+            }).then((res) => {
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+                publication_List.refetch()
             })
         },
-        onSuccess: () => {
-            notification.success({
-                message: "Status o'zgardi"
-            })
-            setSrcItem({...srcItem})
-        }
-
     })
-
     const Status = useMutation({
         mutationFn: (e) => {
-            console.log(e)
-            let newStatus = e?.publicationStatus === "NOT_ACTIVE" ? "ACCEPTED" : "NOT_ACTIVE";
+            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus === "REJECTED" ? "ACCEPTED" : "REJECTED";
 
             ToglActiveStatus({
                 id: e?.id,
                 publicationStatus: newStatus
-            })
-        },
-        onSuccess: () => {
-            notification.success({
-                message: "Status o'zgardi"
-            })
-            setSrcItem({...srcItem})
-        }
+            }).then((res) => {
+                publication_List.refetch()
+                notification.success({
+                    message: "Status o'zgardi"
+                })
 
+            }).catch((error) => notification.error({message: "Status error"}))
+        },
+
+    })
+    const CommentPost = useMutation({
+        mutationFn: (e) => {
+            Comment({
+                content: e.izox,
+                publicationId: publicationID
+            }).then((res) => {
+                publication_List.refetch()
+                form3.resetFields()
+                setOpen1(false)
+                notification.success({
+                    message: "Izox yuborildi"
+                })
+            }).catch((error) => notification.error({message: "Izox error"}))
+        },
+
+    })
+    const CommentAll = useMutation({
+        mutationFn: (e) => {
+            getComment(e).then((res) => {
+                seMessages(res?.data.data.reverse())
+            }).catch((error) => console.log(error))
+        },
     })
 
     const onChangeDate = (value, dateString) => {
@@ -164,7 +184,6 @@ function AdminIlmiyNashirlar(props) {
             }, {replace: true});
         }
     };
-
     useEffect(() => {
         if (srcItem?.faculty) {
             kafedraList.refetch();
@@ -172,7 +191,6 @@ function AdminIlmiyNashirlar(props) {
         teacher_List.refetch()
         publication_List.refetch()
     }, [srcItem]);
-
     const onSearch = (value) => {
         setSrcItem({
             ...srcItem,
@@ -235,7 +253,7 @@ function AdminIlmiyNashirlar(props) {
         {
             title: 'url',
             render: (item, record, index) => (
-                <a href={item.doiOrUrl === '' ? item.mediaIds[0].attachResDTO.url : item.doiOrUrl}
+                <a href={item.doiOrUrl ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url}
                    target={"_blank"}>file</a>),
             width: 80
         },
@@ -244,7 +262,6 @@ function AdminIlmiyNashirlar(props) {
             dataIndex: 'decisionScientificCouncil',
             width: 150
         },
-
         {
             title: "Status",
             width: 80,
@@ -252,7 +269,7 @@ function AdminIlmiyNashirlar(props) {
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
-                    checked={record.publicationStatus === "ACTIVE"}
+                    checked={record.publicationStatus === "ACCEPTED"}
                     onChange={() => Status.mutate(record)}
                 />
             )
@@ -283,24 +300,24 @@ function AdminIlmiyNashirlar(props) {
             )
         },
         {
-            title: 'Rad etish',
+            title: 'Izox',
             width: 100,
             render: (text, record) => (
-
                 <button type="primary" className='btn btn-danger'
                         style={{"minWidth": '30px'}}
-                        onClick={() => setOpen1(true)}
+                        onClick={() => {
+                            setOpen1(true)
+                            setPublicationID(record?.id)
+                            CommentAll.mutate(record?.id)
+                        }}
                 >
-                    <CloseOutlined/>
+                    <EditOutlined/>
                 </button>
             ),
         },
     ];
 
-
     function onChangeField(fieldKey, value) {
-        console.log(fieldKey)
-        console.log(value)
         if (value === undefined || value === false) {
             searchParams.delete(fieldKey);
             setSearchParams(searchParams, {replace: true});
@@ -422,7 +439,7 @@ function AdminIlmiyNashirlar(props) {
                             options={[
                                 {
                                     label: "Yangi",
-                                    value: 'NOT_ACTIVE'
+                                    value: 'ACTIVE'
                                 },
                                 {
                                     label: "Qabul qilingan",
@@ -574,32 +591,25 @@ function AdminIlmiyNashirlar(props) {
 
                 </Form>
             </Drawer>
-            <Drawer title="Rad etish" onClose={() => setOpen1(false)} open={open1}>
+            <Drawer title="Izoxlar" onClose={() => setOpen1(false)} open={open1}>
                 <div className="comentariya">
-                    <div className="d-flex">
-                        <span>8/29/2024</span>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto officiis, ratione? Ea
-                            enim ipsum nemo nostrum provident soluta sunt veniam.
-                        </p>
-                    </div>
-                    <div className="d-flex">
-                        <span>8/29/2024</span>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto officiis, ratione? Ea
-                            enim ipsum nemo nostrum provident soluta sunt veniam.
-                        </p>
-                    </div>
-                    <div className="d-flex">
-                        <span>8/29/2024</span>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto officiis, ratione? Ea
-                            enim ipsum nemo nostrum provident soluta sunt veniam.
-                        </p>
-                    </div>
+                    {
+                        messages?.map((item) =>{
+                            return  <div className="d-flex">
+                                <span>{item?.createdDate.slice(0,10)}</span>
+                                <p>
+                                    {item?.content}
+                                </p>
+                            </div>
+                        }
+                        )
+                    }
                 </div>
                 <Form
                     form={form3}
                     layout="vertical"
                     ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
-                    onFinish={(e) => console.log(e)}
+                    onFinish={(e) => CommentPost.mutate(e)}
                 >
                     <Form.Item name='izox'>
                         <TextArea placeholder="Rad etishga izox yozing" allowClear

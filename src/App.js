@@ -13,6 +13,7 @@ import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
 import Fakulty from "./pages/fakulty/fakulty";
 import TeachersInfo from "./pages/admin/TeachersInfo";
+import Dekan from "./pages/dekan/dekan";
 
 
 const router = createBrowserRouter([
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
     {
         path:'/profile/*',
         element:<Profile/>,
+    },
+    {
+        path:'/dekan/*',
+        element:<Dekan/>,
     },
     {
         path:'/dashboard-admin/*',

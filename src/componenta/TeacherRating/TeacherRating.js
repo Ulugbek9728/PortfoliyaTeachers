@@ -138,6 +138,8 @@ const TeacherRating = () => {
             });
             setRadio(!!userData?.scientificDegree?.name);
             setRadio2(userData?.isTop1000 || false);
+            setscientificTitleRadio(!!userData?.scientificTitle?.name)
+            setprofileStateAwardDTOradio(!!userData?.profileStateAwardDTO?.nameStateAward)
         }
     }, [edite]);
 
@@ -320,18 +322,18 @@ const TeacherRating = () => {
         ...data.specialist,
         attach: JSON.stringify(data.specialist.attach)
     },
-    scientificTitle: {
+    scientificTitle: scientificTitleRadio? {
         ...data.scientificTitle,
         attach: JSON.stringify(data.scientificTitle?.attach)
-    },
-    scientificDegree: {
+    }:{},
+    scientificDegree: radio ? {
         ...data.scientificDegree,
         attach: JSON.stringify(data.scientificDegree?.attach)
-    },
-    profileStateAwardDTO: {
+    } :{},
+    profileStateAwardDTO: profileStateAwardDTOradio? {
         ...data.profileStateAwardDTO,
         attach: JSON.stringify(data.profileStateAwardDTO?.attach)
-    },
+    }:{},
     profileTop1000: {
         ...data.profileTop1000,
     },
@@ -514,6 +516,14 @@ const TeacherRating = () => {
                                   name: "Ilmiy_daraja",
                                   value: radio ? 'ha' : "yoq"
                               },
+                              {
+                                  name: "Ilmiy_unvon",
+                                  value: scientificTitleRadio ? 'ha' : "yoq"
+                              },
+                              {
+                                name: "davlat_mukofoti",
+                                value: profileStateAwardDTOradio ? 'ha' : "yoq"
+                            },
                               {
                                   name: "scientificDegree.name",
                                   value: data.scientificDegree?.name || undefined

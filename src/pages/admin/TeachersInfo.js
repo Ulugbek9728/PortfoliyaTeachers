@@ -1,11 +1,14 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import './teacherInfo.css';
 import Navbar from '../../componenta/Navbar'
 import { useParams } from 'react-router';
 import { TeacherFullInfo } from '../../api/general';
 import { useQuery } from 'react-query';
-
+import axios from 'axios';
+import { ApiName } from '../../api/APIname';
+import wos from '../../img/wos.png'
 const TeachersInfo = () => {
+    const [data, setData] = useState(null); 
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const { id } = useParams();
   const { data: teachersData, isLoading, error } = useQuery(
@@ -15,10 +18,45 @@ const TeachersInfo = () => {
       enabled: !!id,
     }
   );
-  
-  const teacher = teachersData?.data?.data?.content?.find(teacher => teacher.id === id);
+  const [profiles, setProfiles] = useState([]); // Ma'lumotlarni saqlash uchun state
 
-  // Attach obyektlarini JSON.parse yordamida parse qilish
+  // Ma'lumotlarni olish funksiyasi
+  const getData = async () => {
+    try {
+      const response = await axios.get(`${ApiName}/api/author-profile/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fulInfo?.accessToken}`,
+        },
+      });
+
+      if (response.data.isSuccess && response.data.data) {
+        console.log("Ma'lumotlar:", response.data.data);
+        setProfiles(response.data.data); // Ma'lumotlarni state-ga joylash
+      } else {
+        console.error("Ma'lumot olishda xato:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Ma'lumot olishda xato yuz berdi:", error);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, [id]); 
+
+  const getProfileImage = (profileTypeName) => {
+    switch (profileTypeName.toLowerCase()) {
+      case 'scopus':
+        return '../img/Scopus.png';
+      case 'google scholar':
+          return '../img/googleScholar.png';
+      default:
+        return "../img/wos.png";
+    }
+  };
+  const teacher = teachersData?.data?.data?.content?.find(teacher => teacher.id === id);
+    
   const parsedSpecialistAttach = teacher?.specialist?.attach ? JSON.parse(teacher.specialist.attach) : null;
   const parsedScientificTitleAttach = teacher?.scientificTitle?.attach ? JSON.parse(teacher.scientificTitle.attach) : null;
   const parsedScientificDegreeAttach = teacher?.scientificDegree?.attach ? JSON.parse(teacher.scientificDegree.attach) : null;
@@ -141,6 +179,49 @@ const TeachersInfo = () => {
               </div>
           </div>
        </div>
+       <div className='teacher_rating_bottom mt-4'>
+      {profiles.length > 0 ? (
+        profiles.map((profile, index) => (
+          <div key={profile.id} className='align-items-center justify-content-center br_right w-100 d-flex gap-3'>
+            <a href={profile.urlOrOrcid} target="_blank" rel="noreferrer">
+              <img src={getProfileImage(profile.profileType.name)} width={90} alt={profile.profileType.name} />
+            </a>
+            {profile.databaseProfile ? (
+              <div>
+                {profile.databaseProfile.hindex && (
+                  <>
+                    <b className='m-0 text-lg'>h-index</b>
+                    <p className='m-0'>{profile.databaseProfile.hindex}</p>
+                    <hr />
+                  </>
+                )}
+                {profile.databaseProfile.citationCount && (
+                  <>
+                    <b className='m-0 text-lg'>Ilmiy ishlar</b>
+                    <p className='m-0'>{profile.databaseProfile.citationCount}</p>
+                    <hr />
+                  </>
+                )}
+                {profile.databaseProfile.citedByCount && (
+                  <>
+                    <b className='m-0 text-lg'>Iqtiboslar soni</b>
+                    <p className='m-0'>{profile.databaseProfile.citedByCount}</p>
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
+        ))
+      ) : (
+        // Agar profillar mavjud bo'lmasa, faqat rasmni ko'rsatish
+        <>
+          <div className='align-items-center justify-content-center br_right w-100 d-flex gap-3'>
+           <p>Malumot topilmadi.</p>
+          </div>
+
+        </>
+      )}
+    </div>
       </div>
     </>
   )

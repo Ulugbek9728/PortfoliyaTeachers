@@ -1,89 +1,124 @@
-import { Form } from 'antd';
+import { Button, Form, InputNumber, Select } from 'antd';
+import Input from 'antd/es/input/Input';
 import axios from 'axios';
-import React from 'react'
+import React, { useState } from 'react'
+import { useEffect } from 'react';
+import { useRef } from 'react';
 import { useQueries, useQuery } from 'react-query';
-import { Route, Routes, useNavigate } from 'react-router-dom';
-import { TeacherList } from '../../api/general';
+import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
+import { getFaculty, TeacherList } from '../../api/general';
 const TeachersTable = () => {
-  // const data = [
-  //   {
-  //     id: 1,
-  //     rating: 1,
-  //     profileImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC6iPDSqcgCcAtdEz_rPY0B-sxqMd7hz0Hlg&s',
-  //     name: 'Rashid Ashirovich Ganeev',
-  //     institute: 'TIQXMMI MTU qoshidagi "Fundamental va Amaliy Tadqiqotlar instituti"',
-  //     hIndex: 51,
-  //     publications: 539,
-  //     citations: 8392,
-  //   },
-  //   {
-  //     id: 2,
-  //     rating: 2,
-  //     profileImage: 'path_to_image2.jpg',
-  //     name: 'Olga Nikolaevna Petrova',
-  //     institute: 'Moskva Davlat Universiteti',
-  //     hIndex: 45,
-  //     publications: 432,
-  //     citations: 7345,
-  //   },
-  //   {
-  //     id: 3,
-  //     rating: 3,
-  //     profileImage: 'path_to_image3.jpg',
-  //     name: 'Vladimir Ivanovich Sokolov',
-  //     institute: 'Sankt-Peterburg Texnika Instituti',
-  //     hIndex: 39,
-  //     publications: 389,
-  //     citations: 6403,
-  //   },
-  //   {
-  //     id: 4,
-  //     rating: 4,
-  //     profileImage: 'path_to_image4.jpg',
-  //     name: 'Anna Sergeevna Ivanova',
-  //     institute: 'Novosibirsk Davlat Universiteti',
-  //     hIndex: 42,
-  //     publications: 410,
-  //     citations: 5821,
-  //   },
-  //   {
-  //     id: 5,
-  //     rating: 5,
-  //     profileImage: 'path_to_image5.jpg',
-  //     name: 'Dmitry Aleksandrovich Kuznetsov',
-  //     institute: 'Tomsk Politeknika Universiteti',
-  //     hIndex: 47,
-  //     publications: 450,
-  //     citations: 7104,
-  //   },
-  // ];
+  const [departmentAdd, setDepartmentAdd] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const formRef = useRef(null);
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  
+  const { data: facultyData } = useQuery({
+    queryKey: ["FacultyList"],
+    queryFn: () => getFaculty(11, '').then(res => res.data)
+  });
+  const {data: Department} = useQuery({
+    queryKey: ["DepartmentList"],
+    queryFn: () => getFaculty(13).then(res => res.data)
+})
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['get_teacher_info'],
-    queryFn: () => TeacherList()
-    .then(res => {
-      console.log(res); // Ma'lumot tuzilmasini tekshirish
-      return res.data.data.content; // To'g'ri tuzilmani qaytarish
-    })// res.data.data.content dan ma'lumotlarni olish
+  const [srcItem, setSrcItem] = useState({
+    facultyId: searchParams.get('facultyId') || null,
+    departmentId: searchParams.get('departmentId') || null,
+    query: searchParams.get('query') || null,
+    staffPosition: searchParams.get('staffPosition') || null
   });
 
-  console.log(data);
-  const navigate = useNavigate();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['get_teacher_info', srcItem],
+    queryFn: () => TeacherList({
+      page: 0,
+      size: 30,
+      facultyId: srcItem.facultyId,
+      departmentId: srcItem.departmentId,
+      query: srcItem.query,
+      staffPosition: srcItem.staffPosition
+    }).then(res => res.data.data.content)
+  });
+
+  useEffect(() => {
+    form.setFieldsValue(srcItem);
+  }, [srcItem, form]);
+
   const handleCardClick = (id) => {
     navigate(`/userInfo/${id}`);
-  };
+  }
+
+  const onChangeField = (fieldKey, value) => {
+    if (value === undefined || value === false) {
+      searchParams.delete(fieldKey);
+      setSearchParams(searchParams, {replace: true});
+      setSrcItem(prevState => ({ ...prevState, [fieldKey]: null }));
+    } else {
+      setSrcItem(prevState => ({ ...prevState, [fieldKey]: value }));
+      setSearchParams((prevParams) => {
+        prevParams.set(fieldKey, value);
+        return prevParams;
+      }, {replace: true});
+    }
+  }
 
 
-    
-      // Kartalar ro'yxatini chiqarish
-      return (
-      <>
-       <Form
+  return (
+    <>
+      <Form 
+        form={form}
+        layout="vertical"
+        ref={formRef}
+        className='d-flex align-items-center gap-4'
       >
-    
-       </Form>
-        <div className="card-list">
-          {data?.map(card => (
+        <Form.Item name="facultyId" label="Faculty">
+          <Select 
+            style={{ width: 250 }}
+            name="facultyId"
+            allowClear
+            placeholder='Facultet'
+            onChange={(value) => {
+              onChangeField('facultyId', value);
+            }}
+            options={facultyData?.map((item) => ({
+              value: item.id, 
+              label: item.name 
+            }))} 
+          />
+        </Form.Item>
+
+        <Form.Item name="departmentId" label="Department">
+          <Select
+            name="departmentId"
+            allowClear
+            placeholder="Bo'lim"
+            onChange={(value) => {
+              onChangeField('departmentId', value);
+            }}
+            options={Department?.map((item) => ({
+              value: item.id,
+              label: item.name,
+              key: item.id
+            }))}
+          />
+        </Form.Item>
+
+        <Form.Item name="query" label="Search Query">
+          <Input placeholder="Search by query" />
+        </Form.Item>
+
+        <Form.Item name="staffPosition" label="Staff Position">
+          <Input placeholder="Enter staff position" />
+        </Form.Item>
+
+        <Button type="primary" onClick={() => form.submit()}>
+          Search
+        </Button>
+      </Form>
+     <div className="card-list">
+       {data?.map(card => (
         <div key={card.id} className="card  p-3 d-flex flex-column flex-md-row align-items-center mb-3"
         style={{
           "backgroundColor": "#091E3E",

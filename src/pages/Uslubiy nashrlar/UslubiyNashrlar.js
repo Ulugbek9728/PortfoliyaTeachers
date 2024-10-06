@@ -7,8 +7,6 @@ import {
 import {SearchOutlined } from '@ant-design/icons';
 import './UslubiyNashrlar.scss'
 import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
-import axios from 'axios';
-import { ApiName } from "../../api/APIname";
 import { useEffect } from 'react';
 import {useNavigate} from "react-router-dom";
 import { ClassifairGet, DeletIlmiyNashr, getUslubiyNashrPublikatsiya } from '../../api/general';

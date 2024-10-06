@@ -95,8 +95,9 @@ export const SaloxiyatCreate = (data) => getInstance().post('/api/publication/cr
 // Ilmiy Saloxiyat yangilash uchun funksiyasi
 export const SaloxiyatUpdate = (data) => getInstance().put('/api/publication/update', data);
 
-export const TeacherList = (data) => getInstance().get('/api/profile/admin/teacher-list', data)
+export const TeacherList = (params) => getInstance().get('/api/profile/admin/teacher-list', { params });
 
 export const TeacherFullInfo = () => {
     return getInstance().get(`/api/profile/admin/teacher-list`);
   };
+//   export const TeacherwebLink = (data) => {return getInstance().get('/api/author-profile/{employeeId}',data)}; 

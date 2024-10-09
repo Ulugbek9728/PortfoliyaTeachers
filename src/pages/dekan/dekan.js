@@ -9,6 +9,7 @@ import { Content } from 'antd/es/layout/layout';
 import Dekan_UslubiyNashrlar from './dekan_UslubiyNashrlar';
 import Dekan_IntelectualMulk from './dekan_IntelectualMulk';
 import DekanIlmiySaloxiyat from './dekan_IlmiySaloxiyat';
+import Dekan_teachersList from './dekan_teachersList';
 const Dekan = () => {
     const items = [
         {
@@ -60,7 +61,7 @@ const Dekan = () => {
                 }}
             >
                 <Routes>
-                    {/* <Route path={"/1"} element={ <TeachersTable/>}/> */}
+                    <Route path={"/1"} element={ <Dekan_teachersList/>}/>
                     <Route path={"/2/*"} element={ <Dekan_IlmiyNashrlar/>}/>
                     <Route path={"/3/*"} element={ <Dekan_UslubiyNashrlar/>}/>
                     <Route path={"/4/*"} element={ <Dekan_IntelectualMulk/>}/>

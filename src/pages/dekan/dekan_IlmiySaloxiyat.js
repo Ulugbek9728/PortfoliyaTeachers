@@ -19,6 +19,7 @@ function DekanIlmiySaloxiyat(props) {
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,
     });
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
 
     const [tableParams, setTableParams] = useState({
         pagination: {

@@ -48,7 +48,7 @@ console.log(fulInfo);
         let childrenRoles = [];
         fulInfo?.roles?.map(role => (
             {
-                label: role ==='ROLE_DEPARTMENT'? "BO'LIM ADMIN":role==='ROLE_TEACHER'? "O'QITUVCHI" : role==='ROLE_ADMIN'? 'ADMIN' :role==='ROLE_FACULTY'? 'FAKULTET' :'',
+                label: role ==='ROLE_DEPARTMENT'? "BO'LIM ADMIN":role==='ROLE_TEACHER'? "O'QITUVCHI" : role==='ROLE_ADMIN'? 'ADMIN' :role==='ROLE_FACULTY'? 'FAKULTET':'',
                 key: role,
                 onClick: (e) => {
                     changeRoles.mutate(e.key)
@@ -118,7 +118,8 @@ console.log(fulInfo);
             if (e === 'ROLE_TEACHER') {
                 navigate('/profile/1')
             } else if (e === 'ROLE_FACULTY') {
-                navigate('/dashboard-fakultyadm/1')
+                // navigate('/dashboard-fakultyadm/1')
+                navigate('/dekan/1')
             } else if (e === 'ROLE_ADMIN') {
                 navigate('/dashboard-admin/1')
             }

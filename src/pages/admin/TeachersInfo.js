@@ -6,7 +6,6 @@ import { TeacherFullInfo } from '../../api/general';
 import { useQuery } from 'react-query';
 import axios from 'axios';
 import { ApiName } from '../../api/APIname';
-import wos from '../../img/wos.png'
 const TeachersInfo = () => {
     const [data, setData] = useState(null); 
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
@@ -18,9 +17,9 @@ const TeachersInfo = () => {
       enabled: !!id,
     }
   );
-  const [profiles, setProfiles] = useState([]); // Ma'lumotlarni saqlash uchun state
+  const [profiles, setProfiles] = useState([]);
 
-  // Ma'lumotlarni olish funksiyasi
+
   const getData = async () => {
     try {
       const response = await axios.get(`${ApiName}/api/author-profile/${id}`, {
@@ -32,7 +31,7 @@ const TeachersInfo = () => {
 
       if (response.data.isSuccess && response.data.data) {
         console.log("Ma'lumotlar:", response.data.data);
-        setProfiles(response.data.data); // Ma'lumotlarni state-ga joylash
+        setProfiles(response.data.data); 
       } else {
         console.error("Ma'lumot olishda xato:", response.data.message);
       }
@@ -61,7 +60,7 @@ const TeachersInfo = () => {
   const parsedScientificTitleAttach = teacher?.scientificTitle?.attach ? JSON.parse(teacher.scientificTitle.attach) : null;
   const parsedScientificDegreeAttach = teacher?.scientificDegree?.attach ? JSON.parse(teacher.scientificDegree.attach) : null;
   const parsedStateAwardAttach = teacher?.profileStateAwardDTO?.attach ? JSON.parse(teacher.profileStateAwardDTO.attach) : null;
-
+console.log(teacher);
   return (
     <>
       <Navbar/>
@@ -76,16 +75,16 @@ const TeachersInfo = () => {
                   <div className='col-4 card p-4'>
                       <div>
                           <b>Ish joy:</b>
-                          <p>{fulInfo?.parentDepartment?.name} <br/> {fulInfo?.department?.name}</p>
+                          <p> {teacher?.department?.name}</p>
                       </div>
-                      <div>
+                      {/* <div>
                           <b>Lavozim: </b>
                           <p> {fulInfo?.staffPosition?.name}</p>
                       </div>
                       <div>
                           <b>Shtat birligi:</b>
                           <p> {fulInfo?.employmentForm?.name} {fulInfo?.employmentStaff?.name}</p>
-                      </div>
+                      </div> */}
                   </div>
                   <div className='col-4 card p-4'>
                       <div className=''>
@@ -213,7 +212,6 @@ const TeachersInfo = () => {
           </div>
         ))
       ) : (
-        // Agar profillar mavjud bo'lmasa, faqat rasmni ko'rsatish
         <>
           <div className='align-items-center justify-content-center br_right w-100 d-flex gap-3'>
            <p>Malumot topilmadi.</p>

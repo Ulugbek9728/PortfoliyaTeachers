@@ -12,6 +12,7 @@ import Chart, {
 import Data from './data/simpleJSON.json'
 import TeacherRating from '../TeacherRating/TeacherRating';
   const customizeText = (e) => `Day ${e.value}`;
+
 const TeachersComponent = () => {
   return (<>
   <TeacherRating />

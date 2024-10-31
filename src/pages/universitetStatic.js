@@ -68,7 +68,7 @@ function UniversitetStatic(props) {
     return (
         <div>
             <Navbar/>
-            <div className="container" style={{marginTop:"10%"}}>
+            <div className="container" style={{marginTop:"2%"}}>
                 <div className="row" >
                     <Title
                         props={{title1: "Bizning fakultetlar", title2: "Universitet bo'yicha fakultetlar reytingi"}}/>

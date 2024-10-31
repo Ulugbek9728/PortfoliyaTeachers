@@ -8,7 +8,7 @@ import {useNavigate} from "react-router-dom";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useQuery } from 'react-query';
-import {ClassifairGet} from "../../api/general";
+import {ClassifairGet, getUserInfo} from "../../api/general";
 dayjs.extend(customParseFormat);
 
 const defaultDatabaseProfiles = [
@@ -125,6 +125,17 @@ const TeacherRating = () => {
       queryFn:()=>ClassifairGet('h_academic_degree').then(res=>res.data[0])
     })
 
+    const getInfoUser= useQuery({
+        queryKey:['UserInfo'],
+        queryFn:()=>getUserInfo('',{
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${fulInfo?.accessToken}`,
+            }
+        }).then(res=>res?.data?.data)
+    })
+    console.log(getInfoUser?.data)
+
     const fetchCurrentUser = async () => {
         try {
             const response = await axios.get(`${ApiName}/api/profile/current`, {
@@ -230,7 +241,6 @@ const TeacherRating = () => {
         } else if (info.file.status === 'removed') {
             if (edite) {
                 const result = data[section]?.attach?.id;
-                console.log(result)
                 setData(prevState => ({
                     ...prevState,
                     [section]: {
@@ -326,7 +336,7 @@ const TeacherRating = () => {
                 ...data,
                 specialist: {
                     ...data.specialist,
-                    attach: JSON.stringify(data.specialist.attach)
+                    attach: JSON.stringify(data?.specialist?.attach)
                 },
                 scientificTitle: {
                     ...data.scientificTitle,

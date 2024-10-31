@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification} from "antd";
-import {MenuFoldOutlined, CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
+import {DatePicker, Form, Select, Table, Drawer, Switch, Tag, Input, notification} from "antd";
+import {MenuFoldOutlined, CheckOutlined, CloseOutlined, MessageOutlined, SendOutlined} from "@ant-design/icons";
 import {
     ClassifairGet,
     getFaculty,
@@ -46,7 +46,7 @@ function AdminIlmiyNashirlar(props) {
     });
     const [open, setOpen] = useState(false);
     const [open1, setOpen1] = useState(false);
-    const [messages, seMessages] = useState(null);
+    const [messages, setMessages] = useState(null);
     const [publicationID, setPublicationID] = useState(null);
     const Scientificpublication = useQuery({
         queryKey: ['Ilmiy_nashr_turi'],
@@ -155,7 +155,7 @@ function AdminIlmiyNashirlar(props) {
     const CommentAll = useMutation({
         mutationFn: (e) => {
             getComment(e).then((res) => {
-                seMessages(res?.data.data.reverse())
+                setMessages(res?.data.data.reverse())
             }).catch((error) => console.log(error))
         },
     })
@@ -303,7 +303,7 @@ function AdminIlmiyNashirlar(props) {
             title: 'Izox',
             width: 100,
             render: (text, record) => (
-                <button type="primary" className='btn btn-danger'
+                <button type="primary" className='btn btn-primary'
                         style={{"minWidth": '30px'}}
                         onClick={() => {
                             setOpen1(true)
@@ -311,7 +311,7 @@ function AdminIlmiyNashirlar(props) {
                             CommentAll.mutate(record?.id)
                         }}
                 >
-                    <EditOutlined/>
+                    <MessageOutlined />
                 </button>
             ),
         },
@@ -611,13 +611,21 @@ function AdminIlmiyNashirlar(props) {
                     ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
                     onFinish={(e) => CommentPost.mutate(e)}
                 >
-                    <Form.Item name='izox'>
-                        <TextArea placeholder="Rad etishga izox yozing" allowClear
+                    <Form.Item name='izox'
+                               rules={[
+                                   {
+                                       required: true,
+                                       message:"Izox kiriting"
+                                   },
+
+                               ]}>
+                        <TextArea placeholder="Izox" allowClear
+
                                   style={{height: 100, width: 250, resize: 'none',}}/>
                     </Form.Item>
                     <Form.Item>
                         <button className="btn btn-success">
-                            <CheckOutlined/>
+                            <SendOutlined />
                         </button>
                     </Form.Item>
 
@@ -629,9 +637,10 @@ function AdminIlmiyNashirlar(props) {
                     rowKey="id"
                     columns={columns}
                     dataSource={publication_List?.data}
-                    // scroll={{y: 550}}
+                    rowClassName={(record) => {
+                        return record.publicationStatus === 'ACCEPTED' ? 'row-active' : record.publicationStatus === 'REJECTED' ? 'row-inactive' : '';
+                    }}
                     loading={publication_List.isLoading}
-
                     pagination={
                         {
                             total: tableParams.pagination.total,

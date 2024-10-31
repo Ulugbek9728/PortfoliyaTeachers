@@ -337,12 +337,6 @@ h5, h6, .fw-medium {
     transition: .5s;
 }
 
-/* .owl-item center{
- 
-} */
-/* .testimonial-carousel .owl-item.center .testimonial-item {
-    background-color: #FFFFFF ;
-} */
 .owl-theme .owl-dots .owl-dot.active span, .owl-theme .owl-dots .owl-dot span {
     background: #06a3da;
     width: 30px;
@@ -398,7 +392,6 @@ h5, h6, .fw-medium {
 .link-animated a:hover {
     padding-left: 10px;
 }
-
 
 @media (min-width: 767.98px) {
     .footer-about {

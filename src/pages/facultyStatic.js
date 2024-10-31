@@ -70,7 +70,7 @@ function FacultyStatic(props) {
     return (
         <div>
             <Navbar/>
-            <div className="container" style={{marginTop:"10%"}}>
+            <div className="container" style={{marginTop:"2%"}}>
                 <div className="row">
                     <Title props={{title1:"Bizning kafedralar",title2:"Fakultet bo'yicha reyting"}}/>
                     <FakultetList fakulty={fakulty}/>

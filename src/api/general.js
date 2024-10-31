@@ -6,6 +6,7 @@ export const getLogin = (code, state) => getInstance().get(`/api/auth/login`, {
         state: state
     }
 });
+export const getUserInfo = (value) => getInstance().get(`/api/profile/current`,value);
 export const getFaculty = (id,value) => getFacultyList().get(`/api/department`,{
     params:{
         structureCode:id,

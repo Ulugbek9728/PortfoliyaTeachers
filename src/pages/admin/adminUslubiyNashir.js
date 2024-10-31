@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Drawer, Form, notification, Popconfirm, Select, Space, Switch, Table, Tag} from "antd";
-import {CheckOutlined, CloseOutlined, MenuFoldOutlined, SearchOutlined} from "@ant-design/icons";
+import {DatePicker, Drawer, Form, Input, notification, Select, Empty, Switch, Table, Tag} from "antd";
+import {CheckOutlined, CloseOutlined, MenuFoldOutlined, MessageOutlined, SendOutlined} from "@ant-design/icons";
 import {
-    ClassifairGet,
+    ClassifairGet, Comment, getComment,
     getFaculty,
     getIlmiyNashir,
     getProfile,
@@ -15,14 +15,16 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
+const {TextArea} = Input;
 
 function AdminUslubiyNashir(props) {
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
+    const [form3] = Form.useForm();
     const [open, setOpen] = useState(false);
-
+    const [open1, setOpen1] = useState(false);
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
         faculty: searchParams.get('faculty') || null,
@@ -33,7 +35,7 @@ function AdminUslubiyNashir(props) {
         kpi: searchParams.get('kpi') || null,
         rule1030: searchParams.get('rule1030') || null,
     });
-
+    const [publicationID, setPublicationID] = useState(null);
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 0,
@@ -41,6 +43,7 @@ function AdminUslubiyNashir(props) {
             total: 10
         },
     });
+    const [messages, setMessages] = useState([]);
 
     const Scientificpublication = useQuery({
         queryKey: ['Uslubiy_nashr_turi'],
@@ -50,7 +53,6 @@ function AdminUslubiyNashir(props) {
         queryKey: ["FacultyList"],
         queryFn: () => getFaculty(11, '').then(res => res.data)
     })
-
     const kafedraList = useQuery({
         queryKey: ["Kafedra"],
         queryFn: () => getFaculty(12, srcItem?.faculty).then(res =>
@@ -60,12 +62,11 @@ function AdminUslubiyNashir(props) {
     const teacher_List = useQuery({
         queryKey: ['teacherList'],
         queryFn: () => getProfile({
-            facultyId:srcItem?.faculty,
-            departmentId:srcItem?.department,
-            query:srcItem?.query
+            facultyId: srcItem?.faculty,
+            departmentId: srcItem?.department,
+            query: srcItem?.query
         }).then(res => res?.data?.data?.content)
     })
-
     const publication_List = useQuery({
         queryKey: ['publicationList'],
         queryFn: () => getIlmiyNashir({
@@ -81,7 +82,6 @@ function AdminUslubiyNashir(props) {
             rule1030: srcItem?.rule1030,
         }).then(res => res?.data?.data?.content)
     })
-
     const KPIand1030 = useMutation({
         mutationFn: (e) => {
             let newStatus1030
@@ -97,7 +97,7 @@ function AdminUslubiyNashir(props) {
                 publicationId: e?.record?.id,
                 kpi: newStatusKPI,
                 rule1030: newStatus1030
-            }).then((res)=>{
+            }).then((res) => {
                 notification.success({
                     message: "Status o'zgardi"
                 })
@@ -105,26 +105,47 @@ function AdminUslubiyNashir(props) {
             })
         },
     })
-
     const Status = useMutation({
         mutationFn: (e) => {
             console.log(e)
-            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus==="REJECTED" ? "ACCEPTED" : "REJECTED";
+            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus === "REJECTED" ? "ACCEPTED" : "REJECTED";
 
             ToglActiveStatus({
                 id: e?.id,
                 publicationStatus: newStatus
-            }).then((res)=>{
+            }).then((res) => {
                 publication_List.refetch()
                 notification.success({
                     message: "Status o'zgardi"
                 })
 
-            }).catch((error)=>notification.error({message:"Status error"}))
+            }).catch((error) => notification.error({message: "Status error"}))
         },
 
     })
+    const CommentPost = useMutation({
+        mutationFn: (e) => {
+            Comment({
+                content: e.izox,
+                publicationId: publicationID
+            }).then((res) => {
+                publication_List.refetch()
+                form3.resetFields()
+                setOpen1(false)
+                notification.success({
+                    message: "Izox yuborildi"
+                })
+            }).catch((error) => notification.error({message: "Izox error"}))
+        },
 
+    })
+    const CommentAll = useMutation({
+        mutationFn: (e) => {
+            getComment(e).then((res) => {
+                setMessages(res?.data.data.reverse())
+            }).catch((error) => console.log(error))
+        },
+    })
     const onChangeDate = (value, dateString) => {
         if (value === null) {
             setSrcItem({
@@ -210,7 +231,7 @@ function AdminUslubiyNashir(props) {
         {
             title: 'url',
             render: (item, record, index) => (
-                <a href={item.doiOrUrl  ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url }
+                <a href={item.doiOrUrl ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url}
                    target={"_blank"}>file</a>),
             width: 50
         },
@@ -251,6 +272,22 @@ function AdminUslubiyNashir(props) {
                 />
             )
         },
+        {
+            title: 'Izox',
+            width: 100,
+            render: (text, record) => (
+                <button type="primary" className='btn btn-primary'
+                        style={{"minWidth": '30px'}}
+                        onClick={() => {
+                            setOpen1(true)
+                            setPublicationID(record?.id)
+                            CommentAll.mutate(record?.id)
+                        }}
+                >
+                    <MessageOutlined/>
+                </button>
+            ),
+        },
     ];
 
     function onChangeField(fieldKey, value) {
@@ -266,6 +303,7 @@ function AdminUslubiyNashir(props) {
             }, {replace: true});
         }
     }
+
     function onChangeFieldClear(fieldKey) {
         searchParams.delete(fieldKey);
         setSearchParams(searchParams, {replace: true});
@@ -371,7 +409,6 @@ function AdminUslubiyNashir(props) {
                 </Form.Item>
 
 
-
                 <Form.Item label="Status" name="Status">
                     <Select style={{width: 250,}}
                             name="Status"
@@ -464,7 +501,8 @@ function AdminUslubiyNashir(props) {
                       ]}
                 >
                     <Form.Item label="Uslubiy nashir turi" name="srcType">
-                        <Select allowClear name="srcType" labelInValue style={{width: 250,}} placeholder='Uslubiy  nashr turi'
+                        <Select allowClear name="srcType" labelInValue style={{width: 250,}}
+                                placeholder='Uslubiy  nashr turi'
                                 options={Scientificpublication?.data?.options.map(item => ({
                                     label: item.name,
                                     value: item.code
@@ -477,7 +515,46 @@ function AdminUslubiyNashir(props) {
 
                 </Form>
             </Drawer>
+            <Drawer title="Izoxlar" onClose={() => setOpen1(false)} open={open1}>
+                <div className="comentariya">
+                    {
+                        messages?.map((item) => {
+                                return <div className="d-flex" key={item.id}>
+                                    <span>{item?.createdDate.slice(0, 10)}</span>
+                                    <p>
+                                        {item?.content}
+                                    </p>
+                                </div>
+                            }
+                        )
+                    }
+                </div>
+                <Form
+                    form={form3}
+                    layout="vertical"
+                    ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
+                    onFinish={(e) => CommentPost.mutate(e)}
+                >
+                    <Form.Item name='izox'
+                               rules={[
+                                   {
+                                       required: true,
+                                       message: "Izox kiriting"
+                                   },
 
+                               ]}>
+                        <TextArea placeholder="Izox" allowClear
+
+                                  style={{height: 100, width: 250, resize: 'none',}}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <button className="btn btn-success">
+                            <SendOutlined/>
+                        </button>
+                    </Form.Item>
+
+                </Form>
+            </Drawer>
             <div className="mt-4">
                 <Table
                     rowKey="id"

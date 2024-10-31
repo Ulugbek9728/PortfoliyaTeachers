@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Button, Form, InputNumber, Select } from "antd";
-import Input from "antd/es/input/Input";
-import axios from "axios";
 import { useEffect } from "react";
 import { useRef } from "react";
 import { useQueries, useQuery } from "react-query";

@@ -2,15 +2,15 @@ import React, {useState, useRef} from 'react';
 
 import {
     Space, Table, Select, Modal,
-    message, Form, DatePicker, Popconfirm, Input,Switch
+    message, Form, DatePicker, Popconfirm, Input,Switch, notification
 } from 'antd';
 import {SearchOutlined } from '@ant-design/icons';
 import './UslubiyNashrlar.scss'
 import UslubiyNashrlarModal from '../../componenta/UslubiyNashrlarModal/UslubiyNashrlarModal';
-import axios from 'axios';
-import { ApiName } from "../../api/APIname";
 import { useEffect } from 'react';
 import {useNavigate} from "react-router-dom";
+import { ClassifairGet, DeletIlmiyNashr, getUslubiyNashrPublikatsiya } from '../../api/general';
+import { useMutation, useQuery } from 'react-query';
 const UslubiyNashrlar = () => {
     const navigate = useNavigate();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
@@ -20,7 +20,6 @@ const UslubiyNashrlar = () => {
     const [open, setOpen] = useState(false)
     const [editingData, setEditingData] = useState(null);
     const [dataList, setDataList] = useState([]);
-    const [stylePublicationType, setStylePublicationType] = useState([]);
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 0,
@@ -102,7 +101,7 @@ const UslubiyNashrlar = () => {
                     </button>
                     <Popconfirm title="Int.mulkni o'chirish"
                         description="Int.mulkni o'chirishni tasdiqlaysizmi?"
-                        onConfirm={(e) => handleDelete(record.id)}
+                        onConfirm={(e) => deletedUslubiyNashr.mutate(record.id)}
                         okText="Ha" cancelText="Yo'q"
                     >
                         <button className="delet"
@@ -150,93 +149,72 @@ const UslubiyNashrlar = () => {
         
     ];
 
-    const handleDelete = (id) => {
-        axios.put(`${ApiName}/api/publication/update_status`, {
-          id,
-          publicationStatus: 'DELETED'
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${fulInfo?.accessToken}`
-          }
-        })
-        .then(response => {
-            console.log(response);
-          if (response.data.message === "Success") {
-            message.success('Maqola muvaffaqiyatli o`chirildi');
-            getIlmiyNashir(); 
-          }
-        })
-        .catch(error => {
-          message.error('Maqolani o`chirishda xatolik');
-        });
-    };
+    const deletedUslubiyNashr = useMutation({
+        mutationFn:(id)=>DeletIlmiyNashr({
+        id,
+        publicationStatus: 'DELETED'
+      }),
+      onSuccess:()=>{
+          publication_List.refetch()
+          notification.success({
+              message: "Ma'lumot o'chirildi"
+          })
+      },
+      onError:()=>{
+          notification.error({
+              message: "Ma'lumot o'chirishda xato"
+          })
+      }
+      })
+
     const onEdit = (record) => {
         setEditingData(record);
         setOpen(true); // Modalni ochish uchun setOpen(true) funksiyasini chaqiramiz
     };
     useEffect(() => {
-            getIlmiyNashir();
-            ClassifairGet()
-    }, []);
-    function getIlmiyNashir() {
-        axios.get(`${ApiName}/api/publication/current-user`, {
-            headers: {
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            },
-            params:{
-                type: 'STYLE_PUBLICATIONS',
-                size: tableParams.pagination.pageSize,
-                page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
-                publicationName: srcItem?.srcInput,
-                stylePublicationType: srcItem?.srcType,
-                fromlocalDate: DateListe[0],
-                tolocalDate: DateListe[1]
+            publication_List.refetch()
+    }, [srcItem]);
 
-            }
-        }).then((response) => {
+    const publication_List = useQuery({
+        queryKey: ['publicationList_Uslubiy'],
+        queryFn: () => getUslubiyNashrPublikatsiya({
+            type: 'STYLE_PUBLICATIONS',
+            size: tableParams.pagination.pageSize,
+            page: tableParams.pagination.current>0 ? tableParams.pagination.current-1 : 0,
+            publicationName: srcItem?.srcInput,
+            stylePublicationType: srcItem?.srcType,
+            fromlocalDate: DateListe[0],
+            tolocalDate: DateListe[1]
+        }).then(res => {
+            const fetchedData = res?.data?.data?.content.map(item => ({...item, key: item.id}));
+            setDataList(fetchedData);
             setTableParams({
                 ...tableParams,
                 pagination: {
-                    pageSize: response?.data?.data?.size,
-                    total: response?.data?.data?.totalElements
+                    pageSize: res?.data?.data?.size,
+                    total: res?.data?.data?.totalElements
                 }
             })
-            console.log('Fetched data:', response?.data?.data?.content);
-            const fetchedData = response?.data?.data?.content.map(item => ({ ...item, key: item.id }));
-            setDataList(fetchedData);
-        }).catch((error) => {
-            if (error?.response?.data?.message==="Token yaroqsiz!"){
-                localStorage.removeItem("myInfo");
 
+        }).catch((error) => {
+            if (error?.response?.data?.message === "Token yaroqsiz!") {
+                localStorage.removeItem("myInfo");
                 navigate('/')
             }
             console.log('API error:', error);
-        });
-    }    
+            message.error('Failed to fetch data');
+        })
+    })
 
     const handleCancel = () => {
         setOpen(false);
         setEditingData(null);
     };
     
-    function ClassifairGet() {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {
-                key: 'h_methodical_publication_type'
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                setStylePublicationType(response?.data);
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
-    }
+    const stylePublicationType = useQuery({
+        queryKey: ['h_methodical_publication_type'],
+        queryFn:() => ClassifairGet('h_methodical_publication_type').then(res=>res.data[0])
+    })
   return (
     <>
     <div className='p-4'>
@@ -249,13 +227,13 @@ const UslubiyNashrlar = () => {
         style={{right:"-80px"}}
         footer={null} 
       >
-        <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS" getIlmiyNashir={getIlmiyNashir} editingData={editingData}  handleCancel={handleCancel}/>
+        <UslubiyNashrlarModal publicationType="STYLE_PUBLICATIONS" getIlmiyNashir={() => publication_List.refetch()} editingData={editingData}  handleCancel={handleCancel}/>
 
       </Modal>
             
             <div className=' d-flex  align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
-                      onFinish={() => getIlmiyNashir()}
+                      onFinish={() => publication_List.refetch()}
                       className=' d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang"
@@ -274,7 +252,7 @@ const UslubiyNashrlar = () => {
                     </Form.Item>
                     <Form.Item label="Uslubiy nashr turi" name="srcType">
                         <Select name="srcType" labelInValue style={{width: 300,}}
-                                options={stylePublicationType[0]?.options?.map(item => ({
+                                options={stylePublicationType?.data?.options?.map(item => ({
                                     label: item.name,
                                     value: item.code
                                 }))}
@@ -323,7 +301,6 @@ const UslubiyNashrlar = () => {
                             total: page
                         }
                     })
-                     getIlmiyNashir();
                   }
                 }
              }

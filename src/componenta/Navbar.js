@@ -16,7 +16,7 @@ function Navbar(props) {
 
     const {t} = useTranslation();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-
+console.log(fulInfo);
     const items = [
         {
             label: (
@@ -48,7 +48,7 @@ function Navbar(props) {
         let childrenRoles = [];
         fulInfo?.roles?.map(role => (
             {
-                label: role ==='ROLE_DEPARTMENT'? "BO'LIM ADMIN":role==='ROLE_TEACHER'? "O'QITUVCHI" : role==='ROLE_ADMIN'? 'ADMIN' :role==='ROLE_FACULTY'? 'FAKULTET' :'',
+                label: role ==='ROLE_DEPARTMENT'? "BO'LIM ADMIN":role==='ROLE_TEACHER'? "O'QITUVCHI" : role==='ROLE_ADMIN'? 'ADMIN' :role==='ROLE_FACULTY'? 'FAKULTET':'',
                 key: role,
                 onClick: (e) => {
                     changeRoles.mutate(e.key)
@@ -118,7 +118,8 @@ function Navbar(props) {
             if (e === 'ROLE_TEACHER') {
                 navigate('/profile/1')
             } else if (e === 'ROLE_FACULTY') {
-                navigate('/dashboard-fakultyadm/1')
+                // navigate('/dashboard-fakultyadm/1')
+                navigate('/dekan/1')
             } else if (e === 'ROLE_ADMIN') {
                 navigate('/dashboard-admin/1')
             }
@@ -191,7 +192,7 @@ function Navbar(props) {
                                     </Space>
                                 </a>
                             </Dropdown>
-                            {/*/!*${ApiName}*!/  http://localhost:3000/*/}
+                            {/* /!*${ApiName}*!/  http://localhost:3000/ */}
                             {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
                             {fulInfo === null ?
                                 <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}

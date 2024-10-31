@@ -1,12 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react'
 import {Button, DatePicker, Divider, Form, Input, message, Select, Upload,} from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import './IntModal.scss'
 import {ApiName} from "../../api/APIname";
 import {PlusOutlined} from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
-
+import './IntModal.scss'
+import { useMutation, useQuery } from 'react-query';
+import { addAuthor, ClassifairGet, IntelektualCreate, IntelektualUpdate } from '../../api/general';
 
 const IntMulkModal = (props) => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
@@ -15,7 +16,6 @@ const IntMulkModal = (props) => {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const [searchResults, setSearchResults] = useState([]);
-    const [Scientificpublication, setScientificpublication] = useState([]);
     const [data, setData] = useState({
         publicationType: props?.publicationType,
     });
@@ -29,7 +29,6 @@ const IntMulkModal = (props) => {
 
     useEffect(() => {
         handleSearch()
-        ClassifairGet()
         if (props.editingData) {
             const editingValues = {
                 ...props.editingData,
@@ -42,7 +41,6 @@ const IntMulkModal = (props) => {
             setData(editingValues);
             form.setFieldsValue(editingValues);
         } else if (props.handleCancel) {
-
             setData({
                 issueYear: '',
                 publicationType: props?.publicationType,
@@ -128,23 +126,11 @@ const IntMulkModal = (props) => {
         }));
     };
 
-    function ClassifairGet() {
-        axios.get(`${ApiName}/api/classifier`, {
-            params: {
-                key: 'h_patient_type'
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`
-            }
-        })
-            .then(response => {
-                setScientificpublication(response.data);
-            })
-            .catch(error => {
-                console.log(error, 'error');
-            });
-    }
+    const Scientificpublication = useQuery({
+        queryKey: ['h_patient_type'],
+        queryFn: () => ClassifairGet('h_patient_type').then(res => res?.data[0]),
+    })
+
 
     const handleSearch = async () => {
         try {
@@ -167,54 +153,47 @@ const IntMulkModal = (props) => {
 
     };
 
-    const onFinish = (values) => {
-        const requestPayload2 = {
-            ...data2
-        };
-        console.log(data2);
-        axios.post(`${ApiName}/api/author/create`, requestPayload2, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-            },
-        }).then(response => {
-            console.log(data2);
-            message.success(`Muallif muvaffaqiyatli qo'shildi`);
-        }).catch(error => {
-            console.log(error);
-            message.error(`Muallif 'qo'shishda xatolik`);
-        });
-    };
-    const handleSubmit = (event) => {
-        const request = props.editingData
-            ? axios.put(`${ApiName}/api/publication/update`, {
-                ...data,
-                issueYear: event.issueYear.format('YYYY-MM-DD'),
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            : axios.post(`${ApiName}/api/publication/create`, {
-                ...data,
-                issueYear: data.issueYear.format('YYYY-MM-DD')
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-        request.then(res => {
+
+    const addIlmiyNashrInfo = useMutation({
+        mutationFn: (data) => {   
+            console.log(data);
+            const request = props.editingData 
+                ? IntelektualUpdate({
+                    ...data,
+                    issueYear:data?.issueYear.format('YYYY-MM-DD'),
+                })
+                : IntelektualCreate({
+                    ...data,
+                    issueYear: data?.issueYear.format('YYYY-MM-DD'),
+                });
+            return request;
+        },
+        onSuccess: (response) => {
             message.success(`Intelektual mulk ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             form.resetFields();
             props.getIntelektualMulk()
             if (props.handleCancel) {
                 props.handleCancel();
             }
-        }).catch(error => console.log(error))
+        },
+        onError: (error) => {
+            console.error(error);
+            message.error(`Ilmiy nashr ${props.editingData ? 'yangilashda' : "qo'shishda"} xatolik yuz berdi`);
+        },
+    });
 
-    }
+    const useAddAuthor = useMutation({
+        mutationFn:(data2) => addAuthor(data2),
+        onSuccess: () => {
+           form2.resetFields();
+           handleSearch();
+           message.success('Muallif muvaffaqiyatli qo`shildi');
+       },
+       onError: (error) => {
+           console.error(error);
+           message.error('Muallifni qo`shishda xatolik yuz berdi');
+       },
+       })
     const handleChange = (value) => {
         setData(prevState => ({
             ...prevState,
@@ -225,7 +204,7 @@ const IntMulkModal = (props) => {
 
     return (
         <div>
-            <Form className='row' form={form} layout="vertical" ref={formRef} onFinish={handleSubmit}
+            <Form className='row' form={form} layout="vertical" ref={formRef} onFinish={() => addIlmiyNashrInfo.mutate(data)}
                   colon={false}
                   fields={[
                       {
@@ -258,7 +237,7 @@ const IntMulkModal = (props) => {
                     wrapperCol={{span: 24}}
                     className='col-6'>
                     <Select placeholder='Intelektual mulk turi'
-                            options={Scientificpublication[0]?.options?.map(item => ({
+                            options={Scientificpublication?.data?.options?.map(item => ({
                                 label: item.name,
                                 value: item.code
                             }))}
@@ -419,8 +398,8 @@ const IntMulkModal = (props) => {
                                             />
                                         </Form.Item>
                                         <Form.Item>
-                                            <Button type="primary" icon={<PlusOutlined/>} onClick={onFinish}
-                                                    htmlType="submit">
+                                            <Button type="primary" icon={<PlusOutlined/>} 
+                                                    htmlType="submit"  onClick={(e) => useAddAuthor.mutate(data2)}>
                                                 Qo'shish
                                             </Button>
                                         </Form.Item>
@@ -450,7 +429,7 @@ const IntMulkModal = (props) => {
                     wrapperCol={{span: 24}}
                     className='col-6'
                 >
-                    <Upload name='file' {...uploadProps}>
+                    <Upload accept="application/pdf,application/vnd.ms-excel" name='file' {...uploadProps}>
                         <Button icon={<UploadOutlined />}>PDF</Button>
                     </Upload>
                 </Form.Item>

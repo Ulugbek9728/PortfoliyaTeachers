@@ -16,12 +16,13 @@ import {ApiName} from "../../api/APIname";
 import "./UslubiyNashrlarModal.scss";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { useMutation, useQuery } from "react-query";
+import { addAuthor, ClassifairGet, UslubiyNashrCreate, UslubiyNashrUpdate } from "../../api/general";
 dayjs.extend(customParseFormat);
 
 const UslubiyNashrlarModal = (props) => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-    const [searchResults, setSearchResults] = useState([]);
-    const [stylePublicationType, setStylePublicationType] = useState([]);
+    const [searchResults, setSearchResults] = useState([])
     const [form] = Form.useForm();
     const [url, seturl] = useState(true);
     const formRef = useRef(null);
@@ -48,8 +49,14 @@ const UslubiyNashrlarModal = (props) => {
         degreeAndTitle: "",
     });
     const [form2] = Form.useForm();
+    
+
+    const stylePublicationType = useQuery({
+        queryKey: ['h_methodical_publication_type'],
+        queryFn:() => ClassifairGet('h_methodical_publication_type').then(res=>res.data[0])
+    })
+
     useEffect((value) => {
-        ClassifairGet();
         if (props.editingData) {
             const editingValues = {
                 ...props.editingData,
@@ -59,11 +66,11 @@ const UslubiyNashrlarModal = (props) => {
                 authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item => item.id) : [],
                 publicationType: props.editingData.publicationType,
                 stylePublicationType: props.editingData.stylePublicationType,
-                fileType: props.editingData.fileType || 'Url'
+                fileType: props.editingData.fileType || 'Url',
+                fileType: props.editingData.doiOrUrl ? 'Url' : "Upload",
             };
             setData(editingValues);
             form.setFieldsValue(editingValues);
-            // setMonografiya(Scientificpublication[0]?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
             seturl(props.editingData.fileType === 'Url');
         } else if (props.handleCancel) {
             setData({
@@ -79,14 +86,14 @@ const UslubiyNashrlarModal = (props) => {
                 authorIds: []
             })
         }
-    }, [props.editingData, form]);
+    }, [props.editingData, form, stylePublicationType?.data]);
     useEffect(() => {
         return () => {
             handleSearch();
         };
-    }, []);
-    const handleSearch = async () => {
+    }, []);    
 
+    const handleSearch = async () => {
         try {
             const response = await axios.get(`${ApiName}/api/author/search`, {
                 params: {query: ''},
@@ -114,24 +121,8 @@ const UslubiyNashrlarModal = (props) => {
         }));
     };
 
-    function ClassifairGet() {
-        axios
-            .get(`${ApiName}/api/classifier`, {
-                params: {
-                    key: "h_methodical_publication_type",
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            .then((response) => {
-                setStylePublicationType(response.data);
-            })
-            .catch((error) => {
-                console.log(error, "error");
-            });
-    }
+
+
 
     const handleInputChange = (event) => {
         const {name, value} = event.target;
@@ -149,7 +140,7 @@ const UslubiyNashrlarModal = (props) => {
         const {name} = option;
         setData(prevState => ({
             ...prevState,
-            [name]: name === 'stylePublicationType' ? stylePublicationType[0]?.options?.filter(item => item.code === value)[0] : value
+            [name]: name === 'stylePublicationType' ? stylePublicationType?.data.options?.filter(item => item.code === value)[0] : value
         }));
         if (name === "fileType") {
             seturl(value === "Url");
@@ -218,84 +209,70 @@ const UslubiyNashrlarModal = (props) => {
         },
     };
 
-    const handleSubmit = (values) => {
-        const request = props.editingData
-            ? axios.put(`${ApiName}/api/publication/update`, {
-                ...data,
-                issueYear: data.issueYear.format('YYYY-MM-DD'),
-                styleCertificateDate: data.styleCertificateDate.format('YYYY-MM-DD')
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            : axios.post(`${ApiName}/api/publication/create`,
-                {
-                    ...data,
-                    issueYear: data.issueYear.format('YYYY-MM-DD'),
-                    styleCertificateDate: data.styleCertificateDate.format('YYYY-MM-DD')
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${fulInfo?.accessToken}`,
-                    },
-                })
-        request.then(response => {
-            message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
-            form.resetFields();
-            setData({
-                authorCount: 0,
-                issueYear: '',
-                publicationType: props?.publicationType,
-                language: '',
-                scientificName: '',
-                doiOrUrl: '',
-                decisionScientificCouncil: '',
-                fileType: '',
-                stylePublisher: "",
-                styleCertificateNumber: "",
-                styleCertificateDate: "",
-                mediaIds: [],
-                authorIds: []
-            })
-            props.getIlmiyNashir()
-            // Forma maydonlarini tozalash uchun resetFields chaqirish
-            if (props.onSuccess) {
-                props.onSuccess();
-            }
-            // Modalni yopish
-            if (props.handleCancel) {
-                props.handleCancel();
-            }
-        }).catch(error => {
-            console.log(error);
-            message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
-        });
-    };
-    const onFinish = (values) => {
-        const requestPayload2 = {
-            ...data2,
-        };
-        console.log(data2);
-        axios
-            .post(`${ApiName}/api/author/create`, requestPayload2, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            .then((response) => {
-                console.log(data2);
-                handleSearch("");
-                message.success(`Maqola muvaffaqiyatli 'qo'shildi'}`);
-            })
-            .catch((error) => {
-                console.log(error);
-                message.error(`Maqolani 'qo'shishda'} xatolik`);
-            });
-    };
+const addUslubiyNashrInfo = useMutation({
+   mutationFn: (data) => {
+    const request = props.editingData 
+    ? UslubiyNashrUpdate({
+        ...data,
+        issueYear: data.issueYear.format('YYYY-MM-DD'),
+        styleCertificateDate: data.styleCertificateDate.format('YYYY-MM-DD')
+    })
+    : UslubiyNashrCreate({
+        ...data,
+        issueYear: data.issueYear.format('YYYY-MM-DD'),
+        styleCertificateDate: data.styleCertificateDate.format('YYYY-MM-DD')
+    });
+    return request;
+   },
+   onSuccess: (response) => {
+    message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
+    form.resetFields();
+    setData({
+        authorCount: 0,
+        issueYear: '',
+        publicationType: props?.publicationType,
+        language: '',
+        scientificName: '',
+        doiOrUrl: '',
+        decisionScientificCouncil: '',
+        fileType: '',
+        stylePublisher: "",
+        styleCertificateNumber: "",
+        styleCertificateDate: "",
+        mediaIds: [],
+        authorIds: []
+    })
+    props.getIlmiyNashir()
+    // Forma maydonlarini tozalash uchun resetFields chaqirish
+    if (props.onSuccess) {
+        props.onSuccess();
+    }
+    // Modalni yopish
+    if (props.handleCancel) {
+        props.handleCancel();
+    }
+},
+onError: (error) => {
+    console.log(error);
+    message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
+},
+})
+
+const useAddAuthor = useMutation({
+    mutationFn:(data2) => addAuthor(data2),
+    onSuccess: () => {
+       form2.resetFields();
+       handleSearch();
+       message.success('Muallif muvaffaqiyatli qo`shildi');
+   },
+   onError: (error) => {
+       console.error(error);
+       message.error('Muallifni qo`shishda xatolik yuz berdi');
+   },
+   })
+   
+
+
 
     return (
         <div>
@@ -304,7 +281,7 @@ const UslubiyNashrlarModal = (props) => {
                 form={form}
                 ref={formRef}
                 initialValues={data}
-                onFinish={handleSubmit}
+                onFinish={(e) => addUslubiyNashrInfo.mutate(data)}
                 fields={[
                     {
                         name: "stylePublicationType",
@@ -361,7 +338,7 @@ const UslubiyNashrlarModal = (props) => {
                     className="col-6"
                 >
                     <Select
-                        options={stylePublicationType[0]?.options?.map((item) => ({
+                        options={stylePublicationType?.data?.options?.map((item) => ({
                             label: item.name,
                             value: item.code,
                         }))}
@@ -435,7 +412,9 @@ const UslubiyNashrlarModal = (props) => {
                                         margin: "8px 0",
                                     }}
                                 />
-                                <Form name="wrap" form={form2}>
+                                <Form onFinish={(e) => useAddAuthor.mutate(data2)}
+                                   name="wrap" 
+                                   form={form2}>
                                     <div className="d-flex gap-2">
                                         <Form.Item
                                             name="username"
@@ -518,7 +497,6 @@ const UslubiyNashrlarModal = (props) => {
                                             <Button
                                                 type="primary"
                                                 icon={<PlusOutlined/>}
-                                                onClick={onFinish}
                                                 htmlType="submit"
                                             >
                                                 Qo'shish
@@ -559,7 +537,7 @@ const UslubiyNashrlarModal = (props) => {
                         name="file"
                         // valuePropName="fileList"
                     >
-                        <Upload name='file' {...uploadProps}>
+                        <Upload accept="application/pdf,application/vnd.ms-excel" name='file' {...uploadProps}>
                             <Button icon={<UploadOutlined/>}>PDF</Button>
                         </Upload>
                     </Form.Item>

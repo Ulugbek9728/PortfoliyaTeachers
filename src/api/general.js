@@ -44,3 +44,61 @@ export const ToglActiveStatus = (value) => getInstance().put(`/api/publication/u
 export const Comment = (value) => getInstance().post(`/api/comment`, value)
 export const getComment = (filter) => getInstance().get(`/api/comment/${filter}`);
 
+
+
+export const fetchCurrentUser = () => getInstance().get(`/api/profile/current`);
+
+export const profileUpdate = (data) => getInstance().put(`/api/profile/update`, data);
+// Ilmiy nashrni yaratish uchun funksiyasi
+export const IlmiyNashrCreate = (data) => getInstance().post('/api/publication/create', data);
+
+// Ilmiy nashrni yangilash uchun funksiyasi
+export const IlmiyNashrUpdate = (data) => getInstance().put('/api/publication/update', data);
+
+// mualliflarni qoshish uchun
+export const addAuthor = (data2) => getInstance().post('/api/author/create', data2)
+ 
+//Search
+
+// export const search = (query) => getInstance().get('/api/author/search',{
+//     params: { query:'' } 
+// })
+
+//Ilmiy Nashrlar Deleted
+
+export const DeletIlmiyNashr = (value) => getInstance().put(`/api/publication/update_status`, value)
+
+// getPublikatsiya Ilmiy Nashrlar
+
+export const getIlmiyNashrPublikatsiya = (filter) => getInstance().get(`/api/publication/current-user`,{
+    params:filter
+});
+
+// Ilmiy nashrni yaratish uchun funksiyasi
+export const UslubiyNashrCreate = (data) => getInstance().post('/api/publication/create', data);
+
+// Ilmiy nashrni yangilash uchun funksiyasi
+export const UslubiyNashrUpdate = (data) => getInstance().put('/api/publication/update', data);
+
+// Uslubiy Nashrlar get
+export const getUslubiyNashrPublikatsiya = (filter) => getInstance().get(`/api/publication/current-user`,{
+    params:filter
+});
+
+// Ilmiy nashrni yaratish uchun funksiyasi
+export const IntelektualCreate = (data) => getInstance().post('/api/publication/create', data);
+
+// Ilmiy nashrni yangilash uchun funksiyasi
+export const IntelektualUpdate = (data) => getInstance().put('/api/publication/update', data);
+// Ilmiy Saloxiyat yaratish uchun funksiyasi
+export const SaloxiyatCreate = (data) => getInstance().post('/api/publication/create', data);
+
+// Ilmiy Saloxiyat yangilash uchun funksiyasi
+export const SaloxiyatUpdate = (data) => getInstance().put('/api/publication/update', data);
+
+export const TeacherList = (params) => getInstance().get('/api/profile/admin/teacher-list', { params });
+
+export const TeacherFullInfo = () => {
+    return getInstance().get(`/api/profile/admin/teacher-list`);
+  };
+//   export const TeacherwebLink = (data) => {return getInstance().get('/api/author-profile/{employeeId}',data)}; 

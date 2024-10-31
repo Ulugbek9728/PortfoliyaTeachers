@@ -12,6 +12,8 @@ import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
 import Fakulty from "./pages/fakulty/fakulty";
+import TeachersInfo from "./pages/admin/TeachersInfo";
+import Dekan from "./pages/dekan/dekan";
 
 
 const router = createBrowserRouter([
@@ -70,12 +72,26 @@ const router = createBrowserRouter([
         element:<Profile/>,
     },
     {
+        path:'/dekan/*',
+        element:<Dekan/>,
+    },
+    {
         path:'/dashboard-admin/*',
         element:<Admin/>,
     },
     {
         path:'/dashboard-fakultyadm/*',
         element:<Fakulty/>,
+    },
+    {
+        path: "/userInfo",
+        element: (<TeachersInfo/>),
+        children:[
+            {
+                path: "/userInfo/:id",
+                element: (<TeachersInfo/>),
+            },
+        ]
     },
 ]);
 

@@ -8,7 +8,6 @@ function AddFakulty(props) {
 
     const [form] = Form.useForm();
     const formRef = useRef(null);
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [dekanAdd, setDekanAdd] = useState(null);
 

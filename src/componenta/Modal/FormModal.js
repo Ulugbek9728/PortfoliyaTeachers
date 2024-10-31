@@ -4,11 +4,11 @@ import {PlusOutlined,UploadOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import {ApiName} from '../../api/APIname';
 import dayjs from 'dayjs';
-import {ClassifairGet} from "../../api/general";
+import {ClassifairGet, IlmiyNashrCreate, IlmiyNashrUpdate,addAuthor, search} from "../../api/general";
 
 
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
@@ -19,6 +19,26 @@ const FormModal = (props) => {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const formRef = useRef(null);
+    const [defaultPDFList, setDefaultPDFList] = useState(
+        props.editingData?.mediaIds?.filter(item => item.attachResDTO.section === 'defaultPDF').map(item => ({
+            uid: item.attachResDTO.id,
+            id: item.attachResDTO.id,
+            name: item.attachResDTO.fileName,
+            status: 'done',
+            url: item.attachResDTO.url,
+        })) || []
+    );
+    
+    const [monografiyaPdfList, setMonografiyaPdfList] = useState(
+        props.editingData?.mediaIds?.filter(item => item.attachResDTO.section === 'monografiyaPdf').map(item => ({
+            uid: item.attachResDTO.id,
+            id: item.attachResDTO.id,
+            name: item.attachResDTO.fileName,
+            status: 'done',
+            url: item.attachResDTO.url,
+        })) || []
+    );
+    
     const [data2, setData2] = useState({
         citizenship: "",
         fullName: "",
@@ -41,24 +61,29 @@ const FormModal = (props) => {
         authorIds: []
     });
 
+    const Scientificpublication = useQuery({
+        queryKey: ['h_scientific_publication_type'],
+        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
+    })
     useEffect(() => {
-        handleSearch()
+        handleSearch('');
         if (props.editingData) {
             const editingValues = {
                 ...props.editingData,
                 issueYear: dayjs(props.editingData.issueYear),
-                authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item=>item.id) : [],
-                mediaIds:props.editingData.mediaIds?.map((item)=>item.attachResDTO.id),
+                authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item => item.id) : [],
+                mediaIds: props.editingData.mediaIds?.map((item) => item.attachResDTO.id),
                 scientificField: props.editingData.scientificField,
                 publicationType: props.editingData.publicationType,
                 scientificPublicationType: props.editingData.scientificPublicationType,
+                fileType: props.editingData.fileType || 'Url',
                 fileType: props.editingData.doiOrUrl ? 'Url' : "Upload",
             };
+    
             setData(editingValues);
             form.setFieldsValue(editingValues);
             setUrl(editingValues.fileType === 'Url');
-        }
-        else if (props.handleCancel){
+        } else if (props.handleCancel) {
             setData({
                 authorCount: 0,
                 issueYear: '',
@@ -72,13 +97,11 @@ const FormModal = (props) => {
                 fileType: '',
                 mediaIds: [],
                 authorIds: []
-            })
+            });
             form.resetFields();
-
         }
-    }, [props.editingData, form, props.handleCancel]);
-
-
+    }, [props.editingData, form, props.handleCancel, Scientificpublication?.data]);
+    
     const Xalqaro = useQuery({
         queryKey: ['h_publication_database'],
         queryFn:()=>ClassifairGet('h_publication_database').then(res=>res.data[0])
@@ -89,10 +112,26 @@ const FormModal = (props) => {
             res=> res.data[0]?.options?.filter(item=>item?.code?.endsWith('00.00'))
         )
     })
-    const Scientificpublication = useQuery({
-        queryKey: ['h_scientific_publication_type'],
-        queryFn:()=>ClassifairGet('h_scientific_publication_type').then(res=>res.data[0])
-    })
+
+    // const handleSearch = (query) => {
+    //     return useQuery({
+    //         queryKey: ['searchAuthors', query],  // Query key'ni query parametr bilan belgilash
+    //         queryFn: () => search(query),  // queryFn sifatida search funksiyasini chaqiring
+    //         onSuccess: (data) => {
+    //             if (data?.data?.isSuccess && !data?.data?.error) {
+    //                 setSearchResults(data?.data?.data || []);  // Qidiruv natijalarini yangilash
+    //             } else {
+    //                 console.error('Error in response:', data?.data?.message);
+    //                 setSearchResults([]);  // Xatolik yuz berganda natijalarni bo'shatish
+    //             }
+    //         },
+    //         onError: (error) => {
+    //             console.error('Error fetching search results:', error);  // Xatolikni konsolda ko'rsatish
+    //             setSearchResults([]);  // Xatolik yuz berganda natijalarni bo'shatish
+    //         },
+    //     });
+    // };
+
 
     const handleSearch = async () => {
         try {
@@ -114,6 +153,7 @@ const FormModal = (props) => {
         }
 
     };
+
     const handleChange = (value) => {
         setData(prevState => ({
             ...prevState,
@@ -145,114 +185,91 @@ const FormModal = (props) => {
         if (name === "scientificPublicationType") {
             setMonografiya(Scientificpublication?.data?.options?.filter(item => item.code === value)[0]?.name === 'Monografiya');
         }
-
         if (name === "fileType") {
             setUrl(value === 'Url');
         }
     };
 
-    const uploadProps = {
+    const uploadProps = (section) => ({
         name: 'file',
         action: `${ApiName}/api/v1/attach/upload`,
         headers: {
             Authorization: `Bearer ${fulInfo?.accessToken}`,
         },
-        fileList: props.editingData?.mediaIds?.map((item)=> {
-            const attachResDTO = item.attachResDTO;
-            return {
-                uid: attachResDTO.id,
-                id:attachResDTO.id,
-                name: attachResDTO.fileName,
-                status: 'done',
-                url: attachResDTO.url }
-        }),
+        fileList: section === 'defaultPDF' ? defaultPDFList : monografiyaPdfList, 
+        beforeUpload: (file) => {
+            const isSizeValid = file.size / 1024 / 1024 < 1; 
+            if (!isSizeValid) {
+                message.error(`${file.name} fayl hajmi 1 MB dan oshmasin.`);
+                return Upload.LIST_IGNORE; 
+            }
+            return true; 
+        },
         onChange: (info) => {
-
+            if (section === 'defaultPDF') {
+                setDefaultPDFList(info.fileList);
+            } else {
+                setMonografiyaPdfList(info.fileList); 
+            }
+    
             if (info.file.status === 'done') {
                 message.success(`${info.file.name} fayl muvaffaqiyatli yuklandi`);
                 setData(prevState => ({
                     ...prevState,
-                    mediaIds: [info.file.response.id],
+                    mediaIds: [...prevState.mediaIds, info.file.response.id],
                 }));
-            }
-            else if (info.file.status === 'removed') {
-                if(props.editingData){  
-                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.id);
-                    setData(prevState => ({
-                        ...prevState,
-                        mediaIds: [result],
-                    }));
-                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.id}`, {
-                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
-                    }).then((res) => {
-                        message.success("File o'chirildi")
-                    }).catch((error) => {
-                        message.error(`${info.file.name} file delete failed.`);
-                    })
-                }
-                else{
-                    const result = data.mediaIds.filter((idAll) => idAll !== info?.file?.response?.id);
-                    setData(prevState => ({
-                        ...prevState,
-                        mediaIds: [result],
-                    }));
-                    axios.delete(`${ApiName}/api/v1/attach/${info?.file?.response?.id}`, {
-                        headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
-                    }).then((res) => {
-                        message.success("File o'chirildi")
-                    }).catch((error) => {
-                        message.error(`${info.file.name} file delete failed.`);
-                    })
-                }
-            }
-            else if (info.file.status === 'error') {
+            } else if (info.file.status === 'removed') {
+                const updatedMediaIds = data.mediaIds.filter(id => id !== info.file.response.id);
+                setData(prevState => ({
+                    ...prevState,
+                    mediaIds: updatedMediaIds, 
+                }));
+                axios.delete(`${ApiName}/api/v1/attach/${info.file.response.id}`, {
+                    headers: {"Authorization": `Bearer ${fulInfo?.accessToken}`}
+                }).then(() => {
+                    message.success("File o'chirildi");
+                }).catch(() => {
+                    message.error(`${info.file.name} file delete failed.`);
+                });
+            } else if (info.file.status === 'error') {
                 message.error(`${info.file.name} fayl yuklashda xato.`);
             }
         }
+    });
+    
+    
+    const useAddAuthor = useMutation({
+     mutationFn:(data2) => addAuthor(data2),
+     onSuccess: () => {
+        form2.resetFields();
+        handleSearch();
+        message.success('Muallif muvaffaqiyatli qo`shildi');
+    },
+    onError: (error) => {
+        console.error(error);
+        message.error('Muallifni qo`shishda xatolik yuz berdi');
+    },
+    })
+    
 
-    };
-
-    const onFinish = () => {
-        axios.post(`${ApiName}/api/author/create`, data2, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${fulInfo?.accessToken}`,
-            },
-        }).then(response => {
-            form2.resetFields();
-            handleSearch()
-            message.success(`Muallif muvaffaqiyatli qo'shildi`);
-        }).catch(error => {
-            console.log(error);
-            message.error(`Muallif 'qo'shishda xatolik`);
-        });
-    };
-
-    const handleSubmit = (values) => {
-        const request = props.editingData
-            ? axios.put(`${ApiName}/api/publication/update`, {
-                ...data,
-                issueYear: data.issueYear.format('YYYY-MM-DD')
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-            : axios.post(`${ApiName}/api/publication/create`, {
-                ...data,
-                issueYear: data.issueYear.format('YYYY-MM-DD')
-            },
-             {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            })
-        request.then(response => {
-            message.success(`Ilmiy nashir ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
-            form.resetFields();
+    const addIlmiyNashrInfo = useMutation({
+        mutationFn: (data) => {    
+            const request = props.editingData 
+                ? IlmiyNashrUpdate({
+                    ...data,
+                    issueYear: data.issueYear.format('YYYY-MM-DD'),
+                })
+                : IlmiyNashrCreate({
+                    
+                    ...data,
+                    issueYear: data.issueYear.format('YYYY-MM-DD'),
+                });
+            return request;
+        },
+        onSuccess: (response) => {
+            message.success(`Ilmiy nashr ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
             props.getIlmiyNashir()
+            form.resetFields();
             setData({
                 authorCount: 0,
                 issueYear: '',
@@ -272,17 +289,19 @@ const FormModal = (props) => {
             }
             if (props.handleCancel) {
                 props.handleCancel();
-              }
-
-        }).catch(error => {
-            console.log(error);
-            message.error(`Ilmiy nashir ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
-        });
-    };
+            }
+        },
+        onError: (error) => {
+            console.error(error);
+            message.error(`Ilmiy nashr ${props.editingData ? 'yangilashda' : "qo'shishda"} xatolik yuz berdi`);
+        },
+    });
+    
+   
     return (
         <div>
             <Form form={form} ref={formRef} initialValues={data}
-                className='row' onFinish={handleSubmit}
+                className='row' onFinish={(e) => addIlmiyNashrInfo.mutate(data)}
                 fields={[
                     {
                         name: "scientificPublicationType",
@@ -340,6 +359,7 @@ const FormModal = (props) => {
                 </Form.Item>
 
                 {monografiya && (
+                 <>
                     <Form.Item layout="vertical" className='col-6'
                         label="Ilmiy yoki ilmiy texnik kengash qarori"
                         name="decisionScientificCouncil" labelCol={{span: 24}} wrapperCol={{span: 24}}
@@ -352,10 +372,26 @@ const FormModal = (props) => {
                             className='py-2'
                         />
                     </Form.Item>
+                    <Form.Item
+                        layout="vertical"
+                        label="Fayl yukla"
+                        labelCol={{span: 24}}
+                        wrapperCol={{span: 24}}
+                        className='col-6'
+                        name='monografiya.file'
+                    >
+                        <Upload   accept="application/pdf,application/vnd.ms-excel"  {...uploadProps('monografiyaPdf')}
+                         
+                        >
+                        <Button icon={<UploadOutlined />}>PDF</Button>
+                        </Upload>
+                    </Form.Item>
+                 </>
                 )}
 
                 <Form.Item layout="vertical"
-                    label="Nashrning bibliografik matni"
+                    label="
+                    Nashrning bibliografik matni"
                     name="scientificName" labelCol={{span: 24}} wrapperCol={{span: 24}}
                     rules={[{required: true, message: 'Iltimos nashrning bibliografik matnini kiriting'}]}
                     className='col-6'
@@ -389,8 +425,8 @@ const FormModal = (props) => {
                             onChange={handleChange}
                             filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
                             filterSort={(optionA, optionB) =>
-                                (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
-                            options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))}
+                            (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
+                            options={searchResults.map(author => ({value: author.id, label: author.fullName +' (' + author.workplace + ' '+ author.position + ') '}))} 
                             dropdownRender={(menu) => (
                                 <>
                                     {menu}
@@ -399,7 +435,7 @@ const FormModal = (props) => {
                                             margin: '8px 0',
                                         }}
                                     />
-                                    <Form onFinish={onFinish}
+                                    <Form onFinish={(e) => useAddAuthor.mutate(data2)}
                                         name="wrap"
                                         form={form2}
                                     >
@@ -551,17 +587,17 @@ const FormModal = (props) => {
                     <Form.Item
                         layout="vertical"
                         label="Fayl yuklash"
-                        name="file"
+                        name="defaultfile"
                         labelCol={{span: 24}}
                         wrapperCol={{span: 24}}
                         className='col-6'
                     >
-                        <Upload name='file' {...uploadProps}>
+                        <Upload accept="application/pdf,application/vnd.ms-excel"  {...uploadProps('defaultPDF')}
+                        >
                         <Button icon={<UploadOutlined />}>PDF</Button>
                         </Upload>
                     </Form.Item>
                 )}
-
                 <Form.Item
                     layout="vertical"
                     label="Nashr yili"

@@ -241,15 +241,15 @@ const IlmiySaloxiyati = () => {
                         <Select name="srcType" allowClear labelInValue style={{width: 250,}} placeholder='Ilmiy raxbarlik turi'
                                 options={[
                                     {
-                                        label: 'Ilmiy raxbarligi ostida ximoya qilgan fan nomzodi shogird',
+                                        label: 'Fan nomzodi',
                                         value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'
                                     },
                                     {
-                                        label: 'Ilmiy raxbarligi ostida ximoya qilgan falsafa doktori shogird',
+                                        label: 'Falsafa doktori',
                                         value: 'Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'
                                     },
                                     {
-                                        label: 'Ilmiy raxbarligi ostida ximoya qilgan fan doktori shogird',
+                                        label: 'Fan doktori',
                                         value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'
                                     }
                                 ]}

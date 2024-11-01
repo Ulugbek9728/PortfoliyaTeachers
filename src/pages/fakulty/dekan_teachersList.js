@@ -16,6 +16,7 @@ const Dekan_teachersList = () => {
       queryKey: ["FacultyList"],
       queryFn: () => getFaculty(11, "").then((res) => res.data),
     });
+
     const stafPosition = useQuery({
       queryKey: ["h_teacher_position_type"],
       queryFn: () =>
@@ -46,7 +47,6 @@ const Dekan_teachersList = () => {
           staffPosition: srcItem.staffPosition,
         }).then((res) => res.data.data.content),
     });
-    console.log(data);
 
     useEffect(() => {
       form.setFieldsValue(srcItem);

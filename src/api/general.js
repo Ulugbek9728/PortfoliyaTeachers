@@ -45,7 +45,6 @@ export const Comment = (value) => getInstance().post(`/api/comment`, value)
 export const getComment = (filter) => getInstance().get(`/api/comment/${filter}`);
 
 
-
 export const fetchCurrentUser = () => getInstance().get(`/api/profile/current`);
 
 export const profileUpdate = (data) => getInstance().put(`/api/profile/update`, data);
@@ -91,10 +90,10 @@ export const IntelektualCreate = (data) => getInstance().post('/api/publication/
 // Ilmiy nashrni yangilash uchun funksiyasi
 export const IntelektualUpdate = (data) => getInstance().put('/api/publication/update', data);
 // Ilmiy Saloxiyat yaratish uchun funksiyasi
-export const SaloxiyatCreate = (data) => getInstance().post('/api/publication/create', data);
+export const SaloxiyatCreate = (data) => getInstance().post('/api/employee-student', data);
 
 // Ilmiy Saloxiyat yangilash uchun funksiyasi
-export const SaloxiyatUpdate = (data) => getInstance().put('/api/publication/update', data);
+export const SaloxiyatUpdate = (data,id) => getInstance().put(`/api/employee-student/${id}`, data);
 
 export const TeacherList = (params) => getInstance().get('/api/profile/admin/teacher-list', { params });
 

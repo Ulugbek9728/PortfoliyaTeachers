@@ -10,8 +10,14 @@ import Dekan_UslubiyNashrlar from './dekan_UslubiyNashrlar';
 import Dekan_IntelectualMulk from './dekan_IntelectualMulk';
 import DekanIlmiySaloxiyat from './dekan_IlmiySaloxiyat';
 import Dekan_teachersList from './dekan_teachersList';
+import AddKafedra from "./addKafedra";
 const Dekan = () => {
     const items = [
+        {
+            label: "Kafedra mudirini qo'shish",
+            key: '0',
+            icon: <UserOutlined/>,
+        },
         {
             label: "O`qtuvchilar royxati",
             key: '1',
@@ -61,6 +67,7 @@ const Dekan = () => {
                 }}
             >
                 <Routes>
+                    <Route path={"/0"} element={ <AddKafedra/>}/>
                     <Route path={"/1"} element={ <Dekan_teachersList/>}/>
                     <Route path={"/2/*"} element={ <Dekan_IlmiyNashrlar/>}/>
                     <Route path={"/3/*"} element={ <Dekan_UslubiyNashrlar/>}/>

@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import './teacherRating.css';
 import {EditOutlined, UploadOutlined, CloseSquareOutlined} from '@ant-design/icons';
-import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, InputNumber, Modal} from 'antd';
+import {Button, DatePicker, Form, Input, Select, Upload, Radio, message, notification} from 'antd';
 import {ApiName} from "../../api/APIname";
 import axios from 'axios';
 import {useNavigate} from "react-router-dom";
@@ -49,7 +49,6 @@ const defaultDatabaseProfiles = [
 ];
 
 const TeacherRating = () => {
-    const navigate = useNavigate();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [data, setData] = useState({
         profileId: fulInfo?.id,
@@ -100,8 +99,13 @@ const TeacherRating = () => {
         queryKey:['get_full_info'],
         queryFn:()=> fetchCurrentUser()
         .then(res=>{
-            console.log(res.data);
            const item = res?.data?.data;
+            let value
+            value = {
+                ...fulInfo,
+                roles:res?.data?.data?.roles,
+            }
+            localStorage.setItem("myInfo", JSON.stringify(value));
             return {
                 ...item,
                 specialist: {
@@ -121,6 +125,8 @@ const TeacherRating = () => {
                 attach: JSON.parse(item?.profileStateAwardDTO?.attach)
                 }
             }
+
+
         })
     })
     useEffect(() => {
@@ -314,7 +320,6 @@ const TeacherRating = () => {
     };
 
  const addProfileInfo = useMutation({
-
   mutationFn:(data) => profileUpdate({
     ...data,
     specialist: {

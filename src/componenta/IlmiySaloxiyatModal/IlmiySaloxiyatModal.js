@@ -15,7 +15,6 @@ const IlmiySaloxiyatModal = (props) => {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const formRef = useRef(null);
-    // const [IlmFan, setIlmFan] = useState([]);
     const [data, setData] = useState({});
     const [data2, setData2] = useState({
         citizenship: "",
@@ -27,6 +26,7 @@ const IlmiySaloxiyatModal = (props) => {
     const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
+        console.log(props.editingData)
         handleSearch()
         if (props.editingData) {
             const editingValues = {
@@ -44,7 +44,6 @@ const IlmiySaloxiyatModal = (props) => {
             form.resetFields();
         }
     }, [props.editingData, form, props.handleCancel]);
-
 
     const IlmFan = useQuery({
         queryKey: ['h_science_branch'],
@@ -157,53 +156,9 @@ const IlmiySaloxiyatModal = (props) => {
 
     };
 
-    // const handleSubmit = () => {
-    //     const request = props.editingData
-    //         ? axios.put(`${ApiName}/api/employee-student/${props.editingData.id}`, {
-
-    //             yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD'),
-    //             mediaId:data.mediaId,
-    //             scientificLeadershipType:data.scientificLeadershipType,
-    //             studentAcademicDegree:data.studentAcademicDegree,
-    //             studentId:data.studentId,
-    //             dissertationTopic:data.dissertationTopic,
-    //         }, {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 Authorization: `Bearer ${fulInfo?.accessToken}`,
-    //             },
-    //         })
-    //         : axios.post(`${ApiName}/api/employee-student`, {
-    //                 ...data,
-    //                 yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD')
-    //             },
-    //             {
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                     Authorization: `Bearer ${fulInfo?.accessToken}`,
-    //                 },
-    //             })
-    //     request.then(response => {
-    //         message.success(`Ilmiy saloxiyat ${props.editingData ? 'yangilandi' : "qo'shildi"}`);
-    //         form.resetFields();
-    //         props.getIlmiySaloxiyat123()
-    //         setData({})
-    //         if (props.onSuccess) {
-    //             props.onSuccess();
-    //         }
-    //         if (props.handleCancel) {
-    //             props.handleCancel();
-    //         }
-
-    //     }).catch(error => {
-    //         console.log(error);
-    //         message.error(`Ilmiy saloxiyat ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
-    //     });
-    // };
-
     const addIlmiyNashrInfo = useMutation({
-        mutationFn: (data) => {    
-            const request = props.editingData 
+        mutationFn: (data) => {
+            const request = props.editingData
                 ? SaloxiyatUpdate({
                     yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD'),
                     mediaId:data.mediaId,
@@ -211,7 +166,7 @@ const IlmiySaloxiyatModal = (props) => {
                     studentAcademicDegree:data.studentAcademicDegree,
                     studentId:data.studentId,
                     dissertationTopic:data.dissertationTopic,
-                })
+                },data?.id)
                 : SaloxiyatCreate({
                     ...data,
                     yearOfProtection: data.yearOfProtection.format('YYYY-MM-DD')
@@ -265,34 +220,6 @@ const IlmiySaloxiyatModal = (props) => {
 
                   ]}
             >
-                <Form.Item layout="vertical" label="Ilmiy raxbarlik turi" name="scientificLeadershipType"
-                           labelCol={{span: 24}}
-                           wrapperCol={{span: 24}} className='col-6'>
-                    <Select name='scientificLeadershipType' onChange={(e) => {
-                        setData({
-                            ...data,
-                            scientificLeadershipType: e
-                        })
-                    }}>
-                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'>
-                            Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird
-                        </Select.Option>
-                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'>
-                            Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird
-                        </Select.Option>
-                        <Select.Option value='Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'>
-                            Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird</Select.Option>
-                    </Select>
-                </Form.Item>
-                <Form.Item layout="vertical" label="Ximoya qilgan yili" name="yearOfProtection" labelCol={{span: 24}}
-                           wrapperCol={{span: 24}} className='col-6'>
-                    <DatePicker className='py-2'
-                                format="YYYY-MM-DD"
-                                name="yearOfProtection"
-                                onChange={(date) => {
-                                    setData({...data, yearOfProtection: date})
-                                }}/>
-                </Form.Item>
                 <Form.Item layout="vertical" label="Shogirt F.I.SH" name="studentId"
                            labelCol={{span: 24}} wrapperCol={{span: 24}} className='col-6'
                            rules={[{required: true, message: 'Iltimos Shogirt F.I.SH kiriting'}]}
@@ -411,6 +338,36 @@ const IlmiySaloxiyatModal = (props) => {
                             )}
                     />
                 </Form.Item>
+                <Form.Item layout="vertical" label="Ximoya qilgan yili" name="yearOfProtection" labelCol={{span: 24}}
+                           wrapperCol={{span: 24}} className='col-6'>
+                    <DatePicker className='py-2'
+                                format="YYYY-MM-DD"
+                                name="yearOfProtection"
+                                onChange={(date) => {
+                                    setData({...data, yearOfProtection: date})
+                                }}/>
+                </Form.Item>
+                <Form.Item layout="vertical" label="Ilmiy raxbarlik turi" name="scientificLeadershipType"
+                           labelCol={{span: 24}}
+                           wrapperCol={{span: 24}} className='col-6'>
+                    <Select name='scientificLeadershipType' onChange={(e) => {
+                        setData({
+                            ...data,
+                            scientificLeadershipType: e
+                        })
+                    }}>
+                        <Select.Option value='Fan nomzodi'>
+                            Fan nomzodi
+                        </Select.Option>
+                        <Select.Option value='Falsafa doktori'>
+                            Falsafa doktori
+                        </Select.Option>
+                        <Select.Option value='Fan doktori'>
+                            Fan doktori
+                        </Select.Option>
+                    </Select>
+                </Form.Item>
+
                 <Form.Item layout="vertical"
                            label="Dissertatsiya mavzusi"
                            name="dissertationTopic"
@@ -424,7 +381,7 @@ const IlmiySaloxiyatModal = (props) => {
                            }}/>
                 </Form.Item>
 
-                <Form.Item label="Shogirdning ilmiy darajasi" name="studentAcademicDegree" className='col-6'
+                <Form.Item label="Shogirdning ilm-fan sohasi" name="studentAcademicDegree" className='col-6'
                            layout="vertical"
                            labelCol={{span: 24}} wrapperCol={{span: 24}}>
                     <Select name="studentAcademicDegree" placeholder='Ilm-fan sohasi'

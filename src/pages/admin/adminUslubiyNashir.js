@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Drawer, Form, notification, Popconfirm, Select, Space, Switch, Table, Tag} from "antd";
+import {DatePicker, Drawer, Form, notification, Popconfirm, Select, Space, Switch, Table, Tag, Tooltip} from "antd";
 import {CheckOutlined, CloseOutlined, MenuFoldOutlined, SearchOutlined} from "@ant-design/icons";
 import {
     ClassifairGet,
@@ -22,7 +22,7 @@ function AdminUslubiyNashir(props) {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
     const [open, setOpen] = useState(false);
-
+    const [isDisabled, setIsDisabled] = useState(true); 
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
         faculty: searchParams.get('faculty') || null,
@@ -243,12 +243,15 @@ function AdminUslubiyNashir(props) {
             title: "KPI",
             width: 80,
             render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
                     checked={record?.kpi}
+                    disabled= {isDisabled}
                     onChange={() => KPIand1030.mutate({record, key: "KPI"})}
                 />
+                </Tooltip>
             )
         },
     ];
@@ -416,16 +419,18 @@ function AdminUslubiyNashir(props) {
                         label="KPI"
                         name="kpi"
                     >
+                     <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
                         <Switch
                             name='kpi'
                             checkedChildren={<CheckOutlined/>}
                             unCheckedChildren={<CloseOutlined/>}
                             checked={srcItem?.kpi}
+                            disabled={isDisabled}
                             onChange={() => {
                                 onChangeField('kpi', !srcItem?.kpi);
                             }}
                         />
-
+                     </Tooltip>
                     </Form.Item>
                 </div>
                 <Form.Item label=' '>

@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification} from "antd";
+import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification, Tooltip} from "antd";
 import {MenuFoldOutlined, CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
 import {
     ClassifairGet,
@@ -48,6 +48,7 @@ function AdminIlmiyNashirlar(props) {
     const [open1, setOpen1] = useState(false);
     const [messages, seMessages] = useState(null);
     const [publicationID, setPublicationID] = useState(null);
+    const [isDisabled, setIsDisabled] = useState(true); 
     const Scientificpublication = useQuery({
         queryKey: ['Ilmiy_nashr_turi'],
         queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res.data[0])
@@ -159,6 +160,7 @@ function AdminIlmiyNashirlar(props) {
             }).catch((error) => console.log(error))
         },
     })
+
 
     const onChangeDate = (value, dateString) => {
         if (value === null) {
@@ -291,12 +293,15 @@ function AdminIlmiyNashirlar(props) {
             title: "KPI",
             width: 80,
             render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
                 <Switch
+                    disabled={isDisabled}
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
                     checked={record?.kpi}
                     onChange={() => KPIand1030.mutate({record, key: "KPI"})}
                 />
+            </Tooltip>
             )
         },
         {
@@ -472,16 +477,18 @@ function AdminIlmiyNashirlar(props) {
                         label="KPI"
                         name="kpi"
                     >
+                     <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
                         <Switch
                             name='kpi'
                             checkedChildren={<CheckOutlined/>}
                             unCheckedChildren={<CloseOutlined/>}
                             checked={srcItem?.kpi}
+                            disabled={isDisabled} 
                             onChange={() => {
                                 onChangeField('kpi', !srcItem?.kpi);
                             }}
                         />
-
+                     </Tooltip>
                     </Form.Item>
                 </div>
                 <Form.Item label=' '>

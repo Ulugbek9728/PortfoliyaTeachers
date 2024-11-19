@@ -18,6 +18,12 @@ const TeachersTable = () => {
     queryKey: ["FacultyList"],
     queryFn: () => getFaculty(11, "").then((res) => res.data),
   });
+  const{ data: KafedraList} = useQuery({
+    queryKey: ["kafedraList"],
+    queryFn: () => getFaculty(12,'').then(res =>
+        res?.data
+    )
+})
   const stafPosition = useQuery({
     queryKey: ["h_teacher_position_type"],
     queryFn: () =>
@@ -33,6 +39,7 @@ const TeachersTable = () => {
 
   const [srcItem, setSrcItem] = useState({
     facultyId: searchParams.get("facultyId") || null,
+    kafedraId: searchParams.get("kafedraList") || null,
     departmentId: searchParams.get("departmentId") || null,
     query: searchParams.get("query") || null,
     staffPosition: searchParams.get("staffPosition") || null,
@@ -47,6 +54,7 @@ const TeachersTable = () => {
         facultyId: srcItem.facultyId,
         departmentId: srcItem.departmentId,
         query: srcItem.query,
+        kafedraId: srcItem.kafedraId,
         staffPosition: srcItem.staffPosition,
       }).then((res) => res.data.data.content),
   });
@@ -99,20 +107,18 @@ const TeachersTable = () => {
             }))}
           />
         </Form.Item>
-
-        <Form.Item name="departmentId" label="Bolimni tanlang">
+        <Form.Item name="kafedraList" label="Kafedrani tanlang">
           <Select
             style={{ width: 250 }}
-            name="departmentId"
+            name="kafedraList"
             allowClear
-            placeholder="Bo'limni tanlang"
+            placeholder="Kafedra"
             onChange={(value) => {
-              onChangeField("departmentId", value);
+              onChangeField("kafedraList", value);
             }}
-            options={Department?.map((item) => ({
+            options={KafedraList?.map((item) => ({
               value: item.id,
               label: item.name,
-              key: item.id,
             }))}
           />
         </Form.Item>

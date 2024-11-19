@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Drawer, Form, Input, notification, Select, Empty, Switch, Table, Tag} from "antd";
-import {CheckOutlined, CloseOutlined, MenuFoldOutlined, MessageOutlined, SendOutlined} from "@ant-design/icons";
+import {DatePicker, Drawer, Form, notification, Popconfirm, Select, Space, Switch, Table, Tag, Tooltip} from "antd";
+import {CheckOutlined, CloseOutlined, MenuFoldOutlined, SearchOutlined} from "@ant-design/icons";
 import {
     ClassifairGet, Comment, getComment,
     getFaculty,
@@ -25,6 +25,7 @@ function AdminUslubiyNashir(props) {
     const [form3] = Form.useForm();
     const [open, setOpen] = useState(false);
     const [open1, setOpen1] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(true);
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
         faculty: searchParams.get('faculty') || null,
@@ -53,6 +54,7 @@ function AdminUslubiyNashir(props) {
         queryKey: ["FacultyList"],
         queryFn: () => getFaculty(11, '').then(res => res.data)
     })
+
     const kafedraList = useQuery({
         queryKey: ["Kafedra"],
         queryFn: () => getFaculty(12, srcItem?.faculty).then(res =>
@@ -67,6 +69,7 @@ function AdminUslubiyNashir(props) {
             query: srcItem?.query
         }).then(res => res?.data?.data?.content)
     })
+
     const publication_List = useQuery({
         queryKey: ['publicationList'],
         queryFn: () => getIlmiyNashir({
@@ -82,6 +85,7 @@ function AdminUslubiyNashir(props) {
             rule1030: srcItem?.rule1030,
         }).then(res => res?.data?.data?.content)
     })
+
     const KPIand1030 = useMutation({
         mutationFn: (e) => {
             let newStatus1030
@@ -105,6 +109,7 @@ function AdminUslubiyNashir(props) {
             })
         },
     })
+
     const Status = useMutation({
         mutationFn: (e) => {
             console.log(e)
@@ -231,7 +236,7 @@ function AdminUslubiyNashir(props) {
         {
             title: 'url',
             render: (item, record, index) => (
-                <a href={item.doiOrUrl ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url}
+                <a href={item.doiOrUrl  ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url }
                    target={"_blank"}>file</a>),
             width: 50
         },
@@ -264,12 +269,15 @@ function AdminUslubiyNashir(props) {
             title: "KPI",
             width: 80,
             render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
                     checked={record?.kpi}
+                    disabled= {isDisabled}
                     onChange={() => KPIand1030.mutate({record, key: "KPI"})}
                 />
+                </Tooltip>
             )
         },
         {
@@ -409,6 +417,7 @@ function AdminUslubiyNashir(props) {
                 </Form.Item>
 
 
+
                 <Form.Item label="Status" name="Status">
                     <Select style={{width: 250,}}
                             name="Status"
@@ -453,16 +462,18 @@ function AdminUslubiyNashir(props) {
                         label="KPI"
                         name="kpi"
                     >
+                     <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
                         <Switch
                             name='kpi'
                             checkedChildren={<CheckOutlined/>}
                             unCheckedChildren={<CloseOutlined/>}
                             checked={srcItem?.kpi}
+                            disabled={isDisabled}
                             onChange={() => {
                                 onChangeField('kpi', !srcItem?.kpi);
                             }}
                         />
-
+                     </Tooltip>
                     </Form.Item>
                 </div>
                 <Form.Item label=' '>
@@ -501,8 +512,7 @@ function AdminUslubiyNashir(props) {
                       ]}
                 >
                     <Form.Item label="Uslubiy nashir turi" name="srcType">
-                        <Select allowClear name="srcType" labelInValue style={{width: 250,}}
-                                placeholder='Uslubiy  nashr turi'
+                        <Select allowClear name="srcType" labelInValue style={{width: 250,}} placeholder='Uslubiy  nashr turi'
                                 options={Scientificpublication?.data?.options.map(item => ({
                                     label: item.name,
                                     value: item.code
@@ -515,46 +525,7 @@ function AdminUslubiyNashir(props) {
 
                 </Form>
             </Drawer>
-            <Drawer title="Izoxlar" onClose={() => setOpen1(false)} open={open1}>
-                <div className="comentariya">
-                    {
-                        messages?.map((item) => {
-                                return <div className="d-flex" key={item.id}>
-                                    <span>{item?.createdDate.slice(0, 10)}</span>
-                                    <p>
-                                        {item?.content}
-                                    </p>
-                                </div>
-                            }
-                        )
-                    }
-                </div>
-                <Form
-                    form={form3}
-                    layout="vertical"
-                    ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
-                    onFinish={(e) => CommentPost.mutate(e)}
-                >
-                    <Form.Item name='izox'
-                               rules={[
-                                   {
-                                       required: true,
-                                       message: "Izox kiriting"
-                                   },
 
-                               ]}>
-                        <TextArea placeholder="Izox" allowClear
-
-                                  style={{height: 100, width: 250, resize: 'none',}}/>
-                    </Form.Item>
-                    <Form.Item>
-                        <button className="btn btn-success">
-                            <SendOutlined/>
-                        </button>
-                    </Form.Item>
-
-                </Form>
-            </Drawer>
             <div className="mt-4">
                 <Table
                     rowKey="id"

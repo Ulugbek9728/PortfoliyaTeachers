@@ -46,8 +46,7 @@ const FormModal = (props) => {
   );
 
   const [monografiyaPdfList, setMonografiyaPdfList] = useState(
-    props.editingData?.mediaIds
-      ?.filter((item) => item.attachResDTO.section === "monografiyaPdf")
+    props.editingData?.mediaIds?.filter((item) => item.attachResDTO.section === "monografiyaPdf")
       .map((item) => ({
         uid: item.attachResDTO.id,
         id: item.attachResDTO.id,
@@ -84,9 +83,11 @@ const FormModal = (props) => {
     queryFn: () =>
       ClassifairGet("h_scientific_publication_type").then((res) => res.data[0]),
   });
+
   useEffect(() => {
     handleSearch("");
     if (props.editingData) {
+      setScopus(props.editingData.publicationDatabase.name === "Scopus")
       const editingValues = {
         ...props.editingData,
         issueYear: dayjs(props.editingData.issueYear),
@@ -116,6 +117,7 @@ const FormModal = (props) => {
         publicationDatabase: "",
         decisionScientificCouncil: "",
         fileType: "Url",
+        quartile:"",
         mediaIds: [],
         authorIds: [],
       });
@@ -140,25 +142,6 @@ const FormModal = (props) => {
         res.data[0]?.options?.filter((item) => item?.code?.endsWith("00.00"))
       ),
   });
-
-  // const handleSearch = (query) => {
-  //     return useQuery({
-  //         queryKey: ['searchAuthors', query],  // Query key'ni query parametr bilan belgilash
-  //         queryFn: () => search(query),  // queryFn sifatida search funksiyasini chaqiring
-  //         onSuccess: (data) => {
-  //             if (data?.data?.isSuccess && !data?.data?.error) {
-  //                 setSearchResults(data?.data?.data || []);  // Qidiruv natijalarini yangilash
-  //             } else {
-  //                 console.error('Error in response:', data?.data?.message);
-  //                 setSearchResults([]);  // Xatolik yuz berganda natijalarni bo'shatish
-  //             }
-  //         },
-  //         onError: (error) => {
-  //             console.error('Error fetching search results:', error);  // Xatolikni konsolda ko'rsatish
-  //             setSearchResults([]);  // Xatolik yuz berganda natijalarni bo'shatish
-  //         },
-  //     });
-  // };
 
   const handleSearch = async () => {
     try {
@@ -224,8 +207,7 @@ const FormModal = (props) => {
     }
     if (name === "publicationDatabase") {
       setScopus(
-        Xalqaro?.data?.options?.filter((item) => item.code === value)[0]
-          ?.name === "Scopus"
+        Xalqaro?.data?.options?.filter((item) => item.code === value)[0]?.name === "Scopus"
       );
     }
   };
@@ -305,6 +287,7 @@ const FormModal = (props) => {
         : IlmiyNashrCreate({
             ...data,
             issueYear: data.issueYear.format("YYYY-MM-DD"),
+            authorCount:data?.authorCount+1
           });
       return request;
     },
@@ -324,7 +307,8 @@ const FormModal = (props) => {
         doiOrUrl: "",
         publicationDatabase: "",
         decisionScientificCouncil: "",
-        fileType: "",
+        fileType: "Url",
+        quartile:"",
         mediaIds: [],
         authorIds: [],
       });
@@ -372,7 +356,7 @@ const FormModal = (props) => {
           },
           {
             name: "fileType",
-            value: data.fileType,
+            value: data?.fileType,
           },
           {
             name: "doiOrUrl",
@@ -388,11 +372,15 @@ const FormModal = (props) => {
           },
           {
             name: "authorIds",
-            value: data.authorIds,
+            value: data?.authorIds,
           },
           {
             name: "issueYear",
-            value: data.issueYear,
+            value: data?.issueYear,
+          },
+          {
+            name: "Kvartl",
+            value: data?.quartile,
           },
         ]}
       >
@@ -463,8 +451,7 @@ const FormModal = (props) => {
 
         <Form.Item
           layout="vertical"
-          label="
-                    Nashrning bibliografik matni"
+          label="Nashrning bibliografik matni"
           name="scientificName"
           labelCol={{ span: 24 }}
           wrapperCol={{ span: 24 }}
@@ -737,10 +724,11 @@ const FormModal = (props) => {
         <Select
           placeholder="Kvartl"
           name="Kvartl"
-        >
-          <Select.Option value="q1">q1</Select.Option>
-          <Select.Option value="q2">q2</Select.Option>
-          <Select.Option value="q3">q3</Select.Option>
+          onChange={(value, option) => handleSelectChange(value, { name: "quartile" })}>
+          <Select.Option value="Q1">Q1</Select.Option>
+          <Select.Option value="Q2">Q2</Select.Option>
+          <Select.Option value="Q3">Q3</Select.Option>
+          <Select.Option value="Q4">Q4</Select.Option>
         </Select>
       </Form.Item>
         )}
@@ -774,10 +762,7 @@ const FormModal = (props) => {
           <Select
             placeholder="Til"
             name="language"
-            onChange={(value, option) =>
-              handleSelectChange(value, { name: "language" })
-            }
-          >
+            onChange={(value, option) => handleSelectChange(value, { name: "language" })}>
             <Select.Option value="uz">uz</Select.Option>
             <Select.Option value="ru">ru</Select.Option>
             <Select.Option value="en">en</Select.Option>

@@ -59,7 +59,7 @@ function IlmiyNashrlar(props) {
         },
         {
             title: "Xalqaro ilmiy bazalar",
-            render: (item, record, index) => (<>{item?.publicationDatabase?.name}</>),
+            render: (item, record, index) => (<>{item?.publicationDatabase?.name} {item?.quartile ? `(${item?.quartile})` :''} </>),
             width: 200,
         },
         {

@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Drawer, Form, notification, Popconfirm, Select, Space, Switch, Table, Tag, Tooltip} from "antd";
-import {CheckOutlined, CloseOutlined, MenuFoldOutlined, SearchOutlined} from "@ant-design/icons";
+import {DatePicker, Drawer, Form, notification, Select, Input, Switch, Table, Tag, Tooltip} from "antd";
+import {CheckOutlined, CloseOutlined, MenuFoldOutlined, MessageOutlined} from "@ant-design/icons";
 import {
     ClassifairGet, Comment, getComment,
     getFaculty,
@@ -128,6 +128,7 @@ function AdminUslubiyNashir(props) {
         },
 
     })
+
     const CommentPost = useMutation({
         mutationFn: (e) => {
             Comment({
@@ -144,6 +145,7 @@ function AdminUslubiyNashir(props) {
         },
 
     })
+
     const CommentAll = useMutation({
         mutationFn: (e) => {
             getComment(e).then((res) => {
@@ -521,6 +523,38 @@ function AdminUslubiyNashir(props) {
                                     onChangeField('srcType', value?.value);
                                 }}
                         />
+                    </Form.Item>
+
+                </Form>
+            </Drawer>
+            <Drawer title="Izoxlar" onClose={() => setOpen1(false)} open={open1}>
+                <div className="comentariya">
+                    {
+                        messages?.map((item) =>{
+                                return  <div className="d-flex">
+                                    <span>{item?.createdDate.slice(0,10)}</span>
+                                    <p>
+                                        {item?.content}
+                                    </p>
+                                </div>
+                            }
+                        )
+                    }
+                </div>
+                <Form
+                    form={form3}
+                    layout="vertical"
+                    ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
+                    onFinish={(e) => CommentPost.mutate(e)}
+                >
+                    <Form.Item name='izox'>
+                        <TextArea placeholder="Rad etishga izox yozing" allowClear
+                                  style={{height: 100, width: 250, resize: 'none',}}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <button className="btn btn-success">
+                            <CheckOutlined/>
+                        </button>
                     </Form.Item>
 
                 </Form>

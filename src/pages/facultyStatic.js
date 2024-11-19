@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Navbar from "../componenta/Navbar";
 import KafedraAll from "../componenta/kafedraAll";
 import FakultetList from "../componenta/fakultet/fakultetList";
@@ -66,6 +66,13 @@ function FacultyStatic(props) {
 
         }
     ]
+    useEffect(() => {
+        window.scroll({
+            top: 100,
+            left: 100,
+            behavior: "smooth",
+        })
+    }, []);
 
     return (
         <div>

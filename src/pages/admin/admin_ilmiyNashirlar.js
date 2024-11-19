@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification, Tooltip} from "antd";
-import {MenuFoldOutlined, CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
+import {DatePicker, Form, Select, Table, Drawer, Switch, Tag, Input, notification, Tooltip} from "antd";
+import {MenuFoldOutlined, CheckOutlined, CloseOutlined,MessageOutlined} from "@ant-design/icons";
 import {
     ClassifairGet,
     getFaculty,
@@ -46,7 +46,7 @@ function AdminIlmiyNashirlar(props) {
     });
     const [open, setOpen] = useState(false);
     const [open1, setOpen1] = useState(false);
-    const [messages, seMessages] = useState(null);
+    const [messages, setMessages] = useState(null);
     const [publicationID, setPublicationID] = useState(null);
     const [isDisabled, setIsDisabled] = useState(true);
     const Scientificpublication = useQuery({

@@ -192,7 +192,6 @@ const UslubiyNashrlar = () => {
             tolocalDate: DateListe[1]
         }).then(res => {
             const fetchedData = res?.data?.data?.content.map(item => ({...item, key: item.id}));
-            console.log(fetchedData);
             setDataList(fetchedData);
             setTableParams({
                 ...tableParams,
@@ -201,7 +200,6 @@ const UslubiyNashrlar = () => {
                     total: res?.data?.data?.totalElements
                 }
             })
-            // console.log(fetchedData);
 
         }).catch((error) => {
             if (error?.response?.data?.message === "Token yaroqsiz!") {

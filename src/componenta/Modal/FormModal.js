@@ -30,7 +30,6 @@ const FormModal = (props) => {
   const [searchResults, setSearchResults] = useState([]);
   const [monografiya, setMonografiya] = useState(false);
   const [scopus, setScopus] = useState(false);
-  const [url, setUrl] = useState(true);
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
   const formRef = useRef(null);
@@ -726,16 +725,24 @@ const FormModal = (props) => {
           </Form.Item>
         )}
         {scopus && (
-          <Form.Item 
-          className="col-6"
-          layout="vertical"
-          label="Kvartl"
+        <Form.Item
+        layout="vertical"
+        label="Kvartl"
+        name="Kvartl"
+        labelCol={{ span: 24 }}
+        wrapperCol={{ span: 24 }}
+        rules={[{ required: true, message: "Iltimos kvartlni tanlang" }]}
+        className="col-3"
+      >
+        <Select
+          placeholder="Kvartl"
           name="Kvartl"
-          labelCol={{ span: 24 }}
-          wrapperCol={{ span: 24 }}
-          >
-            <Input placeholder="Kvartl" name="text" className="py-2" />
-          </Form.Item>
+        >
+          <Select.Option value="q1">q1</Select.Option>
+          <Select.Option value="q2">q2</Select.Option>
+          <Select.Option value="q3">q3</Select.Option>
+        </Select>
+      </Form.Item>
         )}
         <Form.Item
           layout="vertical"

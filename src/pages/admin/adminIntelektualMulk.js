@@ -1,9 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Popconfirm, Select, Space, Switch, Table} from "antd";
+import {DatePicker, Form, notification, Popconfirm, Select, Space, Switch, Table, Tooltip} from "antd";
 import {SearchOutlined} from "@ant-design/icons";
-import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile} from "../../api/general";
+import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile, ToglActiveStatus,ToglActiveStatusKPIand1030} from "../../api/general";
+import {CheckOutlined, CloseOutlined, MenuFoldOutlined,} from "@ant-design/icons";
 import {useSearchParams} from 'react-router-dom';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
@@ -11,6 +12,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 function AdminIntelektualMulk(props) {
     const [searchParams, setSearchParams] = useSearchParams();
+    const [isDisabled, setIsDisabled] = useState(true); 
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const [srcItem, setSrcItem] = useState({
@@ -62,9 +64,53 @@ function AdminIntelektualMulk(props) {
             scientificPublicationType: srcItem?.srcType,
             facultyId: srcItem?.faculty,
             departmentId: srcItem?.department,
+            status: srcItem?.status,
+            kpi: srcItem?.kpi,
+            rule1030: srcItem?.rule1030,
         }).then(res => res?.data?.data?.content)
     })
+    const KPIand1030 = useMutation({
+        mutationFn: (e) => {
+            let newStatus1030
+            let newStatusKPI
+            if (e?.key === "1030") {
+                newStatus1030 = !e?.record?.rule1030;
+                newStatusKPI = e?.record?.kpi
+            } else {
+                newStatusKPI = !e?.record?.kpi;
+                newStatus1030 = e?.record?.rule1030;
+            }
+            ToglActiveStatusKPIand1030({
+                publicationId: e?.record?.id,
+                kpi: newStatusKPI,
+                rule1030: newStatus1030
+            }).then((res)=>{
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+                publication_List.refetch()
+            })
+        },
+    })
 
+    const Status = useMutation({
+        mutationFn: (e) => {
+            console.log(e)
+            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus==="REJECTED" ? "ACCEPTED" : "REJECTED";
+
+            ToglActiveStatus({
+                id: e?.id,
+                publicationStatus: newStatus
+            }).then((res)=>{
+                publication_List.refetch()
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+
+            }).catch((error)=>notification.error({message:"Status error"}))
+        },
+
+    })
     const onChangeDate = (value, dateString) => {
         if (value === null) {
             setSrcItem({
@@ -148,6 +194,46 @@ function AdminIntelektualMulk(props) {
                 <a href={item.doiOrUrl  ? item.doiOrUrl : item.mediaIds[0].attachResDTO.url }
                    target={"_blank"}>file</a>),
             width: 50
+        },
+        {
+            title: "Status",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record.publicationStatus === "ACCEPTED"}
+                    onChange={() => Status.mutate(record)}
+                />
+            )
+
+        },
+        {
+            title: "1030",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record?.rule1030}
+                    onChange={() => KPIand1030.mutate({record, key: "1030"})}
+                />
+            )
+        },
+        {
+            title: "KPI",
+            width: 80,
+            render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record?.kpi}
+                    disabled= {isDisabled}
+                    onChange={() => KPIand1030.mutate({record, key: "KPI"})}
+                />
+                </Tooltip>
+            )
         },
         {
             title: 'Tekshirish',

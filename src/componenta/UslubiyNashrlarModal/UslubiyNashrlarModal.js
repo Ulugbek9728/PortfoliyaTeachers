@@ -34,7 +34,7 @@ const UslubiyNashrlarModal = (props) => {
         scientificName: "",
         doiOrUrl: "",
         decisionScientificCouncil: "",
-        fileType: "",
+        fileType: "Url",
         mediaIds: [],
         authorIds: [],
         stylePublisher: "",
@@ -66,12 +66,11 @@ const UslubiyNashrlarModal = (props) => {
                 authorIds: props.editingData?.authors ? JSON.parse(props.editingData.authors).map(item => item.id) : [],
                 publicationType: props.editingData.publicationType,
                 stylePublicationType: props.editingData.stylePublicationType,
-                fileType: props.editingData.fileType || 'Url',
+                // fileType: props.editingData.fileType || 'Url',
                 fileType: props.editingData.doiOrUrl ? 'Url' : "Upload",
             };
             setData(editingValues);
             form.setFieldsValue(editingValues);
-            seturl(props.editingData.fileType === 'Url');
         } else if (props.handleCancel) {
             setData({
                 authorCount: 0,
@@ -81,7 +80,7 @@ const UslubiyNashrlarModal = (props) => {
                 scientificName: '',
                 doiOrUrl: '',
                 decisionScientificCouncil: '',
-                fileType: '',
+                fileType: 'Url',
                 mediaIds: [],
                 authorIds: []
             })
@@ -142,9 +141,6 @@ const UslubiyNashrlarModal = (props) => {
             ...prevState,
             [name]: name === 'stylePublicationType' ? stylePublicationType?.data.options?.filter(item => item.code === value)[0] : value
         }));
-        if (name === "fileType") {
-            seturl(value === "Url");
-        }
     };
 
     const uploadProps = {
@@ -225,7 +221,7 @@ const addUslubiyNashrInfo = useMutation({
     return request;
    },
    onSuccess: (response) => {
-    message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo\'shildi'}`);
+    message.success(`Maqola muvaffaqiyatli ${props.editingData ? 'yangilandi' : 'qo`shildi'}`);
     form.resetFields();
     setData({
         authorCount: 0,
@@ -235,7 +231,7 @@ const addUslubiyNashrInfo = useMutation({
         scientificName: '',
         doiOrUrl: '',
         decisionScientificCouncil: '',
-        fileType: '',
+        fileType: 'Url',
         stylePublisher: "",
         styleCertificateNumber: "",
         styleCertificateDate: "",
@@ -254,7 +250,7 @@ const addUslubiyNashrInfo = useMutation({
 },
 onError: (error) => {
     console.log(error);
-    message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo\'shishda'} xatolik`);
+    message.error(`Maqolani ${props.editingData ? 'yangilashda' : 'qo`shishda'} xatolik`);
 },
 })
 
@@ -271,9 +267,6 @@ const useAddAuthor = useMutation({
    },
    })
    
-
-
-
     return (
         <div>
             <Form
@@ -375,9 +368,7 @@ const useAddAuthor = useMutation({
                 >
                     <Select
                         name="fileType"
-                        onChange={(value, option) =>
-                            handleSelectChange(value, {name: "fileType"})
-                        }
+                        onChange={(value, option) =>(setData({...data,fileType:value}))}
                     >
                         <Select.Option value={"Url"}>Url</Select.Option>
                         <Select.Option value={"Upload"}>Upload</Select.Option>
@@ -509,7 +500,7 @@ const useAddAuthor = useMutation({
                     />
                 </Form.Item>
 
-                {url === true ? (
+                {data?.fileType === "Url" ? (
                     <Form.Item
                         layout="vertical"
                         label="URL"

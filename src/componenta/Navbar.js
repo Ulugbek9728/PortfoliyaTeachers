@@ -16,7 +16,7 @@ function Navbar(props) {
 
     const {t} = useTranslation();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-console.log(fulInfo);
+// console.log(fulInfo);
     const items = [
         {
             label: (

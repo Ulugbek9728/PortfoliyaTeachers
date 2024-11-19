@@ -38,9 +38,14 @@ const UslubiyNashrlar = () => {
             render: (item, record, index) => (<>{index + 1}</>)
         },
         {
-            title: 'Uslubiy nashr nomi',
+            title: 'Uslubiy nashir turi',
+            render: (item, record, index) => (<>{item.stylePublicationType.name}</>),
+            width: 200,
+        },
+        {
+            title: 'Nashrning bibliografik matni',
             dataIndex: 'scientificName',
-            width: 350,
+            width: 200,
         },
         {
             title: 'Mualliflar',
@@ -187,6 +192,7 @@ const UslubiyNashrlar = () => {
             tolocalDate: DateListe[1]
         }).then(res => {
             const fetchedData = res?.data?.data?.content.map(item => ({...item, key: item.id}));
+            console.log(fetchedData);
             setDataList(fetchedData);
             setTableParams({
                 ...tableParams,
@@ -195,6 +201,7 @@ const UslubiyNashrlar = () => {
                     total: res?.data?.data?.totalElements
                 }
             })
+            // console.log(fetchedData);
 
         }).catch((error) => {
             if (error?.response?.data?.message === "Token yaroqsiz!") {

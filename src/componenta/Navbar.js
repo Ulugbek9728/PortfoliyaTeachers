@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 import LanguageSwitcher from "./LanguageSwitcher";
 import {useTranslation} from "react-i18next";
 import {CaretDownOutlined, UserOutlined, LogoutOutlined} from '@ant-design/icons';
-import {Dropdown, Menu, notification, Space} from 'antd';
+import {Avatar, Dropdown, Menu, notification, Space} from 'antd';
 import * as PropTypes from "prop-types";
-import {useMutation, useQuery} from "react-query"
-import {ChangeRole, fetchCurrentUser} from "../api/general";
+import {useMutation} from "react-query"
+import {ChangeRole} from "../api/general";
 
 
 LogoutOutlined.propTypes = {className: PropTypes.string};
@@ -16,6 +16,7 @@ function Navbar(props) {
 
     const {t} = useTranslation();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+// console.log(fulInfo);
     const items = [
         {
             label: (
@@ -42,39 +43,6 @@ function Navbar(props) {
             key: '3',
         },
     ];
-
-    const getFullInfo = useQuery({
-        queryKey:['get_full_info'],
-        queryFn:()=> fetchCurrentUser()
-            .then(res=>{
-                console.log(res.data.data)
-                let value
-                value = {
-                    ...fulInfo,
-                    roles:res?.data?.data?.roles,
-                    currentRole: res?.data?.data?.currentRole
-                }
-                localStorage.setItem("myInfo", JSON.stringify(value));
-
-                if (res?.data?.data?.currentRole === "ROLE_ADMIN") {
-                    navigate('/dashboard-admin/1')
-                }
-                if (res?.data?.data?.currentRole === "ROLE_TEACHER") {
-                    navigate('/profile/1')
-                }
-
-                if (res?.data?.data?.currentRole === "ROLE_FACULTY") {
-                    navigate('/dashboard-fakultyadm/1')
-                } else {
-                    // navigate('/profile/1')
-                }
-            }).catch((error)=> {
-                console.log(error)
-                    notification.error({message: error?.response?.data?.message})
-                navigate("/")
-                }
-            )
-    })
 
     const GetRolesMenu = () => {
         let childrenRoles = [];

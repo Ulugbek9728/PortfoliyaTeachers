@@ -23,7 +23,6 @@ import {
 
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useMutation, useQuery } from "react-query";
-import { FormItem } from "devextreme-react/cjs/data-grid";
 dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
@@ -76,7 +75,7 @@ const FormModal = (props) => {
     doiOrUrl: "",
     publicationDatabase: "",
     decisionScientificCouncil: "",
-    fileType: "",
+    fileType: "Url",
     mediaIds: [],
     authorIds: [],
   });
@@ -101,13 +100,11 @@ const FormModal = (props) => {
         scientificField: props.editingData.scientificField,
         publicationType: props.editingData.publicationType,
         scientificPublicationType: props.editingData.scientificPublicationType,
-        fileType: props.editingData.fileType || "Url",
         fileType: props.editingData.doiOrUrl ? "Url" : "Upload",
       };
 
       setData(editingValues);
       form.setFieldsValue(editingValues);
-      setUrl(editingValues.fileType === "Url");
     } else if (props.handleCancel) {
       setData({
         authorCount: 0,
@@ -119,7 +116,7 @@ const FormModal = (props) => {
         doiOrUrl: "",
         publicationDatabase: "",
         decisionScientificCouncil: "",
-        fileType: "",
+        fileType: "Url",
         mediaIds: [],
         authorIds: [],
       });
@@ -231,9 +228,6 @@ const FormModal = (props) => {
         Xalqaro?.data?.options?.filter((item) => item.code === value)[0]
           ?.name === "Scopus"
       );
-    }
-    if (name === "fileType") {
-      setUrl(value === "Url");
     }
   };
 
@@ -665,7 +659,7 @@ const FormModal = (props) => {
           <Select
             name="fileType"
             onChange={(value, option) =>
-              handleSelectChange(value, { name: "fileType" })
+              (setData({...data,fileType:value}))
             }
           >
             <Select.Option value="Url">Url</Select.Option>
@@ -692,7 +686,7 @@ const FormModal = (props) => {
           ></Select>
         </Form.Item>
 
-        {url ? (
+        {data?.fileType === "Url"  ? (
           <Form.Item
             layout="vertical"
             label="URL manzil"

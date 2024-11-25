@@ -145,6 +145,7 @@ function Navbar(props) {
                 ...fulInfo,
                 currentRole: e,
                 accessToken: res?.data?.data?.accessToken,
+                roles:res?.data?.data?.roles,
                 roleInfos:res?.data?.data?.roleInfos
             }
             localStorage.setItem("myInfo", JSON.stringify(value));

@@ -11,8 +11,6 @@ import Dekan_IntelectualMulk from './dekan_IntelectualMulk';
 import DekanIlmiySaloxiyat from './dekan_IlmiySaloxiyat';
 import Dekan_teachersList from './dekan_teachersList';
 import AddKafedra from "./addKafedra";
-import AddFakulty from '../admin/addFakulty';
-import AddKafedra from './addKafedra';
 const Dekan = () => {
     const items = [
         {

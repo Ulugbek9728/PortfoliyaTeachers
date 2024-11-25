@@ -11,9 +11,8 @@ import UniversitetStatic from "./pages/universitetStatic";
 import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
-import Fakulty from "./pages/fakulty/fakulty";
 import TeachersInfo from "./pages/admin/TeachersInfo";
-import Dekan from "./pages/dekan/dekan";
+import Dekan from "./pages/fakulty/dekan";
 
 
 const router = createBrowserRouter([

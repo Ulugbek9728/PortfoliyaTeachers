@@ -9,6 +9,8 @@ import Provider from "react-redux/es/components/Provider";
 import "./lib/animate/animate.min.css"
 import "./utils/i18n";
 import "./style/style.css"
+import {DevSupport} from "@react-buddy/ide-toolbox";
+import {ComponentPreviews, useInitial} from "./dev";
 
 
 const store = createStore(MyRedusers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
@@ -18,7 +20,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         <Provider store={store}>
-            <App/>
+            <DevSupport ComponentPreviews={ComponentPreviews}
+                        useInitialHook={useInitial}
+            >
+                <App/>
+            </DevSupport>
         </Provider>
     </React.StrictMode>
 );

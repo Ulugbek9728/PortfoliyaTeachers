@@ -3,6 +3,8 @@ import Navbar from "../componenta/Navbar";
 import Title from "../componenta/title";
 import FakultetList from "../componenta/fakultet/fakultetList";
 import Facultys from "../componenta/Facultys";
+import {useQuery} from "react-query";
+import {getFaculty} from "../api/general";
 
 function UniversitetStatic(props) {
     const fakulty = [
@@ -65,6 +67,13 @@ function UniversitetStatic(props) {
 
         }
     ]
+
+    const {data} = useQuery({
+        queryKey: ["FacultyList"],
+        queryFn: () => getFaculty(11, '').then(res => res.data)
+    })
+    console.log(data)
+
     return (
         <div>
             <Navbar/>

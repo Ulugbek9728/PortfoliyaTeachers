@@ -10,6 +10,8 @@ import Dekan_UslubiyNashrlar from './dekan_UslubiyNashrlar';
 import Dekan_IntelectualMulk from './dekan_IntelectualMulk';
 import DekanIlmiySaloxiyat from './dekan_IlmiySaloxiyat';
 import Dekan_teachersList from './dekan_teachersList';
+import AddFakulty from '../admin/addFakulty';
+import AddKafedra from './addKafedra';
 const Dekan = () => {
     const items = [
         {
@@ -35,6 +37,11 @@ const Dekan = () => {
         {
             label: "Ilmiy saloxiyatni oshirishdagi hissasi",
             key: "5",
+            icon: <FileTextOutlined/>,
+        },
+        {
+            label: "Kafedra qo`shish",
+            key: "6",
             icon: <FileTextOutlined/>,
         },
     ];
@@ -66,6 +73,7 @@ const Dekan = () => {
                     <Route path={"/3/*"} element={ <Dekan_UslubiyNashrlar/>}/>
                     <Route path={"/4/*"} element={ <Dekan_IntelectualMulk/>}/>
                     <Route path={"/5/*"} element={ <DekanIlmiySaloxiyat/>}/>
+                    <Route path={"/6/*"} element={ <AddKafedra/>}/>
                 </Routes>
             </Content>
         </Layout>

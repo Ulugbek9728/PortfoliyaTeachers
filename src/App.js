@@ -72,16 +72,12 @@ const router = createBrowserRouter([
         element:<Profile/>,
     },
     {
-        path:'/dekan/*',
+        path:'/dashboard-fakultyadm/*',
         element:<Dekan/>,
     },
     {
         path:'/dashboard-admin/*',
         element:<Admin/>,
-    },
-    {
-        path:'/dashboard-fakultyadm/*',
-        element:<Fakulty/>,
     },
     {
         path: "/userInfo",

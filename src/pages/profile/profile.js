@@ -11,7 +11,7 @@ import IlmiyNashrlar from "../ilmiy nashrlar/ilmiyNashrlar";
 import UslubiyNashrlar from '../Uslubiy nashrlar/UslubiyNashrlar';
 import InteliktualMulk from '../InteluktialMulk/InteliktualMulk';
 import IlmiySaloxiyati from '../IlmiySaloxiyati/IlmiySaloxiyati';
-
+const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
 const {Content, Sider} = Layout;
 
 const items = [
@@ -46,7 +46,7 @@ const items = [
 
 function Profile(props) {
 
-
+console.log(fulInfo);
 
     return (
         <div>

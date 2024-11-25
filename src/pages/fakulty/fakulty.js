@@ -59,7 +59,10 @@ function Fakulty(props) {
                     >
                         <Routes>
                             <Route path={"/1"} element={ <AddKafedra/>}/>
-
+                            <Route path={"/2"} element={ <AddKafedra/>}/>
+                            <Route path={"/3"} element={ <AddKafedra/>}/>
+                            <Route path={"/4"} element={ <AddKafedra/>}/>
+                            <Route path={"/5"} element={ <AddKafedra/>}/>
                         </Routes>
                     </Content>
                 </Layout>

@@ -6,12 +6,14 @@ import Home from "./pages/Home";
 import FacultyStatic from "./pages/facultyStatic";
 import KafedraStatic from "./pages/kafedraStatic";
 import Auth from "./pages/auth";
+import TeachersDiogramm from "./pages/TeachersDiogramm";
 import UniversitetStatic from "./pages/universitetStatic";
 import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
 import Admin from "./pages/admin/admin";
+import Fakulty from "./pages/fakulty/fakulty";
 import TeachersInfo from "./pages/admin/TeachersInfo";
-import Dekan from "./pages/fakulty/dekan";
+import Dekan from "./pages/dekan/dekan";
 
 
 const router = createBrowserRouter([
@@ -70,12 +72,12 @@ const router = createBrowserRouter([
         element:<Profile/>,
     },
     {
-        path:'/dashboard-admin/*',
-        element:<Admin/>,
-    },
-    {
         path:'/dashboard-fakultyadm/*',
         element:<Dekan/>,
+    },
+    {
+        path:'/dashboard-admin/*',
+        element:<Admin/>,
     },
     {
         path: "/userInfo",

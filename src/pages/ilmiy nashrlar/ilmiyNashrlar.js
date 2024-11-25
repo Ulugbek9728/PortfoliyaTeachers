@@ -30,7 +30,7 @@ function IlmiyNashrlar(props) {
     const onChangeDate = (value, dateString) => {
         setDateListe(dateString);
     };
-
+ 
     const columns = [
         {
             title: '№',

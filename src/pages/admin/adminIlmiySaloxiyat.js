@@ -1,8 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Popconfirm, Select, Space, Table} from "antd";
-import {ClassifairGet, getFaculty, getIlmiySaloxiyat, getProfile} from "../../api/general";
+import {DatePicker, Form, notification, Popconfirm, Select, Space, Switch, Table, Tooltip} from "antd";
+import {ClassifairGet, getFaculty, getIlmiySaloxiyat, getProfile, ToglActiveStatus,ToglActiveStatusKPIand1030} from "../../api/general";
+import {CheckOutlined, CloseOutlined,} from "@ant-design/icons";
 import {useSearchParams} from 'react-router-dom';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
@@ -12,12 +13,16 @@ function AdminIlmiySaloxiyat(props) {
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
+    const [isDisabled, setIsDisabled] = useState(true); 
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
         faculty: searchParams.get('faculty') || null,
         department: searchParams.get('department') || null,
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,
+        status: searchParams.get('status') || null,
+        kpi: searchParams.get('kpi') || null,
+        rule1030: searchParams.get('rule1030') || null,
     });
 
     const [tableParams, setTableParams] = useState({
@@ -55,12 +60,57 @@ function AdminIlmiySaloxiyat(props) {
             fromlocalDate: srcItem?.dataSrc[0],
             tolocalDate: srcItem?.dataSrc[1],
             employeeId: srcItem?.employeeId,
+            type: "SCIENTIFIC_POTENTIAL",
             scientificLeadershipType: srcItem?.srcType,
             facultyId: srcItem?.faculty,
             departmentId: srcItem?.department,
+            status: srcItem?.status,
+            kpi: srcItem?.kpi,
+            rule1030: srcItem?.rule1030,
         }).then(res => res?.data?.data?.content)
     })
+    const KPIand1030 = useMutation({
+        mutationFn: (e) => {
+            let newStatus1030
+            let newStatusKPI
+            if (e?.key === "1030") {
+                newStatus1030 = !e?.record?.rule1030;
+                newStatusKPI = e?.record?.kpi
+            } else {
+                newStatusKPI = !e?.record?.kpi;
+                newStatus1030 = e?.record?.rule1030;
+            }
+            ToglActiveStatusKPIand1030({
+                publicationId: e?.record?.id,
+                kpi: newStatusKPI,
+                rule1030: newStatus1030
+            }).then((res)=>{
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+                publication_List.refetch()
+            })
+        },
+    })
 
+    const Status = useMutation({
+        mutationFn: (e) => {
+            console.log(e)
+            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus === "REJECTED" ? "ACCEPTED" : "REJECTED";
+
+            ToglActiveStatus({
+                id: e?.id,
+                publicationStatus: newStatus
+            }).then((res)=>{
+                publication_List.refetch()
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+
+            }).catch((error)=>notification.error({message:"Status error"}))
+        },
+
+    })
     const onChangeDate = (value, dateString) => {
         if (value === null) {
             setSrcItem({
@@ -142,6 +192,46 @@ function AdminIlmiySaloxiyat(props) {
             title: 'Tekshirish',
             dataIndex: 'address',
             width: 100
+        },
+        {
+            title: "Status",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record.publicationStatus === "ACCEPTED"}
+                    onChange={() => Status.mutate(record)}
+                />
+            )
+
+        },
+        {
+            title: "1030",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record?.rule1030}
+                    onChange={() => KPIand1030.mutate({record, key: "1030"})}
+                />
+            )
+        },
+        {
+            title: "KPI",
+            width: 80,
+            render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record?.kpi}
+                    disabled= {isDisabled}
+                    onChange={() => KPIand1030.mutate({record, key: "KPI"})}
+                />
+                </Tooltip>
+            )
         },
         // {
         //     title: 'Harakatlar',

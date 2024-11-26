@@ -19,31 +19,23 @@ const Dekan_teachersList = () => {
           res?.data
       )
   })
-
-  
+    console.log(fulInfo)
 
     const [srcItem, setSrcItem] = useState({
-      facultyId: searchParams.get("facultyId") || null,
-      departmentId: searchParams.get("departmentId") || null,
-      query: searchParams.get("query") || null,
-      staffPosition: searchParams.get("staffPosition") || null,
+      departmentId: searchParams.get("kafedraList") || null,
     });
   
-    const { data, isLoading, error } = useQuery({
+    const teacherList = useQuery({
       queryKey: ["get_teacher_info", srcItem],
       queryFn: () =>
         TeacherList({
-          facultyId: srcItem.facultyId,
+            facultyId:fulInfo?.roleInfos[0]?.faculty?.id,
           departmentId: srcItem.departmentId,
           query: srcItem.query,
-          staffPosition: srcItem.staffPosition,
+          // staffPosition: srcItem.staffPosition,
         }).then((res) => res.data.data.content),
     });
-    console.log(data);
 
-    useEffect(() => {
-      form.setFieldsValue(srcItem);
-    }, [srcItem, form]);
   
     const handleCardClick = (id) => {
       navigate(`/userInfo/${id}`);
@@ -81,7 +73,7 @@ const Dekan_teachersList = () => {
             allowClear
             placeholder="Kafedra"
             onChange={(value) => {
-              onChangeField("kafedraList", value);
+              onChangeField("departmentId", value);
             }}
             options={KafedraList?.map((item) => ({
               value: item.id,
@@ -95,7 +87,7 @@ const Dekan_teachersList = () => {
 
         </Form>
         <div className="card-list">
-          {data?.map((card) => (
+          {teacherList?.data?.map((card) => (
             <div
               key={card.id}
               className="card  p-3 d-flex flex-column flex-md-row align-items-center mb-3"

@@ -368,8 +368,7 @@ function AdminUslubiyNashir(props) {
                         format="YYYY-MM-DD"
                         onChange={onChangeDate}/>
                 </Form.Item>
-                <Form.Item name="facultyId"
-                           label="Fakultetni tanlang"
+                <Form.Item name="facultyId" label="Fakultetni tanlang"
                 >
                     <Select style={{width: 250,}}
                             name="facultyId"
@@ -417,8 +416,6 @@ function AdminUslubiyNashir(props) {
                             ))}
                     />
                 </Form.Item>
-
-
 
                 <Form.Item label="Status" name="Status">
                     <Select style={{width: 250,}}

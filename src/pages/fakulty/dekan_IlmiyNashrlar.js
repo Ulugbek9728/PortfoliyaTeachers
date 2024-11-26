@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {DatePicker, Form, Select, Table, Drawer, Switch, Space, Tag, Input, notification} from "antd";
-import {MenuFoldOutlined, CheckOutlined, CloseOutlined, EditOutlined} from "@ant-design/icons";
+import {MenuFoldOutlined, CheckOutlined, CloseOutlined, EditOutlined, MessageOutlined} from "@ant-design/icons";
 import {
     ClassifairGet,
     getFaculty,
@@ -20,6 +20,8 @@ const {TextArea} = Input;
 dayjs.extend(customParseFormat);
 
 function Dekan_IlmiyNashrlar(props) {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -27,7 +29,7 @@ function Dekan_IlmiyNashrlar(props) {
     const [form3] = Form.useForm();
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
-        faculty: searchParams.get('faculty') || null,
+        facultyId: fulInfo?.roleInfos[0]?.faculty?.id,
         department: searchParams.get('department') || null,
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,
@@ -52,20 +54,16 @@ function Dekan_IlmiyNashrlar(props) {
         queryKey: ['Ilmiy_nashr_turi'],
         queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res.data[0])
     })
-    const {data} = useQuery({
-        queryKey: ["FacultyList"],
-        queryFn: () => getFaculty(11, '').then(res => res.data)
-    })
     const kafedraList = useQuery({
         queryKey: ["Kafedra"],
-        queryFn: () => getFaculty(12, srcItem?.faculty).then(res =>
+        queryFn: () => getFaculty(12, srcItem?.facultyId).then(res =>
             res?.data
         )
     })
     const teacher_List = useQuery({
         queryKey: ['teacherList'],
         queryFn: () => getProfile({
-            facultyId: srcItem?.faculty,
+            facultyId: srcItem?.facultyId,
             departmentId: srcItem?.department,
             query: srcItem?.query
         }).then(res => res.data?.data?.content)
@@ -78,7 +76,7 @@ function Dekan_IlmiyNashrlar(props) {
             type: "SCIENTIFIC_PUBLICATIONS",
             employeeId: srcItem?.employeeId,
             scientificPublicationType: srcItem?.srcType,
-            facultyId: srcItem?.faculty,
+            facultyId: srcItem?.facultyId,
             departmentId: srcItem?.department,
             status: srcItem?.status,
             kpi: srcItem?.kpi,
@@ -185,9 +183,6 @@ function Dekan_IlmiyNashrlar(props) {
         }
     };
     useEffect(() => {
-        if (srcItem?.faculty) {
-            kafedraList.refetch();
-        }
         teacher_List.refetch()
         publication_List.refetch()
     }, [srcItem]);
@@ -303,7 +298,7 @@ function Dekan_IlmiyNashrlar(props) {
             title: 'Izox',
             width: 100,
             render: (text, record) => (
-                <button type="primary" className='btn btn-danger'
+                <button type="primary" className='btn btn-primary'
                         style={{"minWidth": '30px'}}
                         onClick={() => {
                             setOpen1(true)
@@ -311,7 +306,7 @@ function Dekan_IlmiyNashrlar(props) {
                             CommentAll.mutate(record?.id)
                         }}
                 >
-                    <EditOutlined/>
+                    <MessageOutlined />
                 </button>
             ),
         },
@@ -349,10 +344,6 @@ function Dekan_IlmiyNashrlar(props) {
                           value: srcItem.dataSrc[0] && srcItem.dataSrc[1] ? [dayjs(srcItem.dataSrc[0], 'YYYY-MM-DD'), dayjs(srcItem.dataSrc[1], 'YYYY-MM-DD')] : null
                       },
                       {
-                          name: "facultyId",
-                          value: srcItem?.faculty
-                      },
-                      {
                           name: "kafedraId",
                           value: srcItem?.department
                       },
@@ -379,22 +370,6 @@ function Dekan_IlmiyNashrlar(props) {
                         allowClear size="large" style={{width: 250,}} name="srcDate"
                         format="YYYY-MM-DD"
                         onChange={onChangeDate}/>
-                </Form.Item>
-                <Form.Item name="facultyId"
-                           label="Fakultetni tanlang"
-                >
-                    <Select style={{width: 250,}}
-                            name="facultyId"
-                            allowClear
-                            placeholder='Facultet'
-                            onChange={(value) => {
-                                onChangeField('faculty', value);
-                            }}
-                            options={data?.map((item, index) => (
-                                {value: item.id, label: item.name, key: item.id}
-                            ))}
-                    />
-
                 </Form.Item>
                 <Form.Item
                     name="kafedraId"

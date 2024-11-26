@@ -1,22 +1,40 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Popconfirm, Select, Space, Switch, Table} from "antd";
-import {SearchOutlined} from "@ant-design/icons";
-import {ClassifairGet, getFaculty, getIlmiyNashir, getProfile} from "../../api/general";
+import {DatePicker, Drawer, Form, Input, notification, Popconfirm, Select, Space, Switch, Table, Tooltip} from "antd";
+import {CheckOutlined, CloseOutlined, MessageOutlined, SearchOutlined} from "@ant-design/icons";
+import {
+    ClassifairGet, Comment, getComment,
+    getFaculty,
+    getIlmiyNashir,
+    getProfile,
+    ToglActiveStatus,
+    ToglActiveStatusKPIand1030
+} from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 
 dayjs.extend(customParseFormat);
+const {TextArea} = Input;
 
 const Dekan_IntelectualMulk = () => {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+
     const [searchParams, setSearchParams] = useSearchParams();
+    const [isDisabled, setIsDisabled] = useState(true);
+    const [open, setOpen] = useState(false);
+    const [publicationID, setPublicationID] = useState(null);
+    const [messages, setMessages] = useState(null);
+
+
     const formRef = useRef(null);
     const [form] = Form.useForm();
+    const [form1] = Form.useForm();
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
-        faculty: searchParams.get('faculty') || null,
+        facultyId: fulInfo?.roleInfos[0]?.faculty?.id,
+        status: searchParams.get('status') || null,
         department: searchParams.get('department') || null,
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,
@@ -34,13 +52,9 @@ const Dekan_IntelectualMulk = () => {
         queryKey: ['Intelektual_mulk_turi'],
         queryFn: () => ClassifairGet('h_patient_type').then(res => res.data[0])
     })
-    const {data} = useQuery({
-        queryKey: ["FacultyList"],
-        queryFn: () => getFaculty(11, '').then(res => res.data)
-    })
     const kafedraList = useQuery({
         queryKey: ["Kafedra"],
-        queryFn: () => getFaculty(12, srcItem?.faculty).then(res =>
+        queryFn: () => getFaculty(12, srcItem?.facultyId).then(res =>
             res?.data
         )
     })
@@ -48,7 +62,7 @@ const Dekan_IntelectualMulk = () => {
         queryKey: ['teacherList'],
         queryFn: () => getProfile(
             {
-                facultyId:srcItem?.faculty,
+                facultyId:srcItem?.facultyId,
                 departmentId:srcItem?.department,
                 query:srcItem?.query
             }).then(res => res.data?.data?.content)
@@ -60,10 +74,79 @@ const Dekan_IntelectualMulk = () => {
             tolocalDate: srcItem?.dataSrc[1],
             type: "INTELLECTUAL_PROPERTY",
             employeeId: srcItem?.employeeId,
-            scientificPublicationType: srcItem?.srcType,
-            facultyId: srcItem?.faculty,
+            intellectualPropertyPublicationType: srcItem?.srcType,
+            facultyId: srcItem?.facultyId,
             departmentId: srcItem?.department,
+            status: srcItem?.status,
+            kpi: srcItem?.kpi,
+            rule1030: srcItem?.rule1030,
         }).then(res => res?.data?.data?.content)
+    })
+    const KPIand1030 = useMutation({
+        mutationFn: (e) => {
+            let newStatus1030
+            let newStatusKPI
+            if (e?.key === "1030") {
+                newStatus1030 = !e?.record?.rule1030;
+                newStatusKPI = e?.record?.kpi
+            } else {
+                newStatusKPI = !e?.record?.kpi;
+                newStatus1030 = e?.record?.rule1030;
+            }
+            ToglActiveStatusKPIand1030({
+                publicationId: e?.record?.id,
+                kpi: newStatusKPI,
+                rule1030: newStatus1030
+            }).then((res)=>{
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+                publication_List.refetch()
+            })
+        },
+    })
+
+    const Status = useMutation({
+        mutationFn: (e) => {
+            console.log(e)
+            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus==="REJECTED" ? "ACCEPTED" : "REJECTED";
+
+            ToglActiveStatus({
+                id: e?.id,
+                publicationStatus: newStatus
+            }).then((res)=>{
+                publication_List.refetch()
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+
+            }).catch((error)=>notification.error({message:"Status error"}))
+        },
+
+    })
+    const CommentAll = useMutation({
+        mutationFn: (e) => {
+            getComment(e).then((res) => {
+                setMessages(res?.data.data.reverse())
+            }).catch((error) => console.log(error))
+        },
+    })
+
+    const CommentPost = useMutation({
+        mutationFn: (e) => {
+            Comment({
+                content: e.izox,
+                publicationId: publicationID
+            }).then((res) => {
+                publication_List.refetch()
+                form1.resetFields()
+                setOpen(false)
+                notification.success({
+                    message: "Izox yuborildi"
+                })
+            }).catch((error) => notification.error({message: "Izox error"}))
+        },
+
     })
 
     const onChangeDate = (value, dateString) => {
@@ -92,9 +175,6 @@ const Dekan_IntelectualMulk = () => {
     };
 
     useEffect(() => {
-        if (srcItem?.faculty) {
-            kafedraList.refetch();
-        }
         teacher_List.refetch()
         publication_List.refetch()
     }, [srcItem]);
@@ -151,14 +231,66 @@ const Dekan_IntelectualMulk = () => {
             width: 50
         },
         {
-            title: 'Tekshirish',
-            dataIndex: 'address',
-            width: 100
+            title: "Status",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record.publicationStatus === "ACCEPTED"}
+                    onChange={() => Status.mutate(record)}
+                />
+            )
+
         },
+        {
+            title: "1030",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record?.rule1030}
+                    onChange={() => KPIand1030.mutate({record, key: "1030"})}
+                />
+            )
+        },
+        {
+            title: "KPI",
+            width: 80,
+            render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
+                    <Switch
+                        checkedChildren={<CheckOutlined/>}
+                        unCheckedChildren={<CloseOutlined/>}
+                        checked={record?.kpi}
+                        disabled= {isDisabled}
+                        onChange={() => KPIand1030.mutate({record, key: "KPI"})}
+                    />
+                </Tooltip>
+            )
+        },
+        {
+            title: 'Izox',
+            width: 100,
+            render: (text, record) => (
+                <button type="primary" className='btn btn-primary'
+                        style={{"minWidth": '30px'}}
+                        onClick={() => {
+                            setOpen(true)
+                            setPublicationID(record?.id)
+                            CommentAll.mutate(record?.id)
+                        }}
+                >
+                    <MessageOutlined />
+                </button>
+            ),
+        },
+
     ];
 
     function onChangeField(fieldKey, value) {
-        if (value === undefined) {
+        if (value === undefined|| value === false) {
             searchParams.delete(fieldKey);
             setSearchParams(searchParams, {replace: true});
             setSrcItem({...srcItem, [fieldKey]: null});
@@ -184,10 +316,6 @@ const Dekan_IntelectualMulk = () => {
                           value: srcItem.dataSrc[0] && srcItem.dataSrc[1] ? [dayjs(srcItem.dataSrc[0], 'YYYY-MM-DD'), dayjs(srcItem.dataSrc[1], 'YYYY-MM-DD')] : null
                       },
                       {
-                          name: "facultyId",
-                          value: srcItem?.faculty
-                      },
-                      {
                           name: "kafedraId",
                           value: srcItem?.department
                       },
@@ -199,6 +327,18 @@ const Dekan_IntelectualMulk = () => {
                           name: "srcType",
                           value: srcItem?.srcType
                       },
+                      {
+                          name: "Status",
+                          value: srcItem?.status
+                      },
+                      {
+                          name: "1030",
+                          value: srcItem?.rule1030
+                      },
+                      {
+                          name: "kpi",
+                          value: srcItem?.kpi
+                      },
                   ]}
             >
                 <Form.Item label="Mudatini belgilang" name="srcDate">
@@ -207,33 +347,7 @@ const Dekan_IntelectualMulk = () => {
                         format="YYYY-MM-DD"
                         onChange={onChangeDate}/>
                 </Form.Item>
-                <Form.Item name="facultyId"
-                           rules={[{required: true, message: 'Fakultetni tanlang'}]}
-                           label="Fakultetni tanlang"
-                >
-                    <Select style={{width: 250,}}
-                            name="facultyId"
-                            allowClear
-                            placeholder='Facultet'
-                            onChange={(value) => {
-                                onChangeField('faculty', value);
-                            }}
-                            options={data?.map((item, index) => (
-                                {value: item.id, label: item.name, key: item.id}
-                            ))}
-                    />
-
-                </Form.Item>
-                <Form.Item
-                    name="kafedraId"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Kafedrani tanlang'
-                        }
-                    ]}
-                    label="Kafedrani tanlang"
-                >
+                <Form.Item name="kafedraId" label="Kafedrani tanlang">
                     <Select style={{width: 250,}}
                             name={"kafedraId"}
                             allowClear
@@ -247,7 +361,6 @@ const Dekan_IntelectualMulk = () => {
                     />
 
                 </Form.Item>
-
                 <Form.Item label="O'qituvchini tanlang" name="srcPerson">
                     <Select style={{width: 250,}}
                             showSearch
@@ -263,9 +376,8 @@ const Dekan_IntelectualMulk = () => {
                             ))}
                     />
                 </Form.Item>
-
                 <Form.Item label="Intelektual mulk turi" name="srcType">
-                    <Select name="srcType" labelInValue style={{width: 250,}} placeholder='Intelektual mulk turi'
+                    <Select allowClear name="srcType" labelInValue style={{width: 250,}} placeholder='Intelektual mulk turi'
                             options={Scientificpublication?.data?.options.map(item => ({
                                 label: item.name,
                                 value: item.code
@@ -275,9 +387,101 @@ const Dekan_IntelectualMulk = () => {
                             }}
                     />
                 </Form.Item>
-            </Form>
+                <Form.Item label="Status" name="Status">
+                    <Select style={{width: 250,}}
+                            name="Status"
+                            allowClear
+                            placeholder='Stasus'
+                            onChange={(value) => {
+                                onChangeField('status', value);
+                            }}
+                            options={[
+                                {
+                                    label: "Yangi",
+                                    value: 'ACTIVE'
+                                },
+                                {
+                                    label: "Qabul qilingan",
+                                    value: 'ACCEPTED'
+                                },
+                                {
+                                    label: "Qabul qilinmagan",
+                                    value: 'REJECTED'
+                                }
+                            ]}
+                    />
+                </Form.Item>
 
+                <div className="d-flex justify-content-between align-items-center">
+                    <Form.Item
+                        label="1030"
+                        name="1030"
+                    >
+                        <Switch
+                            name='1030'
+                            checkedChildren={<CheckOutlined/>}
+                            unCheckedChildren={<CloseOutlined/>}
+                            checked={srcItem?.rule1030}
+                            onChange={() => {
+                                onChangeField('rule1030', !srcItem?.rule1030);
+                            }}
+                        />
+
+                    </Form.Item>
+                    <Form.Item
+                        label="KPI"
+                        name="kpi"
+                    >
+                        <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
+                            <Switch
+                                name='kpi'
+                                checkedChildren={<CheckOutlined/>}
+                                unCheckedChildren={<CloseOutlined/>}
+                                checked={srcItem?.kpi}
+                                disabled={isDisabled}
+                                onChange={() => {
+                                    onChangeField('kpi', !srcItem?.kpi);
+                                }}
+                            />
+                        </Tooltip>
+                    </Form.Item>
+
+                </div>
+            </Form>
+            <Drawer title="Izoxlar" onClose={() => setOpen(false)} open={open}>
+                <div className="comentariya">
+                    {
+                        messages?.map((item) =>{
+                                return  <div className="d-flex">
+                                    <span>{item?.createdDate.slice(0,10)}</span>
+                                    <p>
+                                        {item?.content}
+                                    </p>
+                                </div>
+                            }
+                        )
+                    }
+                </div>
+                <Form
+                    form={form1}
+                    layout="vertical"
+                    ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
+                    onFinish={(e) => CommentPost.mutate(e)}
+                >
+                    <Form.Item name='izox'>
+                        <TextArea placeholder="Rad etishga izox yozing" allowClear
+                                  style={{height: 100, width: 250, resize: 'none',}}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <button className="btn btn-success">
+                            <CheckOutlined/>
+                        </button>
+                    </Form.Item>
+
+                </Form>
+            </Drawer>
             <div className="mt-4">
+
                 <Table
                     rowKey="id"
                     columns={columns}

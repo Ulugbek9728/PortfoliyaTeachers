@@ -161,7 +161,6 @@ function AdminIlmiyNashirlar(props) {
         },
     })
 
-
     const onChangeDate = (value, dateString) => {
         if (value === null) {
             setSrcItem({

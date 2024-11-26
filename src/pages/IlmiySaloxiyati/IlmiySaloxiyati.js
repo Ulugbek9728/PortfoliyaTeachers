@@ -242,15 +242,15 @@ const IlmiySaloxiyati = () => {
                                 options={[
                                     {
                                         label: 'Fan nomzodi',
-                                        value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'
+                                        value: 'Fan nomzodi'
                                     },
                                     {
                                         label: 'Falsafa doktori',
-                                        value: 'Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'
+                                        value: 'Falsafa doktori'
                                     },
                                     {
                                         label: 'Fan doktori',
-                                        value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'
+                                        value: 'Fan doktori'
                                     }
                                 ]}
                                 onChange={(value) => {

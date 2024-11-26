@@ -4,31 +4,24 @@ import { useEffect } from "react";
 import { useRef } from "react";
 import { useQueries, useQuery } from "react-query";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
-import { ClassifairGet, getFaculty, TeacherList } from "../../api/general";
+import { ClassifairGet, getFaculty, getFacultyDekan, TeacherList } from "../../api/general";
 const Dekan_teachersList = () => {
     const [departmentAdd, setDepartmentAdd] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
     const navigate = useNavigate();
-  
-    const { data: facultyData } = useQuery({
-      queryKey: ["FacultyList"],
-      queryFn: () => getFaculty(11, "").then((res) => res.data),
-    });
-    const stafPosition = useQuery({
-      queryKey: ["h_teacher_position_type"],
-      queryFn: () =>
-        ClassifairGet("h_teacher_position_type").then(
-          (res) => res?.data[0]?.options
-        ),
-    });
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
 
-    const { data: Department } = useQuery({
-      queryKey: ["DepartmentList"],
-      queryFn: () => getFaculty(13).then((res) => res.data),
-    });
+    const{ data: KafedraList} = useQuery({
+      queryKey: ["kafedraList"],
+      queryFn: () => getFaculty(12, fulInfo?.roleInfos[0]?.faculty?.id).then(res =>
+          res?.data
+      )
+  })
+
   
+    
     const [srcItem, setSrcItem] = useState({
       facultyId: searchParams.get("facultyId") || null,
       departmentId: searchParams.get("departmentId") || null,
@@ -81,61 +74,25 @@ const Dekan_teachersList = () => {
           ref={formRef}
           className="d-flex align-items-center gap-4"
         >
-          <Form.Item name="facultyId" label="Fakultetni tanlang">
-            <Select
-              style={{ width: 250 }}
-              name="facultyId"
-              allowClear
-              placeholder="Facultet"
-              onChange={(value) => {
-                onChangeField("facultyId", value);
-              }}
-              options={facultyData?.map((item) => ({
-                value: item.id,
-                label: item.name,
-              }))}
-            />
-          </Form.Item>
+          <Form.Item name="kafedraList" label="Kafedrani tanlang">
+          <Select
+            style={{ width: 250 }}
+            name="kafedraList"
+            allowClear
+            placeholder="Kafedra"
+            onChange={(value) => {
+              onChangeField("kafedraList", value);
+            }}
+            options={KafedraList?.map((item) => ({
+              value: item.id,
+              label: item.name,
+            }))}
+          />
+        </Form.Item>
   
-          <Form.Item name="departmentId" label="Bo`limni tanlang">
-            <Select
-              name="departmentId"
-              style={{ width: 250 }}
-              allowClear
-              placeholder="Bo'lim"
-              onChange={(value) => {
-                onChangeField("departmentId", value);
-              }}
-              options={Department?.map((item) => ({
-                value: item.id,
-                label: item.name,
-                key: item.id,
-              }))}
-            />
-          </Form.Item>
+
   
-          <Form.Item name="stafPosition" label="Lavozimni tanlang">
-            <Select
-              name="stafPosition"
-              style={{ width: 250 }}
-              allowClear
-              placeholder="Lavozim"
-              onChange={(value) => {
-                onChangeField("staffPosition", value);
-              }}
-              options={
-                stafPosition?.data?.map((item) => ({
-                  value: item.code,
-                  label: item.name,
-                  key: item.code,
-                })) || []
-              }
-            />
-          </Form.Item>
-  
-          <Button type="primary" onClick={() => form.submit()}>
-            Search
-          </Button>
+
         </Form>
         <div className="card-list">
           {data?.map((card) => (

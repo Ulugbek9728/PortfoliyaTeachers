@@ -13,17 +13,19 @@ const TeachersTable = () => {
   const formRef = useRef(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+  const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const { data: facultyData } = useQuery({
     queryKey: ["FacultyList"],
     queryFn: () => getFaculty(11, "").then((res) => res.data),
   });
   const{ data: KafedraList} = useQuery({
     queryKey: ["kafedraList"],
-    queryFn: () => getFaculty(12,'').then(res =>
+    queryFn: () => getFaculty(12, fulInfo?.roleInfos[0]?.faculty?.id).then(res =>
         res?.data
     )
 })
+
+
   const stafPosition = useQuery({
     queryKey: ["h_teacher_position_type"],
     queryFn: () =>
@@ -58,7 +60,6 @@ const TeachersTable = () => {
         staffPosition: srcItem.staffPosition,
       }).then((res) => res.data.data.content),
   });
-  console.log(data);
   useEffect(() => {
     form.setFieldsValue(srcItem);
   }, [srcItem, form]);
@@ -66,7 +67,7 @@ const TeachersTable = () => {
   const handleCardClick = (id) => {
     navigate(`/userInfo/${id}`);
   };
-
+console.log(searchParams);
   const onChangeField = (fieldKey, value) => {
     if (value === undefined || value === false) {
       searchParams.delete(fieldKey);

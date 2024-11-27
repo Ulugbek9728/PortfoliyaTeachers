@@ -1,26 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {DatePicker, Drawer, Form, Input, notification, Select, Switch, Table, Tag, Tooltip} from "antd";
 import {
-    DatePicker,
-    Drawer,
-    Form,
-    Input,
-    notification,
-    Popconfirm,
-    Select,
-    Space,
-    Switch,
-    Table,
-    Tag,
-    Tooltip
-} from "antd";
-import {
-    ClassifairGet, Comment,
+    Comment,
+    EmployeeStatus,
+    EmployeeStatusKPIand1030,
     getComment,
     getFaculty,
     getIlmiySaloxiyat,
     getProfile,
     ToglActiveStatus,
-    ToglActiveStatusKPIand1030
 } from "../../api/general";
 import {CheckOutlined, CloseOutlined, MenuFoldOutlined, MessageOutlined,} from "@ant-design/icons";
 import {useSearchParams} from 'react-router-dom';
@@ -46,14 +34,13 @@ function AdminIlmiySaloxiyat(props) {
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
         faculty: searchParams.get('faculty') || null,
         department: searchParams.get('department') || null,
-        employeeId: searchParams.get('employeeId') || null,
+        profileId: searchParams.get('profileId') || null,
         srcType: searchParams.get('srcType') || null,
         status: searchParams.get('status') || null,
         kpi: searchParams.get('kpi') || null,
         rule1030: searchParams.get('rule1030') || null,
     });
     const [publicationID, setPublicationID] = useState(null);
-
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 0,
@@ -87,7 +74,7 @@ function AdminIlmiySaloxiyat(props) {
         queryFn: () => getIlmiySaloxiyat({
             fromlocalDate: srcItem?.dataSrc[0],
             tolocalDate: srcItem?.dataSrc[1],
-            employeeId: srcItem?.employeeId,
+            profileId: srcItem?.profileId,
             type: "SCIENTIFIC_POTENTIAL",
             scientificLeadershipType: srcItem?.srcType,
             facultyId: srcItem?.faculty,
@@ -108,8 +95,8 @@ function AdminIlmiySaloxiyat(props) {
                 newStatusKPI = !e?.record?.kpi;
                 newStatus1030 = e?.record?.rule1030;
             }
-            ToglActiveStatusKPIand1030({
-                publicationId: e?.record?.id,
+            EmployeeStatusKPIand1030({
+                employeeStudentId: e?.record?.id,
                 kpi: newStatusKPI,
                 rule1030: newStatus1030
             }).then((res)=>{
@@ -120,15 +107,13 @@ function AdminIlmiySaloxiyat(props) {
             })
         },
     })
-
     const Status = useMutation({
         mutationFn: (e) => {
-            console.log(e)
-            let newStatus = e?.publicationStatus === "ACTIVE" || e?.publicationStatus === "REJECTED" ? "ACCEPTED" : "REJECTED";
+            let newStatus = e?.status === "ACTIVE" || e?.status === "REJECTED" ? "ACCEPTED" : "REJECTED";
 
-            ToglActiveStatus({
+            EmployeeStatus({
                 id: e?.id,
-                publicationStatus: newStatus
+                status: newStatus
             }).then((res)=>{
                 publication_List.refetch()
                 notification.success({
@@ -223,7 +208,7 @@ function AdminIlmiySaloxiyat(props) {
         },
         {
             title: 'Shogirt F.I.SH',
-            render: (item, record, index) => (<>{item?.studentId?.fullName} ({item?.studentId?.workplace} {item?.studentId?.position})</>),
+            render: (item, record, index) => (<>{item?.student?.fullName} ({item?.student?.workplace} {item?.student?.position})</>),
             width: 200,
         },
         {
@@ -249,7 +234,7 @@ function AdminIlmiySaloxiyat(props) {
                 <Switch
                     checkedChildren={<CheckOutlined/>}
                     unCheckedChildren={<CloseOutlined/>}
-                    checked={record.publicationStatus === "ACCEPTED"}
+                    checked={record.status === "ACCEPTED"}
                     onChange={() => Status.mutate(record)}
                 />
             )
@@ -343,7 +328,7 @@ function AdminIlmiySaloxiyat(props) {
                       },
                       {
                           name: "srcPerson",
-                          value: srcItem?.employeeId
+                          value: srcItem?.profileId
                       },
                       {
                           name: "Status",
@@ -374,8 +359,7 @@ function AdminIlmiySaloxiyat(props) {
                             allowClear
                             placeholder='Facultet'
                             onChange={(value) => {
-                                onChangeField('faculty', value);
-                            }}
+                                onChangeField('faculty', value);}}
                             options={data?.map((item, index) => (
                                 {value: item.id, label: item.name, key: item.id}
                             ))}
@@ -412,7 +396,7 @@ function AdminIlmiySaloxiyat(props) {
                             name='srcPerson'
                             placeholder="O'qituvchi"
                             onChange={(value) => {
-                                onChangeField('employeeId', value);
+                                onChangeField('profileId', value);
                             }}
                             onSearch={onSearch}
                             options={teacher_List?.data?.map((item, index) => (
@@ -484,7 +468,6 @@ function AdminIlmiySaloxiyat(props) {
                         <MenuFoldOutlined/>
                     </button>
                 </Form.Item>
-
             </Form>
             <Form className='d-flex align-items-center gap-4'
                   layout="vertical"

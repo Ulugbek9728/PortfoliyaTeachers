@@ -1,26 +1,42 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {DatePicker, Form, Popconfirm, Select, Space, Table} from "antd";
-import {ClassifairGet, getFaculty, getIlmiySaloxiyat, getProfile} from "../../api/general";
+import {DatePicker, Drawer, Form, Input, notification, Select, Switch, Table, Tag, Tooltip} from "antd";
+import {
+    Comment, EmployeeStatus, EmployeeStatusKPIand1030, getComment,
+    getFaculty, getIlmiySaloxiyat, getProfile,
+} from "../../api/general";
 import {useSearchParams} from 'react-router-dom';
-import {useQuery} from "react-query";
+import {useMutation, useQuery} from "react-query";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import {CheckOutlined, CloseOutlined, MenuFoldOutlined, MessageOutlined} from "@ant-design/icons";
 
 dayjs.extend(customParseFormat);
+const {TextArea} = Input;
+
 
 function DekanIlmiySaloxiyat(props) {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
+    const [form1] = Form.useForm();
+    const [form2] = Form.useForm();
+    const [open, setOpen] = useState(false);
+    const [open1, setOpen1] = useState(false);
+    const [messages, setMessages] = useState(null);
+
+    const [isDisabled, setIsDisabled] = useState(true);
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
-        faculty: searchParams.get('faculty') || null,
+        facultyId: fulInfo?.roleInfos[0]?.faculty?.id,
         department: searchParams.get('department') || null,
-        employeeId: searchParams.get('employeeId') || null,
+        profileId: searchParams.get('profileId') || null,
         srcType: searchParams.get('srcType') || null,
+        status: searchParams.get('status') || null,
+        kpi: searchParams.get('kpi') || null,
+        rule1030: searchParams.get('rule1030') || null,
     });
-    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-
+    const [publicationID, setPublicationID] = useState(null);
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 0,
@@ -29,14 +45,9 @@ function DekanIlmiySaloxiyat(props) {
         },
     });
 
-
-    const {data} = useQuery({
-        queryKey: ["FacultyList"],
-        queryFn: () => getFaculty(11, '').then(res => res.data)
-    })
     const kafedraList = useQuery({
         queryKey: ["Kafedra"],
-        queryFn: () => getFaculty(12, srcItem?.faculty).then(res =>
+        queryFn: () => getFaculty(12, srcItem?.facultyId).then(res =>
             res?.data
         )
     })
@@ -44,9 +55,9 @@ function DekanIlmiySaloxiyat(props) {
         queryKey: ['teacherList'],
         queryFn: () => getProfile(
             {
-                facultyId:srcItem?.faculty,
-                departmentId:srcItem?.department,
-                query:srcItem?.query
+                facultyId: srcItem?.facultyId,
+                departmentId: srcItem?.department,
+                query: srcItem?.query
             }).then(res => res.data?.data?.content)
     })
 
@@ -55,11 +66,81 @@ function DekanIlmiySaloxiyat(props) {
         queryFn: () => getIlmiySaloxiyat({
             fromlocalDate: srcItem?.dataSrc[0],
             tolocalDate: srcItem?.dataSrc[1],
-            employeeId: srcItem?.employeeId,
+            profileId: srcItem?.profileId,
+            type: "SCIENTIFIC_POTENTIAL",
             scientificLeadershipType: srcItem?.srcType,
-            facultyId: srcItem?.faculty,
+            facultyId: srcItem?.facultyId,
             departmentId: srcItem?.department,
+            status: srcItem?.status,
+            kpi: srcItem?.kpi,
+            rule1030: srcItem?.rule1030,
         }).then(res => res?.data?.data?.content)
+    })
+    const KPIand1030 = useMutation({
+        mutationFn: (e) => {
+            let newStatus1030
+            let newStatusKPI
+            if (e?.key === "1030") {
+                newStatus1030 = !e?.record?.rule1030;
+                newStatusKPI = e?.record?.kpi
+            } else {
+                newStatusKPI = !e?.record?.kpi;
+                newStatus1030 = e?.record?.rule1030;
+            }
+            EmployeeStatusKPIand1030({
+                employeeStudentId: e?.record?.id,
+                kpi: newStatusKPI,
+                rule1030: newStatus1030
+            }).then((res)=>{
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+                publication_List.refetch()
+            })
+        },
+    })
+
+    const Status = useMutation({
+        mutationFn: (e) => {
+            let newStatus = e?.status === "ACTIVE" || e?.status === "REJECTED" ? "ACCEPTED" : "REJECTED";
+
+            EmployeeStatus({
+                id: e?.id,
+                status: newStatus
+            }).then((res)=>{
+                publication_List.refetch()
+                notification.success({
+                    message: "Status o'zgardi"
+                })
+
+            }).catch((error)=>notification.error({message:"Status error"}))
+        },
+
+    })
+
+    const CommentAll = useMutation({
+        mutationFn: (e) => {
+            getComment(e).then((res) => {
+                setMessages(res?.data.data.reverse())
+            }).catch((error) => console.log(error))
+        },
+    })
+
+    const CommentPost = useMutation({
+        mutationFn: (e) => {
+            Comment({
+                content: e.izox,
+                publicationId: publicationID
+            }).then((res) => {
+                publication_List.refetch()
+                form1.resetFields()
+                setOpen(false)
+                notification.success({
+                    message: "Izox yuborildi"
+                })
+            }).catch((error) => notification.error({message: "Izox error"}))
+        },
+
     })
 
     const onChangeDate = (value, dateString) => {
@@ -88,9 +169,7 @@ function DekanIlmiySaloxiyat(props) {
     };
 
     useEffect(() => {
-        if (srcItem?.faculty) {
-            kafedraList.refetch();
-        }
+        kafedraList.refetch();
         teacher_List.refetch()
         publication_List.refetch()
     }, [srcItem]);
@@ -120,7 +199,7 @@ function DekanIlmiySaloxiyat(props) {
         },
         {
             title: 'Shogirt F.I.SH',
-            render: (item, record, index) => (<>{item?.studentId?.fullName} ({item?.studentId?.workplace} {item?.studentId?.position})</>),
+            render: (item, record, index) => (<>{item?.student?.fullName} ({item?.student?.workplace} {item?.student?.position})</>),
             width: 200,
         },
         {
@@ -140,77 +219,66 @@ function DekanIlmiySaloxiyat(props) {
             width: 50
         },
         {
-            title: 'Tekshirish',
-            dataIndex: 'address',
-            width: 100
+            title: "Status",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record.status === "ACCEPTED"}
+                    onChange={() => Status.mutate(record)}
+                />
+            )
+
         },
-        // {
-        //     title: 'Harakatlar',
-        //     width: 100,
-        //     render: (text, record) => (
-        //         <Space size="middle">
-        //             <button type="primary" className='editBtn'
-        //                     style={{"minWidth": '30px'}}
-        //                     onClick={() => onEdit(record)}
-        //             >
-        //                 <svg height="1em" viewBox="0 0 512 512">
-        //                     <path
-        //                         d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"
-        //                     ></path>
-        //                 </svg>
-        //             </button>
-        //             <Popconfirm title="Ilmiy nashirni o'chirish"
-        //                         description="Ilmiy nashirni o'chirishni tasdiqlaysizmi?"
-        //                         onConfirm={(e) => handleDelete(record.id)}
-        //                         okText="Ha" cancelText="Yo'q"
-        //             >
-        //                 <button className="delet"
-        //                 >
-        //                     <svg
-        //                         className="bin-top"
-        //                         viewBox="0 0 39 7"
-        //                         fill="none"
-        //                         xmlns="http://www.w3.org/2000/svg"
-        //                     >
-        //                         <line y1="5" x2="39" y2="5" stroke="white" strokeWidth="4"></line>
-        //                         <line
-        //                             x1="12"
-        //                             y1="1.5"
-        //                             x2="26.0357"
-        //                             y2="1.5"
-        //                             stroke="white"
-        //                             strokeWidth="3"
-        //                         ></line>
-        //                     </svg>
-        //                     <svg
-        //                         className="bin-bottom"
-        //                         viewBox="0 0 33 39"
-        //                         fill="none"
-        //                         xmlns="http://www.w3.org/2000/svg"
-        //                     >
-        //                         <mask id="path-1-inside-1_8_19" fill="white">
-        //                             <path
-        //                                 d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
-        //                             ></path>
-        //                         </mask>
-        //                         <path
-        //                             d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-        //                             fill="white"
-        //                             mask="url(#path-1-inside-1_8_19)"
-        //                         ></path>
-        //                         <path d="M12 6L12 29" stroke="white" strokeWidth="4"></path>
-        //                         <path d="M21 6V29" stroke="white" strokeWidth="4"></path>
-        //                     </svg>
-        //                 </button>
-        //             </Popconfirm>
-        //
-        //         </Space>
-        //     ),
-        // },
+        {
+            title: "1030",
+            width: 80,
+            render: (text, record) => (
+                <Switch
+                    checkedChildren={<CheckOutlined/>}
+                    unCheckedChildren={<CloseOutlined/>}
+                    checked={record?.rule1030}
+                    onChange={() => KPIand1030.mutate({record, key: "1030"})}
+                />
+            )
+        },
+        {
+            title: "KPI",
+            width: 80,
+            render: (text, record) => (
+                <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
+                    <Switch
+                        checkedChildren={<CheckOutlined/>}
+                        unCheckedChildren={<CloseOutlined/>}
+                        checked={record?.kpi}
+                        disabled={isDisabled}
+                        onChange={() => KPIand1030.mutate({record, key: "KPI"})}
+                    />
+                </Tooltip>
+            )
+        },
+        {
+            title: 'Izox',
+            width: 100,
+            render: (text, record) => (
+                <button type="primary" className='btn btn-primary'
+                        style={{"minWidth": '30px'}}
+                        onClick={() => {
+                            setOpen(true)
+                            setPublicationID(record?.id)
+                            CommentAll.mutate(record?.id)
+                        }}
+                >
+                    <MessageOutlined/>
+                </button>
+            ),
+        },
+
     ];
 
     function onChangeField(fieldKey, value) {
-        if (value === undefined) {
+        if (value === undefined || value === false) {
             searchParams.delete(fieldKey);
             setSearchParams(searchParams, {replace: true});
             setSrcItem({...srcItem, [fieldKey]: null});
@@ -221,6 +289,12 @@ function DekanIlmiySaloxiyat(props) {
                 return prevParams;
             }, {replace: true});
         }
+    }
+
+    function onChangeFieldClear(fieldKey) {
+        searchParams.delete(fieldKey);
+        setSearchParams(searchParams, {replace: true});
+        setSrcItem({...srcItem, [fieldKey]: null});
     }
 
     return (
@@ -236,20 +310,24 @@ function DekanIlmiySaloxiyat(props) {
                           value: srcItem.dataSrc[0] && srcItem.dataSrc[1] ? [dayjs(srcItem.dataSrc[0], 'YYYY-MM-DD'), dayjs(srcItem.dataSrc[1], 'YYYY-MM-DD')] : null
                       },
                       {
-                          name: "facultyId",
-                          value: srcItem?.faculty
-                      },
-                      {
                           name: "kafedraId",
                           value: srcItem?.department
                       },
                       {
                           name: "srcPerson",
-                          value: srcItem?.employeeId
+                          value: srcItem?.profileId
                       },
                       {
-                          name: "srcType",
-                          value: srcItem?.srcType
+                          name: "Status",
+                          value: srcItem?.status
+                      },
+                      {
+                          name: "1030",
+                          value: srcItem?.rule1030
+                      },
+                      {
+                          name: "kpi",
+                          value: srcItem?.kpi
                       },
                   ]}
             >
@@ -258,23 +336,6 @@ function DekanIlmiySaloxiyat(props) {
                         allowClear size="large" style={{width: 250,}} name="srcDate"
                         format="YYYY-MM-DD"
                         onChange={onChangeDate}/>
-                </Form.Item>
-                <Form.Item name="facultyId"
-                           rules={[{message: 'Fakultetni tanlang'}]}
-                           label="Fakultetni tanlang"
-                >
-                    <Select style={{width: 250,}}
-                            name="facultyId"
-                            allowClear
-                            placeholder='Facultet'
-                            onChange={(value) => {
-                                onChangeField('faculty', value);
-                            }}
-                            options={data?.map((item, index) => (
-                                {value: item.id, label: item.name, key: item.id}
-                            ))}
-                    />
-
                 </Form.Item>
                 <Form.Item
                     name="kafedraId"
@@ -306,7 +367,7 @@ function DekanIlmiySaloxiyat(props) {
                             name='srcPerson'
                             placeholder="O'qituvchi"
                             onChange={(value) => {
-                                onChangeField('employeeId', value);
+                                onChangeField('profileId', value);
                             }}
                             onSearch={onSearch}
                             options={teacher_List?.data?.map((item, index) => (
@@ -314,29 +375,157 @@ function DekanIlmiySaloxiyat(props) {
                             ))}
                     />
                 </Form.Item>
-
-                <Form.Item label="Ilmiy raxbarlik turi" name="srcType">
-                    <Select name="srcType" allowClear labelInValue style={{width: 250,}} placeholder='Ilmiy raxbarlik turi'
+                <Form.Item label="Status" name="Status">
+                    <Select style={{width: 250,}}
+                            name="Status"
+                            allowClear
+                            placeholder='Stasus'
+                            onChange={(value) => {
+                                onChangeField('status', value);
+                            }}
                             options={[
                                 {
-                                    label: 'Ilmiy raxbarligi ostida ximoya qilgan fan nomzodi shogird',
-                                    value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan nomzodi shogird'
+                                    label: "Yangi",
+                                    value: 'ACTIVE'
                                 },
                                 {
-                                    label: 'Ilmiy raxbarligi ostida ximoya qilgan falsafa doktori shogird',
-                                    value: 'Ilmiy raxbarligingiz ostida ximoya qilgan falsafa doktori shogird'
+                                    label: "Qabul qilingan",
+                                    value: 'ACCEPTED'
                                 },
                                 {
-                                    label: 'Ilmiy raxbarligi ostida ximoya qilgan fan doktori shogird',
-                                    value: 'Ilmiy raxbarligingiz ostida ximoya qilgan fan doktori shogird'
+                                    label: "Qabul qilinmagan",
+                                    value: 'REJECTED'
                                 }
                             ]}
-                            onChange={(value) => {
-                                onChangeField('srcType', value?.value);
-                            }}
                     />
                 </Form.Item>
+                <div className="d-flex justify-content-between align-items-center">
+                    <Form.Item
+                        label="1030"
+                        name="1030"
+                    >
+                        <Switch
+                            name='1030'
+                            checkedChildren={<CheckOutlined/>}
+                            unCheckedChildren={<CloseOutlined/>}
+                            checked={srcItem?.rule1030}
+                            onChange={() => {
+                                onChangeField('rule1030', !srcItem?.rule1030);
+                            }}
+                        />
+
+                    </Form.Item>
+                    <Form.Item
+                        label="KPI"
+                        name="kpi"
+                    >
+                        <Tooltip title={isDisabled ? 'Bu funksiya mavjud emas' : ''}>
+                            <Switch
+                                name='kpi'
+                                checkedChildren={<CheckOutlined/>}
+                                unCheckedChildren={<CloseOutlined/>}
+                                checked={srcItem?.kpi}
+                                disabled={isDisabled}
+                                onChange={() => {
+                                    onChangeField('kpi', !srcItem?.kpi);
+                                }}
+                            />
+                        </Tooltip>
+                    </Form.Item>
+
+                </div>
+                <Form.Item label=' '>
+                    <button className='btn btn-primary' onClick={() => setOpen1(true)}>
+                        <MenuFoldOutlined/>
+                    </button>
+                </Form.Item>
+
             </Form>
+            <Form className='d-flex align-items-center gap-4'
+                  layout="vertical"
+                  ref={formRef}
+                  colon={false}>
+                {
+                    srcItem?.srcType ? <Form.Item label='Uslubiy nashir turi'>
+                        <Tag bordered={false} name='122' color="processing" closable
+                             onClose={(e) => onChangeFieldClear("srcType")}
+                        >
+                            {
+                                srcItem?.srcType
+                            }
+                        </Tag>
+                    </Form.Item> : ''
+                }
+
+            </Form>
+            <Drawer title="Filter" onClose={() => setOpen1(false)} open={open1}>
+                <Form form={form2}
+                      layout="vertical"
+                      ref={formRef}
+                      fields={[
+                          {
+                              name: "srcType",
+                              value: srcItem?.srcType
+                          },
+                      ]}
+                >
+                    <Form.Item label="Ilmiy raxbarlik turi" name="srcType">
+                        <Select name="srcType" allowClear labelInValue style={{width: 300,}}
+                                placeholder='Ilmiy raxbarlik turi'
+                                options={[
+                                    {
+                                        label: 'Fan nomzodi',
+                                        value: 'Fan nomzodi'
+                                    },
+                                    {
+                                        label: 'Falsafa doktori',
+                                        value: 'Falsafa doktori'
+                                    },
+                                    {
+                                        label: 'Fan doktori',
+                                        value: 'Fan doktori'
+                                    }
+                                ]}
+                                onChange={(value) => {
+                                    onChangeField('srcType', value?.value);
+                                }}
+                        />
+                    </Form.Item>
+                </Form>
+            </Drawer>
+
+            <Drawer title="Izoxlar" onClose={() => setOpen(false)} open={open}>
+                <div className="comentariya">
+                    {
+                        messages?.map((item) => {
+                                return <div className="d-flex">
+                                    <span>{item?.createdDate.slice(0, 10)}</span>
+                                    <p>
+                                        {item?.content}
+                                    </p>
+                                </div>
+                            }
+                        )
+                    }
+                </div>
+                <Form
+                    form={form1}
+                    layout="vertical"
+                    ref={formRef} className="d-flex align-items-center justify-content-between mt-3"
+                    onFinish={(e) => CommentPost.mutate(e)}
+                >
+                    <Form.Item name='izox'>
+                        <TextArea placeholder="Rad etishga izox yozing" allowClear
+                                  style={{height: 100, width: 250, resize: 'none',}}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <button className="btn btn-success">
+                            <CheckOutlined/>
+                        </button>
+                    </Form.Item>
+
+                </Form>
+            </Drawer>
 
             <div className="mt-4">
                 <Table

@@ -126,7 +126,6 @@ function AddFakulty(props) {
         },
     ];
 
-
     return (
         <div>
             <button type="button" className=" button1" onClick={() => setIsModalOpen(true)}>

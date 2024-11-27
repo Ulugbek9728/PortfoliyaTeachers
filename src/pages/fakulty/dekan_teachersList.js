@@ -19,7 +19,6 @@ const Dekan_teachersList = () => {
           res?.data
       )
   })
-    console.log(fulInfo)
 
     const [srcItem, setSrcItem] = useState({
       departmentId: searchParams.get("kafedraList") || null,

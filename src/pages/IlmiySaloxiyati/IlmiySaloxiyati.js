@@ -66,7 +66,7 @@ const IlmiySaloxiyati = () => {
         },
         {
             title: 'Shogirt F.I.SH',
-            render: (item, record, index) => (<>{item?.studentId?.fullName} ({item?.studentId?.workplace} {item?.studentId?.position})</>),
+            render: (item, record, index) => (<>{item?.student?.fullName} ({item?.student?.workplace} {item?.student?.position})</>),
             width: 200,
         },
         {
@@ -203,7 +203,7 @@ const IlmiySaloxiyati = () => {
     return (
         <div className='p-4'>
             <Modal
-                title={editingData ? "Ilmiy raxbarlik tahrirlash" : "Ilmiy raxbarlik ostidagi shogird qoshish punkti"}
+                title={editingData ? "Ilmiy raxbarlik tahrirlash" : "Ilmiy raxbarlik ostidagi shogirt qoshish punkti"}
                 centered
                 open={open}
                 onCancel={handleCancel}
@@ -265,7 +265,7 @@ const IlmiySaloxiyati = () => {
                             setOpen(true)
                         }}
                 >
-                    <span className="button__text">Ilmiy nashr yaratish</span>
+                    <span className="button__text">Shogirt qo'shish</span>
                     <span className="button__icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
                              strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" height="24"

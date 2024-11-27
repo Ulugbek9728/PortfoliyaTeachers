@@ -1,22 +1,26 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Table, Modal, Select, Form, Button, notification, Space, Popconfirm} from 'antd';
 import {useQuery, useMutation} from "react-query"
-import { addDekanInfo, deleteDekanInfo, getFaculty, getFacultyDekan, getProfile } from '../../api/general';
+import {
+    addDepartmentInfo, deleteDepartment, getdepartmentAdmin, getFaculty, getProfile
+} from '../../api/general';
 
 const AddKafedra = () => {
+    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+
     const [form] = Form.useForm();
     const formRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [kafedraAdd, setKafedraAdd] = useState(null);
     const{ data: KafedraList} = useQuery({
         queryKey: ["kafedraList"],
-        queryFn: () => getFaculty(12,'').then(res =>
+        queryFn: () => getFaculty(12,fulInfo?.roleInfos[0]?.faculty?.id).then(res =>
             res?.data
         )
     })
 
-    const dekan_List = useQuery({
-        queryKey: ['dekanlist'],
+    const allKafedraMudir_List = useQuery({
+        queryKey: ['Alldekanlist'],
         queryFn: () => getProfile({
             staffPosition: 16,
         }).then(res => res?.data?.data?.content)
@@ -35,7 +39,7 @@ const AddKafedra = () => {
         },
         {
             title: 'Kafedra',
-            render: (item, record, index) => (<>{item?.kafedra?.name}</>)
+            render: (item, record, index) => (<>{item?.department?.name}</>)
         },
         {
             title: 'Harakatlar',
@@ -43,7 +47,7 @@ const AddKafedra = () => {
                 <Space size="middle">
                     <Popconfirm title="Fakultetni o'chirish"
                                 description="Fakultetni o'chirishni tasdiqlaysizmi?"
-                                onConfirm={(e) => deletFakulty.mutate(record.id)}
+                                onConfirm={(e) => deletDekan.mutate(record.id)}
                                 okText="Ha" cancelText="Yo'q"
                     >
                         <button className="delet"
@@ -90,38 +94,38 @@ const AddKafedra = () => {
             ),
         },
     ];
-const addFakulty = useMutation({
-    mutationFn: (id) => addDekanInfo(id.userID, kafedraAdd),
+const addKafedra = useMutation({
+    mutationFn: (id) => addDepartmentInfo(id.userID, kafedraAdd),
     onSuccess: () => {
-        FacultyDekan.refetch()
+        KafedraMudirList.refetch()
         notification.success({
-            message: "fakultet qo'shildi"
+            message: "Kafedra mudiri qo'shildi"
         })
         form.resetFields();
         setIsModalOpen(false)
     },
     onError: () => {
         notification.error({
-            message: "fakultet eror",
+            message: "kafedra eror",
             duration: 1,
             placement: 'top'
         })
     }
 })
 
-const deletFakulty = useMutation({
-    mutationFn:(id)=>deleteDekanInfo(id),
+const deletDekan = useMutation({
+    mutationFn:(id)=>deleteDepartment(id),
     onSuccess:()=>{
-        FacultyDekan.refetch()
+        KafedraMudirList.refetch()
         notification.success({
             message: "fakultet o'chirildi"
         })
     }
 })
 
-const FacultyDekan = useQuery({
-    queryKey: ['Fakultydekanlist'],
-    queryFn: () => getFacultyDekan().then(res => res.data?.data)
+const KafedraMudirList = useQuery({
+    queryKey: ['KafedraMudirList'],
+    queryFn: () => getdepartmentAdmin().then(res => res.data?.data)
 })
 
 return (
@@ -139,14 +143,14 @@ return (
                 </svg>
          </span>
         </button>
-        <Modal title="Fakultet dekanini qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
-            <Form form={form} ref={formRef} onFinish={(e) =>addFakulty.mutate(e)} layout="vertical">
+        <Modal title="Kafedra qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
+            <Form form={form} ref={formRef} onFinish={(e) =>addKafedra.mutate(e)} layout="vertical">
                 <Form.Item name="kafedraId"
                            rules={[{required: true, message: 'Kafedrani tanlang'}]}
                            label="Kafedrani tanlang"
                 >
                     <Select
-                        name="facultyId"
+                        name="kafedraId"
                         onChange={(e, option) => {
                             setKafedraAdd({
                                 ...kafedraAdd,
@@ -169,7 +173,7 @@ return (
                            label="Kafedra mudirini tanlang">
 
                     <Select name="userID" placeholder=' Kafedra mudirini F.I.Sh'
-                            options={dekan_List.data?.map((item, index) => (
+                            options={allKafedraMudir_List.data?.map((item, index) => (
                                 {value: item.id, label: item.fullName, key: item.id}
                             ))}
                     />
@@ -189,8 +193,8 @@ return (
         <Table
             rowKey="id"
             columns={columns}
-            dataSource={FacultyDekan.data}
-            loading={FacultyDekan.isLoading}
+            dataSource={KafedraMudirList.data}
+            loading={KafedraMudirList.isLoading}
         />
     </div>
 )}

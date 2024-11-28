@@ -44,39 +44,6 @@ function Navbar(props) {
         },
     ];
 
-    // const getFullInfo = useQuery({
-    //     queryKey:['get_full_info'],
-    //     queryFn:()=> fetchCurrentUser()
-    //         .then(res=>{
-    //             console.log(res.data.data)
-    //             let value
-    //             value = {
-    //                 ...fulInfo,
-    //                 roles:res?.data?.data?.roles,
-    //                 currentRole: res?.data?.data?.currentRole
-    //             }
-    //             localStorage.setItem("myInfo", JSON.stringify(value));
-    //
-    //             if (res?.data?.data?.currentRole === "ROLE_ADMIN") {
-    //                 navigate('/dashboard-admin/1')
-    //             }
-    //             if (res?.data?.data?.currentRole === "ROLE_TEACHER") {
-    //                 navigate('/profile/1')
-    //             }
-    //
-    //             if (res?.data?.data?.currentRole === "ROLE_FACULTY") {
-    //                 navigate('/dashboard-fakultyadm/1')
-    //             } else {
-    //                 // navigate('/profile/1')
-    //             }
-    //         }).catch((error)=> {
-    //             console.log(error)
-    //                 notification.error({message: error?.response?.data?.message})
-    //             navigate("/")
-    //             }
-    //         )
-    // })
-
     const GetRolesMenu = () => {
         let childrenRoles = [];
         fulInfo?.roles?.map(role => (
@@ -229,7 +196,7 @@ function Navbar(props) {
                             {/* /!*${ApiName}*!/  http://localhost:3000/ */}
                             {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
                             {fulInfo === null ?
-                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
+                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://portfolio.uplink.uz/auth`}
                                    className="nav-item nav-link">
                                     Hemis orqali kirish
                                     <i className="fa-solid fa-right-to-bracket mx-2"></i>

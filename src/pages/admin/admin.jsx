@@ -77,7 +77,7 @@ function Admin(props) {
                     >
                         <Routes>
                             <Route path={"/1"} element={ <AddFakulty/>}/>
-                            <Route path={"/2"} element={ <AddDepartment/>}/>
+                            {/*<Route path={"/2"} element={ <AddDepartment/>}/>*/}
                             <Route path={"/3"} element={ <TeachersTable/>}/>
                             <Route path={"/4/*"} element={ <AdminIlmiyNashirlar/>}/>
                             <Route path={"/5/*"} element={ <AdminUslubiyNashir/>}/>

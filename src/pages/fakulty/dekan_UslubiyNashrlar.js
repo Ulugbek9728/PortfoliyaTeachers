@@ -32,6 +32,7 @@ const {TextArea} = Input;
 
 const Dekan_UslubiyNashrlar = () => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+    const fakultyInfo = fulInfo.roleInfos.filter((item) => item?.faculty?.id != null)
 
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
@@ -41,7 +42,7 @@ const Dekan_UslubiyNashrlar = () => {
     const [isDisabled, setIsDisabled] = useState(true);
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
-        facultyId: fulInfo?.roleInfos[0]?.faculty?.id,
+        facultyId: fakultyInfo[0]?.faculty?.id,
         department: searchParams.get('department') || null,
         employeeId: searchParams.get('employeeId') || null,
         srcType: searchParams.get('srcType') || null,

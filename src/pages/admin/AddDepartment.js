@@ -12,7 +12,6 @@ import {
 function AddDepartment(props) {
     const [form] = Form.useForm();
     const formRef = useRef(null);
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [departmentAdd, setDepartmentAdd] = useState(null);
 
@@ -57,7 +56,9 @@ function AddDepartment(props) {
 
     const DepartmentsListadmin = useQuery({
         queryKey: ['AdminDepartmentlist'],
-        queryFn: () => getdepartmentAdmin().then(res => res.data?.data)
+        queryFn: () => getdepartmentAdmin({
+
+        }).then(res => res.data?.data)
     })
 
     const columns = [

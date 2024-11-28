@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Table, Modal, Select, Form, Button, notification, Space, Popconfirm} from 'antd';
 import {useQuery, useMutation} from "react-query"
 import {
@@ -7,14 +7,14 @@ import {
 
 const AddKafedra = () => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-
+    const fakultyInfo = fulInfo.roleInfos.filter((item) => item?.faculty?.id != null)
     const [form] = Form.useForm();
     const formRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [kafedraAdd, setKafedraAdd] = useState(null);
-    const{ data: KafedraList} = useQuery({
+    const {data: KafedraList} = useQuery({
         queryKey: ["kafedraList"],
-        queryFn: () => getFaculty(12,fulInfo?.roleInfos[0]?.faculty?.id).then(res =>
+        queryFn: () => getFaculty(12, fakultyInfo[0]?.faculty?.id).then(res =>
             res?.data
         )
     })
@@ -23,8 +23,13 @@ const AddKafedra = () => {
         queryKey: ['Alldekanlist'],
         queryFn: () => getProfile({
             staffPosition: 16,
+            departmentId: kafedraAdd?.id
         }).then(res => res?.data?.data?.content)
     })
+
+    useEffect(() => {
+        allKafedraMudir_List.refetch()
+    }, [kafedraAdd?.id]);
 
     const columns = [
         {
@@ -94,47 +99,52 @@ const AddKafedra = () => {
             ),
         },
     ];
-const addKafedra = useMutation({
-    mutationFn: (id) => addDepartmentInfo(id.userID, kafedraAdd),
-    onSuccess: () => {
-        KafedraMudirList.refetch()
-        notification.success({
-            message: "Kafedra mudiri qo'shildi"
-        })
-        form.resetFields();
-        setIsModalOpen(false)
-    },
-    onError: () => {
-        notification.error({
-            message: "kafedra eror",
-            duration: 1,
-            placement: 'top'
-        })
-    }
-})
+    const addKafedra = useMutation({
+        mutationFn: (id) => addDepartmentInfo(id.userID, kafedraAdd),
+        onSuccess: () => {
+            KafedraMudirList.refetch()
+            notification.success({
+                message: "Kafedra mudiri qo'shildi"
+            })
+            form.resetFields();
+            setIsModalOpen(false)
+        },
+        onError: () => {
+            notification.error({
+                message: "kafedra eror",
+                duration: 1,
+                placement: 'top'
+            })
+        }
+    })
 
-const deletDekan = useMutation({
-    mutationFn:(id)=>deleteDepartment(id),
-    onSuccess:()=>{
-        KafedraMudirList.refetch()
-        notification.success({
-            message: "fakultet o'chirildi"
-        })
-    }
-})
+    const deletDekan = useMutation({
+        mutationFn: (id) => deleteDepartment(id),
+        onSuccess: () => {
+            KafedraMudirList.refetch()
+            notification.success({
+                message: "fakultet o'chirildi"
+            })
+        }
+    })
+    const KafedraMudirList = useQuery({
+        queryKey: ['KafedraMudirList'],
+        queryFn: () => getdepartmentAdmin(
+            {
+                facultyId: fakultyInfo[0]?.faculty?.id,
+                departmentId: "",
+                structureTypeId: ""
+            }
+        ).then(res => res.data?.data)
+    })
 
-const KafedraMudirList = useQuery({
-    queryKey: ['KafedraMudirList'],
-    queryFn: () => getdepartmentAdmin().then(res => res.data?.data)
-})
-
-return (
-    <div>
-        <button type="button" className=" button1" onClick={() => setIsModalOpen(true)}>
+    return (
+        <div>
+            <button type="button" className=" button1" onClick={() => setIsModalOpen(true)}>
             <span className="button__text">
                 Kafedra mudirini qo'shish
             </span>
-            <span className="button__icon">
+                <span className="button__icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" strokeWidth="2"
                      strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" height="24"
                      fill="none" className="svg">
@@ -142,60 +152,68 @@ return (
                     <line y2="12" y1="12" x2="19" x1="5"/>
                 </svg>
          </span>
-        </button>
-        <Modal title="Kafedra qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
-            <Form form={form} ref={formRef} onFinish={(e) =>addKafedra.mutate(e)} layout="vertical">
-                <Form.Item name="kafedraId"
-                           rules={[{required: true, message: 'Kafedrani tanlang'}]}
-                           label="Kafedrani tanlang"
-                >
-                    <Select
-                        name="kafedraId"
-                        onChange={(e, option) => {
-                            setKafedraAdd({
-                                ...kafedraAdd,
-                                id: e,
-                                name: option.label,
-                            })
-                        }}
-                        placeholder='Kafedra'
-                        options={KafedraList?.map((item, index) => (
-                            {value: item.id, label: item.name, key: item.id}
-                        ))}
-                    />
+            </button>
+            <Modal title="Kafedra qo'shish" open={isModalOpen} onCancel={() => setIsModalOpen(false)}>
+                <Form form={form} ref={formRef} onFinish={(e) => addKafedra.mutate(e)} layout="vertical">
+                    <Form.Item name="kafedraId"
+                               rules={[{required: true, message: 'Kafedrani tanlang'}]}
+                               label="Kafedrani tanlang"
+                    >
+                        <Select
+                            name="kafedraId"
+                            onChange={(e, option) => {
+                                setKafedraAdd({
+                                    ...kafedraAdd,
+                                    id: e,
+                                    name: option.label,
+                                    structureType: option?.item?.structureType
+                                })
 
-                </Form.Item>
-                <Form.Item name="userID"
-                           rules={[{
-                               required: true,
-                               message: 'Dekani tanlang'
-                           }]}
-                           label="Kafedra mudirini tanlang">
-
-                    <Select name="userID" placeholder=' Kafedra mudirini F.I.Sh'
-                            options={allKafedraMudir_List.data?.map((item, index) => (
-                                {value: item.id, label: item.fullName, key: item.id}
+                            }}
+                            placeholder='Kafedra'
+                            options={KafedraList?.map((item, index) => (
+                                {
+                                    value: item.id,
+                                    label: item.name,
+                                    key: item.id,
+                                    item: item
+                                }
                             ))}
-                    />
+                        />
 
-                </Form.Item>
-
-                <div className="d-flex justify-content-end">
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            Qo'shish
-                        </Button>
                     </Form.Item>
-                </div>
-            </Form>
-        </Modal>
+                    <Form.Item name="userID"
+                               rules={[{
+                                   required: true,
+                                   message: 'Dekani tanlang'
+                               }]}
+                               label="Kafedra mudirini tanlang">
 
-        <Table
-            rowKey="id"
-            columns={columns}
-            dataSource={KafedraMudirList.data}
-            loading={KafedraMudirList.isLoading}
-        />
-    </div>
-)}
+                        <Select name="userID" placeholder=' Kafedra mudirini F.I.Sh'
+                                options={allKafedraMudir_List.data?.map((item, index) => (
+                                    {value: item.id, label: item.fullName, key: item.id}
+                                ))}
+                        />
+
+                    </Form.Item>
+
+                    <div className="d-flex justify-content-end">
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit">
+                                Qo'shish
+                            </Button>
+                        </Form.Item>
+                    </div>
+                </Form>
+            </Modal>
+
+            <Table
+                rowKey="id"
+                columns={columns}
+                dataSource={KafedraMudirList.data}
+                loading={KafedraMudirList.isLoading}
+            />
+        </div>
+    )
+}
 export default AddKafedra

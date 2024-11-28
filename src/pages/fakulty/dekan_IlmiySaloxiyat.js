@@ -16,6 +16,8 @@ const {TextArea} = Input;
 
 function DekanIlmiySaloxiyat(props) {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+    const fakultyInfo = fulInfo.roleInfos.filter((item) => item?.faculty?.id != null)
+
     const [searchParams, setSearchParams] = useSearchParams();
     const formRef = useRef(null);
     const [form] = Form.useForm();
@@ -28,7 +30,7 @@ function DekanIlmiySaloxiyat(props) {
     const [isDisabled, setIsDisabled] = useState(true);
     const [srcItem, setSrcItem] = useState({
         dataSrc: [searchParams.get('from') || null, searchParams.get('to') || null],
-        facultyId: fulInfo?.roleInfos[0]?.faculty?.id,
+        facultyId: fakultyInfo[0]?.faculty?.id,
         department: searchParams.get('department') || null,
         profileId: searchParams.get('profileId') || null,
         srcType: searchParams.get('srcType') || null,

@@ -12,10 +12,11 @@ const Dekan_teachersList = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
+    const fakultyInfo = fulInfo.roleInfos.filter((item) => item?.faculty?.id != null)
 
     const{ data: KafedraList} = useQuery({
       queryKey: ["kafedraList"],
-      queryFn: () => getFaculty(12, fulInfo?.roleInfos[0]?.faculty?.id).then(res =>
+      queryFn: () => getFaculty(12, fakultyInfo[0]?.faculty?.id).then(res =>
           res?.data
       )
   })
@@ -28,7 +29,7 @@ const Dekan_teachersList = () => {
       queryKey: ["get_teacher_info", srcItem],
       queryFn: () =>
         TeacherList({
-            facultyId:fulInfo?.roleInfos[0]?.faculty?.id,
+            facultyId:fakultyInfo[0]?.faculty?.id,
           departmentId: srcItem.departmentId,
           query: srcItem.query,
           // staffPosition: srcItem.staffPosition,

@@ -7,7 +7,7 @@ import {Avatar, Dropdown, Menu, notification, Space} from 'antd';
 import * as PropTypes from "prop-types";
 import {useMutation} from "react-query"
 import {ChangeRole} from "../api/general";
-
+import {ApiName} from "../api/APIname";
 
 LogoutOutlined.propTypes = {className: PropTypes.string};
 
@@ -196,7 +196,7 @@ function Navbar(props) {
                             {/* /!*${ApiName}*!/  http://localhost:3000/ */}
                             {/*/!*${ApiName}*!/  http://portfolio.uplink.uz/*/}
                             {fulInfo === null ?
-                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://portfolio.uplink.uz/auth`}
+                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
                                    className="nav-item nav-link">
                                     Hemis orqali kirish
                                     <i className="fa-solid fa-right-to-bracket mx-2"></i>

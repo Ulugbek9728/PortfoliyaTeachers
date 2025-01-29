@@ -341,7 +341,7 @@ const IlmiySaloxiyatModal = (props) => {
                 <Form.Item layout="vertical" label="Ximoya qilgan yili" name="yearOfProtection" labelCol={{span: 24}}
                            wrapperCol={{span: 24}} className='col-6'>
                     <DatePicker className='py-2'
-                                format="YYYY-MM-DD"
+                                format="DD-MM-YYYY"
                                 name="yearOfProtection"
                                 onChange={(date) => {
                                     setData({...data, yearOfProtection: date})

@@ -548,6 +548,7 @@ const useAddAuthor = useMutation({
                            className="py-2"/>
                 </Form.Item>
                 <Form.Item
+
                     layout="vertical"
                     label="Nashr yili"
                     name="issueYear"
@@ -559,7 +560,7 @@ const useAddAuthor = useMutation({
                     className="col-3"
                 >
                     <DatePicker
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                         name="issueYear"
                         onChange={(date) => {
                             setData({...data, issueYear: date})
@@ -611,7 +612,7 @@ const useAddAuthor = useMutation({
                 >
                     <DatePicker
                         className="py-2"
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                         name="styleCertificateDate"
                         onChange={(date) => {
                             setData({...data, styleCertificateDate: date})

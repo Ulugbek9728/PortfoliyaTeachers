@@ -46,7 +46,6 @@ export const EmployeeStatus = (value) => getInstance().put(`/api/employee-studen
 export const Comment = (value) => getInstance().post(`/api/comment`, value)
 export const getComment = (filter) => getInstance().get(`/api/comment/${filter}`);
 
-
 export const fetchCurrentUser = () => getInstance().get(`/api/profile/current`);
 
 export const profileUpdate = (data) => getInstance().put(`/api/profile/update`, data);

@@ -29,6 +29,7 @@ import {
   fetchCurrentUser,
   profileUpdate,
 } from "../../api/general";
+import DateFormat from "../dateFormat";
 dayjs.extend(customParseFormat);
 
 const defaultDatabaseProfiles = [
@@ -71,7 +72,6 @@ const defaultDatabaseProfiles = [
 ];
 
 const TeacherRating = () => {
-  const navigate = useNavigate();
   const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
   const [data, setData] = useState({
     profileId: fulInfo?.id,
@@ -1151,7 +1151,7 @@ const TeacherRating = () => {
                   </div>
                   <div className="">
                     <b>Diplom sanasi</b>
-                    <p> {getFullInfo?.data?.specialist?.date}</p>
+                    <DateFormat date={getFullInfo?.data?.specialist?.date}/>
                   </div>
                   <div>
                     <b>Diplom raqami</b>
@@ -1175,7 +1175,6 @@ const TeacherRating = () => {
                   <div className="">
                     <b>Ilmiy unvon nomi</b>
                     <p>
-                      {" "}
                       {getFullInfo?.data?.scientificTitle?.name
                         ? getFullInfo?.data?.scientificTitle?.name
                         : "yo'q"}
@@ -1183,18 +1182,16 @@ const TeacherRating = () => {
                   </div>
                   <div className="">
                     <b>Diplom sanasi</b>
-                    <p>
-                      {" "}
-                      {getFullInfo?.data?.scientificTitle?.name
-                        ? getFullInfo?.data?.scientificTitle?.date
+                    <div>
+                      {getFullInfo?.data?.scientificTitle?.date
+                        ?  <DateFormat date={getFullInfo?.data?.scientificTitle?.date}/>
                         : "yo'q"}
-                    </p>
+                    </div>
                   </div>
                   <div className="">
                     <b>Diplom raqami</b>
                     <p>
-                      {" "}
-                      {getFullInfo?.data?.scientificTitle?.name
+                      {getFullInfo?.data?.scientificTitle?.number
                         ? getFullInfo?.data?.scientificTitle?.number
                         : "yo'q"}
                     </p>
@@ -1221,10 +1218,8 @@ const TeacherRating = () => {
                   <div className="">
                     <b>Ilmiy daraja nomi</b>
                     <p>
-                      {getFullInfo?.data?.scientificDegree?.name
-                        ? getFullInfo?.data?.scientificDegree?.name
+                      {getFullInfo?.data?.scientificDegree?.name ? getFullInfo?.data?.scientificDegree?.name
                         : "yo'q"}{" "}
-                      {getFullInfo?.data?.scientificDegree?.name}
                     </p>
                   </div>
                   <div className="">
@@ -1248,9 +1243,9 @@ const TeacherRating = () => {
                   <div className="">
                     <b>Diplom sanasi</b>
                     <p>
-                      {" "}
-                      {getFullInfo?.data?.scientificDegree?.name
-                        ? getFullInfo?.data?.scientificDegree?.date
+                      {getFullInfo?.data?.scientificDegree?.date
+
+                        ?<DateFormat date={getFullInfo?.data?.scientificDegree?.date}/>
                         : "yo'q"}
                     </p>
                   </div>
@@ -1300,9 +1295,8 @@ const TeacherRating = () => {
                   <div>
                     <b>Davlat mukofotini olgan sanasi</b>
                     <p>
-                      {" "}
-                      {getFullInfo?.data?.profileStateAwardDTO?.nameStateAward
-                        ? getFullInfo?.data?.profileStateAwardDTO?.date
+                      {getFullInfo?.data?.profileStateAwardDTO?.date
+                        ?<DateFormat date={getFullInfo?.data?.profileStateAwardDTO?.date}/>
                         : "yo'q"}
                     </p>
                   </div>

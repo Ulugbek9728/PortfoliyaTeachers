@@ -147,7 +147,7 @@ const IntMulkModal = (props) => {
                 setSearchResults([]);
             }
         } catch (error) {
-            console.error('Error fetching search results:', error);
+            console.log('Error fetching search results:', error);
             setSearchResults([]);
         }
 
@@ -416,7 +416,10 @@ const IntMulkModal = (props) => {
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     className='col-6'>
-                    <DatePicker name='data' className='py-2'
+                    <DatePicker
+                        format="DD-MM-YYYY"
+                        name='data'
+                        className='py-2'
                                 onChange={(date) => {
                                     setData({...data, issueYear: date})
                                 }}/>

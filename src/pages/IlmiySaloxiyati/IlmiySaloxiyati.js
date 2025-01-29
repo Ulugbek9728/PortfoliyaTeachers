@@ -5,6 +5,7 @@ import IlmiySaloxiyatModal from '../../componenta/IlmiySaloxiyatModal/IlmiySalox
 import {useSearchParams} from "react-router-dom";
 import {useMutation, useQuery} from "react-query";
 import dayjs from "dayjs";
+import DateFormat from "../../componenta/dateFormat";
 
 const IlmiySaloxiyati = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -71,7 +72,7 @@ const IlmiySaloxiyati = () => {
         },
         {
             title: 'Ximoya qilgan yili',
-            dataIndex: 'yearOfProtection',
+            render: (item ) => (<DateFormat date={item?.yearOfProtection}/>),
             width: 100
         },
         {
@@ -81,9 +82,16 @@ const IlmiySaloxiyati = () => {
         },
         {
             title: 'url',
-            render: (item, record, index) => (
-                <a href={item.media?.url} target={"_blank"}>file</a>),
-            width: 50
+            render: (item) => (
+                item?.media!=null ? (
+                    <a href={item.media?.url} target="_blank" rel="noopener noreferrer">
+                        file
+                    </a>
+                ) : (
+                    <span className="text-danger">Yo'q</span> // Agar mediaId bo‘lmasa
+                )
+            ),
+            width: 60
         },
         {
             title: 'Harakatlar',

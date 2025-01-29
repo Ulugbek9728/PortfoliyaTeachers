@@ -8,6 +8,7 @@ import {ApiName} from "../../api/APIname";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {useMutation, useQuery} from "react-query";
 import {ClassifairGet, DeletIlmiyNashr, getIlmiyNashrPublikatsiya} from "../../api/general";
+import DateFormat from "../../componenta/dateFormat";
 
 function IlmiyNashrlar(props) {
     const navigate = useNavigate();
@@ -80,21 +81,25 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'Nashr yili',
-            dataIndex: 'issueYear',
+            render: (item ) => (<DateFormat date={item?.issueYear}/>),
             width: 150
         },
         {
             title: 'url',
-            render: (item, record, index) => {
-                const url = item?.doiOrUrl === '' 
-                    ? (item?.mediaIds && item.mediaIds.length > 0 ? item.mediaIds[0]?.attachResDTO?.url : '') 
-                    : item?.doiOrUrl;
-        
-                return (
-                    <a href={url} target="_blank">file</a>
-                );
-            },
-            width: 50
+            render: (item) => (
+                item?.mediaIds &&
+                item.mediaIds.length > 0 &&
+                item.mediaIds[0]?.attachResDTO?.url &&
+                item?.doiOrUrl &&
+                item.doiOrUrl.length > 0 ? (
+                    <a href={item.doiOrUrl===''? item.mediaIds[0].attachResDTO.url: item.doiOrUrl} target="_blank" rel="noopener noreferrer">
+                        file
+                    </a>
+                ) : (
+                    <span className="text-danger">Yo'q</span> // Agar shart bajarilmasa
+                )
+            ),
+            width: 60
         },
         {
             title: 'Ilmiy yoki ilmiy texnik kengash qarori',

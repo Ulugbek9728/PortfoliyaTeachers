@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import {useNavigate} from "react-router-dom";
 import { ClassifairGet, DeletIlmiyNashr, getUslubiyNashrPublikatsiya } from '../../api/general';
 import { useMutation, useQuery } from 'react-query';
+import DateFormat from "../../componenta/dateFormat";
 const UslubiyNashrlar = () => {
     const navigate = useNavigate();
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
@@ -65,8 +66,8 @@ const UslubiyNashrlar = () => {
         },
         {
             title: 'Nashr yili',
-            dataIndex: 'issueYear',
-            width: 150
+            render: (item ) => (<DateFormat date={item?.issueYear}/>),
+            width: 110
         },
         {
             title: 'Uslubiy nashr turi',
@@ -80,9 +81,20 @@ const UslubiyNashrlar = () => {
         },
         {
             title: 'url',
-            render: (item, record, index) => (
-                <a href={item.doiOrUrl===''? item.mediaIds[0].attachResDTO.url: item.doiOrUrl} target={"_blank"}>file</a>),
-            width: 50
+            render: (item) => (
+                item?.mediaIds &&
+                item.mediaIds.length > 0 &&
+                item.mediaIds[0]?.attachResDTO?.url &&
+                item?.doiOrUrl &&
+                item.doiOrUrl.length > 0 ? (
+                    <a href={item.doiOrUrl===''? item.mediaIds[0].attachResDTO.url: item.doiOrUrl} target="_blank" rel="noopener noreferrer">
+                        file
+                    </a>
+                ) : (
+                    <span className="text-danger">Yo'q</span> // Agar shart bajarilmasa
+                )
+            ),
+            width: 60
         },
         {
             title: 'Tekshirish',

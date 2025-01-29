@@ -8,6 +8,7 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {useMutation, useQuery} from "react-query";
 import {ClassifairGet, DeletIntelektual, getPublikatsiya} from "../../api/general";
 import dayjs from "dayjs";
+import DateFormat from "../../componenta/dateFormat";
 
 const InteliktualMulk = () => {
     const navigate = useNavigate();
@@ -139,15 +140,21 @@ const InteliktualMulk = () => {
         },
         {
             title: "O'quv yili",
-            dataIndex: 'issueYear',
+            render: (item ) => (<DateFormat date={item?.issueYear}/>),
             width: 100
         },
         {
             title: 'url',
             render: (item) => (
-                item.mediaIds === null ? '' :
-                    <a href={item?.mediaIds[0]?.attachResDTO?.url} target={"_blank"}>file</a>),
-            width: 50
+                item?.mediaIds && item.mediaIds.length > 0 && item.mediaIds[0]?.attachResDTO?.url ? (
+                    <a href={item.mediaIds[0].attachResDTO.url} target="_blank" rel="noopener noreferrer">
+                        file
+                    </a>
+                ) : (
+                    <span className="text-danger">Yo'q</span> // Agar mediaId bo‘lmasa
+                )
+            ),
+            width: 60
         },
         {
             title: 'Tekshirish',

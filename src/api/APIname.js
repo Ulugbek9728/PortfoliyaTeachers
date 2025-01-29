@@ -1,4 +1,3 @@
-const ApiName = 'http://api-portfolio.uplink.uz';
-// const ApiName = 'http://192.168.18.228:9090' // sarvar
-// const ApiName = 'http://192.168.16.207:9090'//abdulaziz
+const ApiName = 'http://api-scinalitic.tdtu.uz'//prod;
+// const ApiName = 'http://192.168.20.9:9090'//abdulaziz
 export {ApiName}

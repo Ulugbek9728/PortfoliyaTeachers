@@ -1,21 +1,17 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {Space, Table, Modal, Form, DatePicker, Input, Switch, message, Select, Popconfirm, notification} from 'antd';
+import {Space, Table, Modal, Form, DatePicker, Input, message, Select, Popconfirm, notification} from 'antd';
 import {SearchOutlined} from '@ant-design/icons';
 import "./ilmiyNashrlar.scss";
 import FormModal from '../../componenta/Modal/FormModal';
-import axios from "axios";
-import {ApiName} from "../../api/APIname";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {useMutation, useQuery} from "react-query";
 import {ClassifairGet, DeletIlmiyNashr, getIlmiyNashrPublikatsiya} from "../../api/general";
-import DateFormat from "../../componenta/dateFormat";
+import {useTranslation} from "react-i18next";
 
 function IlmiyNashrlar(props) {
     const navigate = useNavigate();
-    const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
     const formRef = useRef(null);
     const [form] = Form.useForm();
-    const [DateListe, setDateListe] = useState(['', '']);
     const [open, setOpen] = useState(false);
     const [dataList, setDataList] = useState([]);
     const [editingData, setEditingData] = useState(null);
@@ -26,12 +22,15 @@ function IlmiyNashrlar(props) {
             total: 10
         },
     });
-    const [srcItem, setSrcItem] = useState({
-    });
+    const [srcItem, setSrcItem] = useState({});
     const onChangeDate = (value, dateString) => {
-        setDateListe(dateString);
+        setSrcItem({
+            ...srcItem,
+            fromlocalDate: dateString[0],
+            tolocalDate: dateString[1]
+        })
     };
- 
+
     const columns = [
         {
             title: '№',
@@ -60,7 +59,7 @@ function IlmiyNashrlar(props) {
         },
         {
             title: "Xalqaro ilmiy bazalar",
-            render: (item, record, index) => (<>{item?.publicationDatabase?.name} {item?.quartile ? `(${item?.quartile})` :''} </>),
+            render: (item, record, index) => (<>{item?.publicationDatabase?.name} {item?.quartile ? `(${item?.quartile})` : ''} </>),
             width: 200,
         },
         {
@@ -81,28 +80,35 @@ function IlmiyNashrlar(props) {
         },
         {
             title: 'Nashr yili',
-            render: (item ) => (<DateFormat date={item?.issueYear}/>),
+            dataIndex: 'issueYear',
             width: 150
         },
         {
-            title: 'url',
+            title: 'url, file',
             render: (item) => (
-                item?.mediaIds &&
-                item.mediaIds.length > 0 &&
-                item.mediaIds[0]?.attachResDTO?.url &&
-                item?.doiOrUrl &&
-                item.doiOrUrl.length > 0 ? (
-                    <a href={item.doiOrUrl===''? item.mediaIds[0].attachResDTO.url: item.doiOrUrl} target="_blank" rel="noopener noreferrer">
-                        file
-                    </a>
-                ) : (
-                    <span className="text-danger">Yo'q</span> // Agar shart bajarilmasa
-                )
-            ),
-            width: 60
+                <ol>
+                    {item?.doiOrUrl && (
+                        <li>
+                            <a href={item.doiOrUrl} target="_blank" rel="noopener noreferrer">
+                                url
+                            </a>
+                        </li>
+                    )}
+
+                    {item?.mediaIds?.map((media, index) => (
+                        media?.attachResDTO?.url && (
+                            <li key={index}>
+                                <a href={media.attachResDTO.url} target="_blank" rel="noopener noreferrer">
+                                    file
+                                </a>
+                            </li>
+                        )
+                    ))}
+                </ol>),
+            width: 100
         },
         {
-            title: 'Ilmiy yoki ilmiy texnik kengash qarori',
+            title: 'Ilmiy yoki ilmiy texnik kengash qarori (file)',
             dataIndex: 'decisionScientificCouncil',
             width: 150
         },
@@ -181,26 +187,22 @@ function IlmiyNashrlar(props) {
         queryFn: () => ClassifairGet('h_scientific_publication_type').then(res => res?.data[0]),
     })
 
-    useEffect(() => {
-        publication_List.refetch()
-    }, [srcItem]);
-
     const deletedIlmiyNashr = useMutation({
-      mutationFn:(id)=>DeletIlmiyNashr({
-      id,
-      publicationStatus: 'DELETED'
-    }),
-    onSuccess:()=>{
-        publication_List.refetch()
-        notification.success({
-            message: "Ma'lumot o'chirildi"
-        })
-    },
-    onError:()=>{
-        notification.error({
-            message: "Ma'lumot o'chirishda xato"
-        })
-    }
+        mutationFn: (id) => DeletIlmiyNashr({
+            id,
+            publicationStatus: 'DELETED'
+        }),
+        onSuccess: () => {
+            publication_List.refetch()
+            notification.success({
+                message: "Ma'lumot o'chirildi"
+            })
+        },
+        onError: () => {
+            notification.error({
+                message: "Ma'lumot o'chirishda xato"
+            })
+        }
     })
 
 
@@ -212,8 +214,8 @@ function IlmiyNashrlar(props) {
             type: 'SCIENTIFIC_PUBLICATIONS',
             publicationName: srcItem?.srcInput,
             scientificPublicationType: srcItem?.srcType,
-            fromlocalDate: DateListe[0],
-            tolocalDate: DateListe[1]
+            fromlocalDate: srcItem?.fromlocalDate,
+            tolocalDate: srcItem?.tolocalDate
         }).then(res => {
             const fetchedData = res?.data?.data?.content.map(item => ({...item, key: item.id}));
             setDataList(fetchedData);
@@ -234,6 +236,9 @@ function IlmiyNashrlar(props) {
             message.error('Failed to fetch data');
         })
     })
+    useEffect(() => {
+        publication_List.refetch()
+    }, [srcItem]);
 
     const onEdit = (record) => {
         setEditingData(record);
@@ -262,15 +267,14 @@ function IlmiyNashrlar(props) {
 
             <div className='d-flex align-items-center justify-content-between'>
                 <Form form={form} layout="vertical" ref={formRef} colon={false}
-                      onFinish={() => publication_List.refetch()}
                       className='d-flex align-items-center gap-4'
                 >
                     <Form.Item label="Mudatini belgilang" name="srcDate">
-                        <DatePicker.RangePicker size="large" name="srcDate" format="YYYY-MM-DD"
+                        <DatePicker.RangePicker size="large" name="srcDate" format="DD-MM-YYYY" allowClear
                                                 onChange={onChangeDate}/>
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr nomi" name="srcInput">
-                        <Input name='srcInput' size="large" style={{width: '400px'}}
+                        <Input name='srcInput' size="large" style={{width: '400px'}} allowClear
                                placeholder="Ilmiy nashr nomi bo'yicha qidirish"
                                onChange={(e) => {
                                    setSrcItem({...srcItem, srcInput: e.target.value})
@@ -279,11 +283,18 @@ function IlmiyNashrlar(props) {
                     </Form.Item>
                     <Form.Item label="Ilmiy nashr turi" name="srcType">
                         <Select name="srcType" labelInValue style={{width: 300,}} placeholder='Ilmiy nashr turi'
+                                allowClear
                                 options={Scientificpublication?.data?.options.map(item => ({
                                     label: item.name,
                                     value: item.code
                                 }))}
-                                onChange={(value, option) => setSrcItem({...srcItem, srcType: option.value})}
+                                onChange={(value, option) => {
+                                    if (value && option) {
+                                        setSrcItem(prev => ({...prev, srcType: option.value}));
+                                    } else {
+                                        setSrcItem(prev => ({...prev, srcType: ''}));
+                                    }
+                                }}
                         />
                     </Form.Item>
                     <Form.Item label=''>
@@ -326,7 +337,7 @@ function IlmiyNashrlar(props) {
                                         total: page
                                     }
                                 })
-                                
+
                             }
                         }
                     }

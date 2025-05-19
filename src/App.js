@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import FacultyStatic from "./pages/facultyStatic";
 import KafedraStatic from "./pages/kafedraStatic";
 import Auth from "./pages/auth";
-import TeachersDiogramm from "./pages/TeachersDiogramm";
 import UniversitetStatic from "./pages/universitetStatic";
 import Profile from "./pages/profile/profile";
 import PageNotFound from "./pages/PageNotFound";
@@ -37,34 +36,16 @@ const router = createBrowserRouter([
         element: (<UniversitetStatic/>),
     },
     {
-        path: "/faculties",
+        path: "/faculties/:id",
         element: (<FacultyStatic/>),
-        children:[
-            {
-                path: "/faculties/:id",
-                element: (<FacultyStatic/>),
-            },
-        ]
     },
     {
-        path: "/kafedra",
+        path: "/kafedra/:id",
         element: (<KafedraStatic/>),
-        children:[
-            {
-                path: "/kafedra/:id",
-                element: (<KafedraStatic/>),
-            },
-        ]
     },
     {
-        path: "/teacher_info",
+        path: "/teacher_info/:id",
         element: (<TeachersInfo/>),
-        children:[
-            {
-                path: "/teacher_info/:id",
-                element: (<TeachersInfo/>),
-            },
-        ]
     },
     {
         path:'/profile/*',
@@ -77,16 +58,6 @@ const router = createBrowserRouter([
     {
         path:'/dashboard-admin/*',
         element:<Admin/>,
-    },
-    {
-        path: "/userInfo",
-        element: (<TeachersInfo/>),
-        children:[
-            {
-                path: "/userInfo/:id",
-                element: (<TeachersInfo/>),
-            },
-        ]
     },
 ]);
 

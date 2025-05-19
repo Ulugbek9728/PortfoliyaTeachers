@@ -33,7 +33,6 @@ const TeachersTable = () => {
         (res) => res?.data[0]?.options
       ),
   });
-  console.log(stafPosition);
   const { data: Department } = useQuery({
     queryKey: ["DepartmentList"],
     queryFn: () => getFaculty(13).then((res) => res.data),
@@ -65,9 +64,8 @@ const TeachersTable = () => {
   }, [srcItem, form]);
 
   const handleCardClick = (id) => {
-    navigate(`/userInfo/${id}`);
+    navigate(`/teacher_info/${id}`);
   };
-console.log(searchParams);
   const onChangeField = (fieldKey, value) => {
     if (value === undefined || value === false) {
       searchParams.delete(fieldKey);

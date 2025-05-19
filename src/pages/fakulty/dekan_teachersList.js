@@ -38,7 +38,7 @@ const Dekan_teachersList = () => {
 
   
     const handleCardClick = (id) => {
-      navigate(`/userInfo/${id}`);
+      navigate(`/teacher_info/${id}`);
     };
   
     const onChangeField = (fieldKey, value) => {

@@ -1,15 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {
-    Button,
-    DatePicker,
-    Form,
-    Input,
-    InputNumber,
-    Upload,
-    Select,
-    message,
-    Divider,
-} from "antd";
+import {Button, DatePicker, Form, Input, Upload, Select, message, Divider,} from "antd";
 import {PlusOutlined, UploadOutlined} from "@ant-design/icons";
 import axios from "axios";
 import {ApiName} from "../../api/APIname";
@@ -17,14 +7,12 @@ import "./UslubiyNashrlarModal.scss";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useMutation, useQuery } from "react-query";
-import { addAuthor, ClassifairGet, UslubiyNashrCreate, UslubiyNashrUpdate } from "../../api/general";
+import {addAuthor, ClassifairGet, search, UslubiyNashrCreate, UslubiyNashrUpdate} from "../../api/general";
 dayjs.extend(customParseFormat);
 
 const UslubiyNashrlarModal = (props) => {
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-    const [searchResults, setSearchResults] = useState([])
     const [form] = Form.useForm();
-    const [url, seturl] = useState(true);
     const formRef = useRef(null);
     const [data, setData] = useState({
         authorCount: 0,
@@ -86,31 +74,11 @@ const UslubiyNashrlarModal = (props) => {
             })
         }
     }, [props.editingData, form, stylePublicationType?.data]);
-    useEffect(() => {
-        return () => {
-            handleSearch();
-        };
-    }, []);    
 
-    const handleSearch = async () => {
-        try {
-            const response = await axios.get(`${ApiName}/api/author/search`, {
-                params: {query: ''},
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            });
-            if (response.data.isSuccess && !response.data.error) {
-                setSearchResults(response.data.data || []);
-            } else {
-                console.error("Error in response:", response.data.message);
-                setSearchResults([]);
-            }
-        } catch (error) {
-            console.error("Error fetching search results:", error);
-            setSearchResults([]);
-        }
-    };
+    const Mualiflar = useQuery({
+        queryKey: [''],
+        queryFn:() => search({query: ''}).then(res=>res.data)
+    })
 
     const handleChange = (value) => {
         setData((prevState) => ({
@@ -119,9 +87,6 @@ const UslubiyNashrlarModal = (props) => {
             authorCount: value.length,
         }));
     };
-
-
-
 
     const handleInputChange = (event) => {
         const {name, value} = event.target;
@@ -258,7 +223,6 @@ const useAddAuthor = useMutation({
     mutationFn:(data2) => addAuthor(data2),
     onSuccess: () => {
        form2.resetFields();
-       handleSearch();
        message.success('Muallif muvaffaqiyatli qo`shildi');
    },
    onError: (error) => {
@@ -391,7 +355,7 @@ const useAddAuthor = useMutation({
                         filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').startsWith(input.toLowerCase())}
                         filterSort={(optionA, optionB) =>
                             (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())}
-                        options={searchResults.map(author => ({
+                        options={Mualiflar?.data?.data.map(author => ({
                             value: author.id,
                             label: author.fullName + ' (' + author.workplace + ' ' + author.position + ') '
                         }))}

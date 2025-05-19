@@ -1,4 +1,4 @@
-import {getInstance, getFacultyList} from "../utils/httpClient";
+import {getInstance} from "../utils/httpClient";
 
 export const getLogin = (code, state) => getInstance().get(`/api/auth/login`, {
     params: {
@@ -7,7 +7,7 @@ export const getLogin = (code, state) => getInstance().get(`/api/auth/login`, {
     }
 });
 export const getUserInfo = (value) => getInstance().get(`/api/profile/current`,value);
-export const getFaculty = (id,value) => getFacultyList().get(`/api/department`,{
+export const getFaculty = (id,value) => getInstance().get(`/api/department`,{
     params:{
         structureCode:id,
         parent:value? value: ''
@@ -60,9 +60,9 @@ export const addAuthor = (data2) => getInstance().post('/api/author/create', dat
  
 //Search
 
-// export const search = (query) => getInstance().get('/api/author/search',{
-//     params: { query:'' } 
-// })
+export const search = (filter) => getInstance().get('/api/author/search',{
+    params: filter
+})
 
 //Ilmiy Nashrlar Deleted
 
@@ -98,7 +98,8 @@ export const SaloxiyatUpdate = (data,id) => getInstance().put(`/api/employee-stu
 
 export const TeacherList = (params) => getInstance().get('/api/profile/admin/teacher-list', { params });
 
-export const TeacherFullInfo = () => {
+export const TeacherFullInfoList = () => {
     return getInstance().get(`/api/profile/admin/teacher-list`);
   };
-//   export const TeacherwebLink = (data) => {return getInstance().get('/api/author-profile/{employeeId}',data)}; 
+ export const TeacherInfoLinks = (data) => {return getInstance().get(`/api/author-profile/${data}`)};
+ export const TeacherInfo = (data) => {return getInstance().get(`/api/employee/get/${data}`)};

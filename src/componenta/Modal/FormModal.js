@@ -23,12 +23,14 @@ import {
 
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import {useMutation, useQuery} from "react-query";
+import {useTranslation} from "react-i18next";
 
 dayjs.extend(customParseFormat);
 
 const FormModal = (props) => {
+    const {t} = useTranslation();
+
     const fulInfo = JSON.parse(localStorage.getItem("myInfo"));
-    const [searchResults, setSearchResults] = useState([]);
     const [monografiya, setMonografiya] = useState(false);
     const [scopus, setScopus] = useState(false);
     const [form] = Form.useForm();
@@ -86,7 +88,6 @@ const FormModal = (props) => {
     });
 
     useEffect(() => {
-        handleSearch("");
         if (props.editingData) {
             setScopus(props.editingData.publicationDatabase.name === "Scopus")
             const editingValues = {
@@ -133,8 +134,14 @@ const FormModal = (props) => {
 
     const Xalqaro = useQuery({
         queryKey: ["h_publication_database"],
-        queryFn: () =>
-            ClassifairGet("h_publication_database").then((res) => res.data[0]),
+        queryFn: async () => {
+            const res = await ClassifairGet("h_publication_database");
+            if (!res.data[0].options) {
+                res.data[0].options = []; // Agar options yo'q bo'lsa, uni yaratamiz
+            }
+            res.data[0].options.push({ name: "Yo'q", code: "00" });
+            return res.data[0];
+        },
     });
     const IlmFan = useQuery({
         queryKey: ["h_science_branch"],
@@ -143,27 +150,10 @@ const FormModal = (props) => {
                 res.data[0]?.options?.filter((item) => item?.code?.endsWith("00.00"))
             ),
     });
-
-    const handleSearch = async () => {
-        try {
-            const response = await axios.get(`${ApiName}/api/author/search`, {
-                params: {query: ""},
-                headers: {
-                    Authorization: `Bearer ${fulInfo?.accessToken}`,
-                },
-            });
-            if (response.data.isSuccess && !response.data.error) {
-                setSearchResults(response.data.data || []);
-            } else {
-                console.error("Error in response:", response.data.message);
-                setSearchResults([]);
-            }
-        } catch (error) {
-            console.error("Error fetching search results:", error);
-            setSearchResults([]);
-        }
-    };
-
+    const Mualiflar = useQuery({
+        queryKey: [''],
+        queryFn:() => search({query: ''}).then(res=>res.data)
+    })
     const handleChange = (value) => {
         setData((prevState) => ({
             ...prevState,
@@ -269,7 +259,6 @@ const FormModal = (props) => {
         mutationFn: (data2) => addAuthor(data2),
         onSuccess: () => {
             form2.resetFields();
-            handleSearch();
             message.success("Muallif muvaffaqiyatli qo`shildi");
         },
         onError: (error) => {
@@ -283,11 +272,11 @@ const FormModal = (props) => {
             const request = props.editingData
                 ? IlmiyNashrUpdate({
                     ...data,
-                    issueYear: data.issueYear.format("YYYY-MM-DD"),
+                    issueYear: data.issueYear.format("DD-MM-YYYY"),
                 })
                 : IlmiyNashrCreate({
                     ...data,
-                    issueYear: data.issueYear.format("YYYY-MM-DD"),
+                    issueYear: data.issueYear.format("DD-MM-YYYY"),
                     authorCount: data?.authorCount + 1
                 });
             return request;
@@ -467,7 +456,7 @@ const FormModal = (props) => {
                     <Input
                         name="scientificName"
                         onChange={handleInputChange}
-                        placeholder="Nashrning bibliografik matni"
+                        placeholder={(t("publication.Nashrning_bibliografik_matni"))}
                         className="py-2"
                     />
                 </Form.Item>
@@ -517,15 +506,9 @@ const FormModal = (props) => {
                                 .toLowerCase()
                                 .localeCompare((optionB?.label ?? "").toLowerCase())
                         }
-                        options={searchResults.map((author) => ({
+                        options={Mualiflar?.data?.data.map(author => ({
                             value: author.id,
-                            label:
-                                author.fullName +
-                                " (" +
-                                author.workplace +
-                                " " +
-                                author.position +
-                                ") ",
+                            label: author.fullName + ' (' + author.workplace + ' ' + author.position + ') '
                         }))}
                         dropdownRender={(menu) => (
                             <>
@@ -663,10 +646,13 @@ const FormModal = (props) => {
                 >
                     <Select
                         name="scientificField"
-                        options={Xalqaro?.data?.options?.map((item) => ({
+                        options={
+
+                        Xalqaro?.data?.options?.map((item) => ({
                             label: item.name,
                             value: item.code,
-                        }))}
+                        }))
+                    }
                         onChange={(value) =>
                             handleSelectChange(value, {name: "publicationDatabase"})
                         }
@@ -705,9 +691,7 @@ const FormModal = (props) => {
                         className="col-6"
                     >
                         <Upload
-                            accept="application/pdf,application/vnd.ms-excel"
-                            {...uploadProps("defaultPDF")}
-                        >
+                            accept="application/pdf,application/vnd.ms-excel" {...uploadProps("defaultPDF")}>
                             <Button icon={<UploadOutlined/>}>PDF</Button>
                         </Upload>
                     </Form.Item>

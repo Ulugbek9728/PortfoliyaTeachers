@@ -196,7 +196,7 @@ function Navbar(props) {
                             {/* /!*${ApiName}*!/  http://localhost:3000/ */}
                             {/*/!*${ApiName}*!/  http://scinalitic.tdtu.uz*/}
                             {fulInfo === null ?
-                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://localhost:3000/auth`}
+                                <a href={`https://hemis.tdtu.uz/oauth/authorize?response_type=code&client_id=5&state=auth_state&redirect_uri=http://scinalitic.tdtu.uz/auth`}
                                    className="nav-item nav-link">
                                     Hemis orqali kirish
                                     <i className="fa-solid fa-right-to-bracket mx-2"></i>
